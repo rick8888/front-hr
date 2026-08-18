@@ -1,0 +1,216 @@
+{
+  "country_code": "SN",
+  "status": "active",
+  "version": 2,
+  "last_updated": "2026-01-20T11:00:00.000Z",
+  "categories": [
+    { "id": "income_tax", "label": "IRPP", "is_active": true },
+    { "id": "social_security", "label": "IPRES", "is_active": true },
+    { "id": "health_insurance", "label": "CSS", "is_active": true },
+    { "id": "training_tax", "label": "Taxe apprentissage / ONFP", "is_active": true }
+  ],
+  "calculation_bases": [
+    { "id": "gross_salary", "label": "Salaire brut", "description": "Total des éléments bruts du bulletin de paie", "source": "payroll", "is_active": true },
+    { "id": "taxable_income", "label": "Revenu imposable", "description": "Base après abattements et déductions fiscales", "source": "computed", "is_active": true }
+  ],
+  "rules": [
+    {
+      "id": "sn-ipres-rg-ee",
+      "code": "IPRES_RG_EE",
+      "name": "IPRES Régime général — Salarié",
+      "category": "social_security",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 5.6,
+      "base": "gross_salary",
+      "ceiling": 432000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Institution de prévoyance retraite — régime général"
+    },
+    {
+      "id": "sn-ipres-rg-er",
+      "code": "IPRES_RG_ER",
+      "name": "IPRES Régime général — Employeur",
+      "category": "social_security",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 8.4,
+      "base": "gross_salary",
+      "ceiling": 432000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Part patronale IPRES régime général"
+    },
+    {
+      "id": "sn-css-ee",
+      "code": "CSS_EE",
+      "name": "CSS — Part salariale",
+      "category": "health_insurance",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 1,
+      "base": "gross_salary",
+      "ceiling": 250000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Caisse de sécurité sociale"
+    },
+    {
+      "id": "sn-css-er",
+      "code": "CSS_ER",
+      "name": "CSS — Part patronale",
+      "category": "health_insurance",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 3,
+      "base": "gross_salary",
+      "ceiling": 250000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Prestations familiales et risques professionnels"
+    },
+    {
+      "id": "sn-irpp-ee",
+      "code": "IRPP_EE",
+      "name": "IRPP — Retenue à la source",
+      "category": "income_tax",
+      "applies_to": "employee",
+      "type": "scale",
+      "scale_id": "sn-irpp-monthly",
+      "value": null,
+      "base": "taxable_income",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif IRPP — voir section Barèmes"
+    },
+    {
+      "id": "sn-onfp-er",
+      "code": "ONFP_ER",
+      "name": "Taxe ONFP",
+      "category": "training_tax",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 3,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Office national de formation professionnelle"
+    }
+  ],
+  "scales": [
+    {
+      "id": "sn-irpp-monthly",
+      "code": "IRPP_BARAME_MENSUEL",
+      "name": "Barème IRPP — Tranches mensuelles",
+      "category": "income_tax",
+      "linked_rule_code": "IRPP_EE",
+      "period": "monthly",
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif de l'impôt sur le revenu des personnes physiques",
+      "brackets": [
+        { "order": 1, "min": 0, "max": 63000, "rate": 0, "deduction": 0 },
+        { "order": 2, "min": 63000.01, "max": 150000, "rate": 20, "deduction": 12600 },
+        { "order": 3, "min": 150000.01, "max": 400000, "rate": 30, "deduction": 27600 },
+        { "order": 4, "min": 400000.01, "max": 800000, "rate": 35, "deduction": 47600 },
+        { "order": 5, "min": 800000.01, "max": 1200000, "rate": 37, "deduction": 63600 },
+        { "order": 6, "min": 1200000.01, "max": null, "rate": 40, "deduction": 99600 }
+      ]
+    }
+  ],
+  "declaration_periods": [
+    {
+      "id": "sn-ipres-monthly",
+      "code": "IPRES_DECL",
+      "name": "Déclaration IPRES mensuelle",
+      "type": "social",
+      "authority": "IPRES",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["social_security"],
+      "linked_rule_codes": ["IPRES_RG_EE", "IPRES_RG_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Bordereau de cotisations IPRES — 15 du mois suivant"
+    },
+    {
+      "id": "sn-css-monthly",
+      "code": "CSS_DECL",
+      "name": "Déclaration CSS mensuelle",
+      "type": "social",
+      "authority": "CSS",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["health_insurance"],
+      "linked_rule_codes": ["CSS_EE", "CSS_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Cotisations CSS — échéance le 15 du mois suivant"
+    },
+    {
+      "id": "sn-irpp-monthly",
+      "code": "IRPP_DECL",
+      "name": "Déclaration IRPP mensuelle",
+      "type": "fiscal",
+      "authority": "Direction générale des Impôts",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["income_tax"],
+      "linked_rule_codes": ["IRPP_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Versement de l'IRPP retenu à la source"
+    },
+    {
+      "id": "sn-onfp-annual",
+      "code": "ONFP_DECL",
+      "name": "Déclaration ONFP annuelle",
+      "type": "social",
+      "authority": "ONFP",
+      "frequency": "annual",
+      "reference_period": "previous_year",
+      "due_rule": { "type": "fixed_day", "month": 3, "day": 31 },
+      "grace_days": 30,
+      "filing_channel": "paper",
+      "linked_categories": ["training_tax"],
+      "linked_rule_codes": ["ONFP_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Déclaration annuelle taxe de formation professionnelle"
+    }
+  ],
+  "versions": [
+    {
+      "id": "sn-v1",
+      "timestamp": "2025-03-01T00:00:00.000Z",
+      "summary": "Configuration initiale Sénégal"
+    },
+    {
+      "id": "sn-v2",
+      "timestamp": "2026-01-20T11:00:00.000Z",
+      "summary": "Révision plafonds IPRES et CSS"
+    }
+  ]
+}

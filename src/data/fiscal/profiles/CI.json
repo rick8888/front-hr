@@ -1,0 +1,162 @@
+{
+  "country_code": "CI",
+  "status": "active",
+  "version": 1,
+  "last_updated": "2025-09-01T08:00:00.000Z",
+  "categories": [
+    { "id": "income_tax", "label": "ITS", "is_active": true },
+    { "id": "social_security", "label": "CNPS", "is_active": true },
+    { "id": "training_tax", "label": "FDFP", "is_active": true }
+  ],
+  "calculation_bases": [
+    { "id": "gross_salary", "label": "Salaire brut", "description": "Total des éléments bruts du bulletin de paie", "source": "payroll", "is_active": true },
+    { "id": "taxable_income", "label": "Revenu imposable", "description": "Base ITS après abattements", "source": "computed", "is_active": true }
+  ],
+  "rules": [
+    {
+      "id": "ci-cnps-ee",
+      "code": "CNPS_EE",
+      "name": "CNPS — Part salariale",
+      "category": "social_security",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 6.3,
+      "base": "gross_salary",
+      "ceiling": 3375000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Caisse nationale de prévoyance sociale"
+    },
+    {
+      "id": "ci-cnps-er",
+      "code": "CNPS_ER",
+      "name": "CNPS — Part patronale",
+      "category": "social_security",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 14.95,
+      "base": "gross_salary",
+      "ceiling": 3375000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Prestations familiales, accidents du travail, retraite"
+    },
+    {
+      "id": "ci-its-ee",
+      "code": "ITS_EE",
+      "name": "ITS — Impôt sur les traitements et salaires",
+      "category": "income_tax",
+      "applies_to": "employee",
+      "type": "scale",
+      "scale_id": "ci-its-monthly",
+      "value": null,
+      "base": "taxable_income",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif ITS — voir section Barèmes"
+    },
+    {
+      "id": "ci-fdfp-er",
+      "code": "FDFP_ER",
+      "name": "FDFP — Taxe apprentissage",
+      "category": "training_tax",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 0.6,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Fonds de développement de la formation professionnelle"
+    }
+  ],
+  "scales": [
+    {
+      "id": "ci-its-monthly",
+      "code": "ITS_BARAME_MENSUEL",
+      "name": "Barème ITS — Tranches mensuelles",
+      "category": "income_tax",
+      "linked_rule_code": "ITS_EE",
+      "period": "monthly",
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Impôt sur les traitements et salaires — barème progressif",
+      "brackets": [
+        { "order": 1, "min": 0, "max": 75000, "rate": 0, "deduction": 0 },
+        { "order": 2, "min": 75000.01, "max": 200000, "rate": 10, "deduction": 7500 },
+        { "order": 3, "min": 200000.01, "max": 500000, "rate": 15, "deduction": 17500 },
+        { "order": 4, "min": 500000.01, "max": 1000000, "rate": 20, "deduction": 42500 },
+        { "order": 5, "min": 1000000.01, "max": 2000000, "rate": 25, "deduction": 92500 },
+        { "order": 6, "min": 2000000.01, "max": null, "rate": 35, "deduction": 292500 }
+      ]
+    }
+  ],
+  "declaration_periods": [
+    {
+      "id": "ci-cnps-monthly",
+      "code": "CNPS_DECL",
+      "name": "Déclaration CNPS mensuelle",
+      "type": "social",
+      "authority": "CNPS",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["social_security"],
+      "linked_rule_codes": ["CNPS_EE", "CNPS_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Déclaration des salaires et cotisations CNPS"
+    },
+    {
+      "id": "ci-its-monthly",
+      "code": "ITS_DECL",
+      "name": "Déclaration ITS mensuelle",
+      "type": "fiscal",
+      "authority": "DGI",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["income_tax"],
+      "linked_rule_codes": ["ITS_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Versement de l'impôt sur les traitements et salaires"
+    },
+    {
+      "id": "ci-fdfp-annual",
+      "code": "FDFP_DECL",
+      "name": "Déclaration FDFP annuelle",
+      "type": "social",
+      "authority": "FDFP",
+      "frequency": "annual",
+      "reference_period": "previous_year",
+      "due_rule": { "type": "fixed_day", "month": 3, "day": 31 },
+      "grace_days": 15,
+      "filing_channel": "online",
+      "linked_categories": ["training_tax"],
+      "linked_rule_codes": ["FDFP_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Déclaration annuelle taxe d'apprentissage FDFP"
+    }
+  ],
+  "versions": [
+    {
+      "id": "ci-v1",
+      "timestamp": "2025-09-01T08:00:00.000Z",
+      "summary": "Configuration initiale Côte d'Ivoire"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-6">
+  <div class="px-4 py-4 sm:px-8 sm:py-6">
     <!-- Header Navigation -->
     <div class="mb-8">
       <router-link
@@ -19,15 +19,15 @@
             d="M15 19l-7-7 7-7"
           ></path>
         </svg>
-        Leave Requests
+        {{ t("admin.leave.title") }}
       </router-link>
     </div>
 
     <!-- Page Title -->
     <div class="mb-6">
-      <h1 class="text-3xl font-bold text-neutral-900">Request Time Off</h1>
+      <h1 class="text-3xl font-bold text-neutral-900">{{ t("admin.leave.newRequest.title") }}</h1>
       <p class="text-neutral-600 text-sm mt-1">
-        Submit a new leave or absence request
+        {{ t("admin.leave.newRequest.subtitle") }}
       </p>
     </div>
 
@@ -54,9 +54,9 @@
         <!-- Absence Type Tab -->
         <div v-if="activeTab === 'type'" class="space-y-6">
           <div>
-            <label class="block text-sm font-semibold text-neutral-900 mb-4"
-              >Type of Absence</label
-            >
+            <label class="block text-sm font-semibold text-neutral-900 mb-4">{{
+              t("admin.leave.newRequest.typeOfAbsence")
+            }}</label>
             <div class="space-y-3">
               <div
                 v-for="category in categories"
@@ -79,10 +79,10 @@
                     {{ category.name }}
                   </p>
                   <p class="text-xs text-neutral-500 mt-1">
-                    Available:
-                    <span class="font-semibold text-neutral-700"
-                      >{{ category.balance }} days</span
-                    >
+                    {{ t("admin.leave.newRequest.available") }}
+                    <span class="font-semibold text-neutral-700">{{
+                      daysLabel(category.balance)
+                    }}</span>
                   </p>
                 </label>
               </div>
@@ -93,13 +93,13 @@
         <!-- Duration Tab -->
         <div v-if="activeTab === 'duration'" class="space-y-6">
           <div>
-            <label class="block text-sm font-semibold text-neutral-900 mb-4"
-              >Period</label
-            >
+            <label class="block text-sm font-semibold text-neutral-900 mb-4">{{
+              t("admin.leave.newRequest.period")
+            }}</label>
             <div class="grid grid-cols-2 gap-6">
               <div>
                 <label class="block text-xs font-medium text-neutral-700 mb-2"
-                  >Start Date *</label
+                  >{{ t("admin.leave.newRequest.startDate") }} *</label
                 >
                 <input
                   v-model="formData.startDate"
@@ -111,7 +111,7 @@
               </div>
               <div>
                 <label class="block text-xs font-medium text-neutral-700 mb-2"
-                  >End Date *</label
+                  >{{ t("admin.leave.newRequest.endDate") }} *</label
                 >
                 <input
                   v-model="formData.endDate"
@@ -130,19 +130,19 @@
             >
               <div class="grid grid-cols-3 gap-4">
                 <div>
-                  <p class="text-xs text-neutral-600 mb-1">Start Date</p>
+                  <p class="text-xs text-neutral-600 mb-1">{{ t("admin.leave.newRequest.startDate") }}</p>
                   <p class="font-semibold text-neutral-900">
                     {{ formatDate(formData.startDate) }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-neutral-600 mb-1">Total Duration</p>
+                  <p class="text-xs text-neutral-600 mb-1">{{ t("admin.leave.newRequest.totalDuration") }}</p>
                   <p class="font-semibold text-primary-600">
-                    {{ durationDays }} day{{ durationDays > 1 ? "s" : "" }}
+                    {{ daysLabel(durationDays) }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-neutral-600 mb-1">End Date</p>
+                  <p class="text-xs text-neutral-600 mb-1">{{ t("admin.leave.newRequest.endDate") }}</p>
                   <p class="font-semibold text-neutral-900">
                     {{ formatDate(formData.endDate) }}
                   </p>
@@ -168,9 +168,10 @@
                   ></path>
                 </svg>
                 <p>
-                  You will exceed your available balance by
-                  {{ durationDays - selectedCategory.balance }} day{{
-                    durationDays - selectedCategory.balance > 1 ? "s" : ""
+                  {{
+                    t("admin.leave.newRequest.exceedBalance", {
+                      count: daysLabel(durationDays - selectedCategory.balance),
+                    })
                   }}
                 </p>
               </div>
@@ -181,25 +182,25 @@
         <!-- Details Tab -->
         <div v-if="activeTab === 'details'" class="space-y-6">
           <div>
-            <label class="block text-sm font-semibold text-neutral-900 mb-2"
-              >Reason for Absence</label
-            >
+            <label class="block text-sm font-semibold text-neutral-900 mb-2">{{
+              t("admin.leave.newRequest.reason")
+            }}</label>
             <textarea
               v-model="formData.reason"
-              placeholder="Please provide details about your absence request..."
+              :placeholder="t('admin.leave.newRequest.reasonPlaceholder')"
               class="input-base resize-none"
               rows="5"
             ></textarea>
             <p class="text-xs text-neutral-500 mt-2">
-              {{ formData.reason.length }}/500 characters
+              {{ t("admin.leave.newRequest.charCount", { count: formData.reason.length }) }}
             </p>
           </div>
 
           <!-- Attachments -->
           <div>
-            <label class="block text-sm font-semibold text-neutral-900 mb-3"
-              >Supporting Documents</label
-            >
+            <label class="block text-sm font-semibold text-neutral-900 mb-3">{{
+              t("admin.leave.newRequest.supportingDocs")
+            }}</label>
             <div
               class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors"
             >
@@ -230,19 +231,19 @@
                   @click="$refs.fileInput.click()"
                   class="text-primary-600 hover:text-primary-700 font-semibold"
                 >
-                  Click to upload
+                  {{ t("admin.leave.newRequest.clickToUpload") }}
                 </button>
-                <span class="text-neutral-600"> or drag and drop</span>
+                <span class="text-neutral-600"> {{ t("admin.leave.newRequest.orDragDrop") }}</span>
               </p>
               <p class="text-xs text-neutral-500 mt-2">
-                PDF, DOC, DOCX, JPG, PNG (max 5MB)
+                {{ t("admin.leave.newRequest.fileTypes") }}
               </p>
             </div>
 
             <!-- Uploaded Files -->
             <div v-if="attachments.length > 0" class="mt-4 space-y-2">
               <p class="text-sm font-medium text-neutral-700">
-                Uploaded Files:
+                {{ t("admin.leave.newRequest.uploadedFiles") }}
               </p>
               <div
                 v-for="(file, index) in attachments"
@@ -331,10 +332,10 @@
         <!-- Action Buttons -->
         <div class="flex gap-3 pt-6 border-t border-neutral-200">
           <button type="submit" :disabled="isLoading" class="btn-primary px-8">
-            {{ isLoading ? "Submitting..." : "Submit Request" }}
+            {{ isLoading ? t("common.submitting") : t("common.submitRequest") }}
           </button>
           <router-link to="/leave-requests" class="btn-outline px-8">
-            Cancel
+            {{ t("common.cancel") }}
           </router-link>
         </div>
       </form>
@@ -345,15 +346,25 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "../i18n/index.js";
 
 const router = useRouter();
+const { t, bcp47 } = useI18n();
+
+function daysLabel(count) {
+  if (typeof count !== "number") return String(count);
+  return t(
+    count > 1 ? "admin.leave.newRequest.days" : "admin.leave.newRequest.day",
+    { count },
+  );
+}
 
 // Tabs
-const tabs = [
-  { id: "type", label: "Absence Type" },
-  { id: "duration", label: "Duration" },
-  { id: "details", label: "Details" },
-];
+const tabs = computed(() => [
+  { id: "type", label: t("admin.leave.newRequest.tab.type") },
+  { id: "duration", label: t("admin.leave.newRequest.tab.duration") },
+  { id: "details", label: t("admin.leave.newRequest.tab.details") },
+]);
 const activeTab = ref("type");
 
 // Form data
@@ -394,12 +405,12 @@ const durationDays = computed(() => {
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(dateStr).toLocaleDateString("en-US", options);
+  return new Date(dateStr).toLocaleDateString(bcp47.value, options);
 };
 
 const calculateDuration = () => {
   if (new Date(formData.value.startDate) > new Date(formData.value.endDate)) {
-    errorMessage.value = "End date must be after start date";
+    errorMessage.value = t("admin.leave.modal.dateOrderError");
     formData.value.endDate = "";
   } else {
     errorMessage.value = "";
@@ -410,7 +421,7 @@ const handleFileSelect = (event) => {
   const files = event.target.files;
   for (let file of files) {
     if (file.size > 5 * 1024 * 1024) {
-      errorMessage.value = `File ${file.name} is too large (max 5MB)`;
+      errorMessage.value = t("admin.leave.newRequest.fileTooLarge", { name: file.name });
       continue;
     }
     attachments.value.push(file);
@@ -426,31 +437,31 @@ const validateForm = () => {
   errorMessage.value = "";
 
   if (!formData.value.categoryId) {
-    errorMessage.value = "Please select an absence type";
+    errorMessage.value = t("admin.leave.newRequest.selectTypeError");
     activeTab.value = "type";
     return false;
   }
 
   if (!formData.value.startDate) {
-    errorMessage.value = "Please select a start date";
+    errorMessage.value = t("admin.leave.newRequest.selectStartError");
     activeTab.value = "duration";
     return false;
   }
 
   if (!formData.value.endDate) {
-    errorMessage.value = "Please select an end date";
+    errorMessage.value = t("admin.leave.newRequest.selectEndError");
     activeTab.value = "duration";
     return false;
   }
 
   if (new Date(formData.value.startDate) > new Date(formData.value.endDate)) {
-    errorMessage.value = "End date must be after start date";
+    errorMessage.value = t("admin.leave.modal.dateOrderError");
     activeTab.value = "duration";
     return false;
   }
 
   if (formData.value.reason.length > 500) {
-    errorMessage.value = "Reason must be 500 characters or less";
+    errorMessage.value = t("admin.leave.newRequest.reasonLengthError");
     activeTab.value = "details";
     return false;
   }
@@ -476,8 +487,7 @@ const handleSubmit = async () => {
     };
 
     if (response.success) {
-      successMessage.value =
-        "Your leave request has been submitted successfully!";
+      successMessage.value = t("admin.leave.newRequest.submitSuccess");
 
       // Reset form
       formData.value = {
@@ -494,10 +504,10 @@ const handleSubmit = async () => {
         router.push("/leave-requests");
       }, 2000);
     } else {
-      errorMessage.value = response.message || "Failed to submit request";
+      errorMessage.value = response.message || t("admin.leave.newRequest.submitFailed");
     }
   } catch (error) {
-    errorMessage.value = "An error occurred. Please try again.";
+    errorMessage.value = t("admin.leave.newRequest.errorRetry");
     console.error("Error:", error);
   } finally {
     isLoading.value = false;

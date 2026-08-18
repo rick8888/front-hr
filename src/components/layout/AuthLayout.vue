@@ -1,10 +1,10 @@
 <template>
   <div
-    class="flex min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-50"
+    class="flex min-h-screen min-h-[100dvh] bg-gradient-to-br from-neutral-50 via-white to-neutral-50"
   >
     <!-- Left Side - Illustration/Info -->
     <div
-      class="relative flex-col justify-between hidden p-8 overflow-hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-600"
+      class="relative hidden min-h-0 shrink-0 flex-col items-center justify-center overflow-hidden p-8 lg:flex lg:min-h-screen lg:w-1/2 bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-600"
     >
       <!-- Animated Background Pattern -->
       <div class="absolute inset-0 opacity-10">
@@ -27,8 +27,8 @@
         ></div>
       </div>
 
-      <!-- Content -->
-      <div class="relative z-10">
+      <!-- Content (centered block in the left column) -->
+      <div class="relative z-10 w-full max-w-lg">
         <!-- Logo -->
         <div class="flex items-center gap-3 mb-10">
           <div
@@ -134,39 +134,58 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Footer Stats -->
-      <div
-        class="relative z-10 grid grid-cols-3 gap-4 pt-6 border-t border-white/20"
-      >
-        <div>
-          <p class="mb-0.5 text-2xl font-bold text-white">5K+</p>
-          <p class="text-xs text-primary-100">Active Users</p>
-        </div>
-        <div>
-          <p class="mb-0.5 text-2xl font-bold text-white">98%</p>
-          <p class="text-xs text-primary-100">Satisfaction</p>
-        </div>
-        <div>
-          <p class="mb-0.5 text-2xl font-bold text-white">24/7</p>
-          <p class="text-xs text-primary-100">Support</p>
+        <!-- Footer Stats -->
+        <div
+          class="grid grid-cols-3 gap-4 border-t border-white/20 pt-6"
+        >
+          <div>
+            <p class="mb-0.5 text-2xl font-bold text-white">5K+</p>
+            <p class="text-xs text-primary-100">Active Users</p>
+          </div>
+          <div>
+            <p class="mb-0.5 text-2xl font-bold text-white">98%</p>
+            <p class="text-xs text-primary-100">Satisfaction</p>
+          </div>
+          <div>
+            <p class="mb-0.5 text-2xl font-bold text-white">24/7</p>
+            <p class="text-xs text-primary-100">Support</p>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Right Side - Form -->
     <div
-      class="flex items-center justify-center w-full px-6 py-6 overflow-y-auto lg:w-1/2 sm:px-8 lg:px-12 xl:px-16"
+      class="flex min-h-screen min-h-[100dvh] w-full items-center justify-center overflow-y-auto px-6 py-6 sm:px-8 lg:w-1/2 lg:px-12 xl:px-16"
     >
-      <div class="w-full max-w-md my-auto">
+      <div :class="['w-full my-auto', maxWidthClass]">
         <slot />
       </div>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { computed } from "vue";
+
+const props = defineProps({
+  /** Tailwind max-width key for the form column */
+  maxWidth: { type: String, default: "xl" },
+});
+
+const MAX_WIDTHS = {
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+  "3xl": "max-w-3xl",
+};
+
+const maxWidthClass = computed(
+  () => MAX_WIDTHS[props.maxWidth] || MAX_WIDTHS.md,
+);
+</script>
 
 <style scoped>
 /* Smooth animations */

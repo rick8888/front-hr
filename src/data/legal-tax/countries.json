@@ -1,0 +1,6 @@
+[
+  { "id": 1, "code": "MA", "name": "Maroc", "currency": "MAD", "locale": "fr_MA", "is_active": true },
+  { "id": 2, "code": "CD", "name": "République Démocratique du Congo", "currency": "CDF", "locale": "fr_CD", "is_active": true },
+  { "id": 3, "code": "FR", "name": "France", "currency": "EUR", "locale": "fr_FR", "is_active": true },
+  { "id": 4, "code": "CIV", "name": "Côte d'Ivoire", "currency": "XOF", "locale": "fr_CI", "is_active": true }
+]

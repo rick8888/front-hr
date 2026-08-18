@@ -3,10 +3,10 @@
     <!-- Login Form Card -->
     <div class="space-y-8">
       <!-- Header -->
-      <div class="text-center">
-        <h2 class="text-3xl font-bold text-neutral-900">Welcome Back</h2>
+          <div class="text-center">
+        <h2 class="text-3xl font-bold text-neutral-900">{{ t("login.title") }}</h2>
         <p class="text-neutral-600 text-sm mt-2">
-          Sign in to your account to continue
+          {{ t("login.subtitle") }}
         </p>
       </div>
 
@@ -14,7 +14,7 @@
       <form @submit.prevent="handleLogin" class="space-y-5">
         <div>
           <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Email Address</label
+            >{{ t("login.email") }}</label
           >
           <input
             v-model="credentials.email"
@@ -27,7 +27,7 @@
 
         <div>
           <label class="block text-sm font-medium text-neutral-700 mb-2"
-            >Password</label
+            >{{ t("login.password") }}</label
           >
           <div class="relative">
           <input
@@ -101,7 +101,7 @@
           <router-link
             to="/forgot-password"
             class="text-sm text-primary-600 hover:text-primary-700 font-medium"
-            >Forgot password?</router-link
+            >{{ t("login.forgot") }}</router-link
           >
         </div>
 
@@ -131,8 +131,8 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span v-if="!isLoading">Sign In</span>
-          <span v-else>Signing in...</span>
+          <span v-if="!isLoading">{{ t("login.submit") }}</span>
+          <span v-else>{{ t("login.signingIn") }}</span>
         </button>
       </form>
 
@@ -208,10 +208,24 @@
           </div>
           <div class="pt-2 border-t border-info-200">
             <p class="text-xs font-medium text-info-900 mb-0.5">Employee:</p>
-        <p class="text-xs text-info-700">
+            <p class="text-xs text-info-700">
               <span class="font-medium">Email:</span> employee@bravorh.com<br />
               <span class="font-medium">Password:</span> password123
-        </p>
+            </p>
+          </div>
+          <div class="pt-2 border-t border-info-200">
+            <p class="text-xs font-medium text-info-900 mb-0.5">Tenant:</p>
+            <p class="text-xs text-info-700">
+              <span class="font-medium">Email:</span> tenant@bravorh.com<br />
+              <span class="font-medium">Password:</span> password123
+            </p>
+          </div>
+          <div class="pt-2 border-t border-info-200">
+            <p class="text-xs font-medium text-info-900 mb-0.5">Super Admin:</p>
+            <p class="text-xs text-info-700">
+              <span class="font-medium">Email:</span> superadmin@bravorh.com<br />
+              <span class="font-medium">Password:</span> password123
+            </p>
           </div>
         </div>
       </div>
@@ -224,9 +238,11 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/authStore";
 import AuthLayout from "../components/layout/AuthLayout.vue";
+import { useI18n } from "../i18n/index.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 const credentials = ref({
   email: "",
@@ -239,41 +255,29 @@ const errorMessage = ref("");
 
 const handleLogin = async () => {
   errorMessage.value = "";
-  
-  // Validate credentials
+
   if (!credentials.value.email || !credentials.value.password) {
-    errorMessage.value = "Please enter both email and password";
-    return;
-  }
-
-  // Check for demo credentials
-  const isAdminLogin = 
-    credentials.value.email === "admin@bravorh.com" && 
-    credentials.value.password === "password123";
-  
-  const isEmployeeLogin = 
-    credentials.value.email === "employee@bravorh.com" && 
-    credentials.value.password === "password123";
-
-  if (!isAdminLogin && !isEmployeeLogin) {
-    errorMessage.value = "Invalid email or password";
+    errorMessage.value = "Veuillez saisir votre email et votre mot de passe";
     return;
   }
 
   isLoading.value = true;
-  
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  
-  // Login using store
-  authStore.login(credentials.value);
-  
-  if (rememberMe.value) {
-    localStorage.setItem("rememberMe", "true");
+
+  try {
+    await authStore.login(credentials.value);
+
+    if (rememberMe.value) {
+      localStorage.setItem("rememberMe", "true");
+    }
+
+    router.push(authStore.homePath);
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message ||
+      "Email ou mot de passe incorrect";
+  } finally {
+    isLoading.value = false;
   }
-  
-  isLoading.value = false;
-  router.push("/");
 };
 
 const handleSocialLogin = (provider) => {

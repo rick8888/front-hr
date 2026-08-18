@@ -1,31 +1,37 @@
 <template>
   <header
-    class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-8"
+    class="flex h-16 min-w-0 items-center justify-between gap-2 border-b border-neutral-200 bg-white px-4 sm:px-6 lg:px-8"
   >
-    <!-- Left - Greeting or Employee Name -->
-    <div>
-      <template v-if="employeeName">
-        <h1 class="text-xl font-bold text-neutral-900 mb-1">{{ employeeName }}</h1>
-        <div class="flex items-center gap-2 text-sm text-neutral-600">
-          <span>All Employee</span>
-          <span>›</span>
-          <span class="text-neutral-900 font-medium">{{ employeeName }}</span>
-        </div>
-      </template>
-      <template v-else>
-        <h1 class="text-lg font-semibold text-neutral-900">
-          Hello {{ authStore.user?.name?.split(' ')[0] || 'User' }} 👋
-          <span class="text-neutral-600 font-normal">{{ getGreeting() }}</span>
+    <!-- Left - Menu + Greeting -->
+    <div class="flex min-w-0 items-center gap-2">
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 lg:hidden"
+        :aria-label="sidebarOpen ? t('header.close') : t('header.menu')"
+        :aria-expanded="sidebarOpen"
+        @click="toggleSidebar"
+      >
+        <svg v-if="!sidebarOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <div class="min-w-0">
+        <h1 class="truncate text-base font-semibold text-neutral-900 sm:text-lg">
+          {{ t("header.hello", { name: firstName }) }}
+          <span class="hidden font-normal text-neutral-600 sm:inline"> 👋 {{ greeting }}</span>
         </h1>
-      </template>
+      </div>
     </div>
 
     <!-- Center - Search -->
-    <div class="flex-1 flex justify-center px-8">
+    <div class="hidden min-w-0 flex-1 justify-center px-4 lg:flex lg:px-8">
       <div class="relative w-full max-w-md">
         <input
           type="text"
-          placeholder="Search"
+          :placeholder="t('header.searchPlaceholder')"
           class="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 text-sm"
         />
         <svg
@@ -45,34 +51,20 @@
     </div>
 
     <!-- Right - Notifications & Profile -->
-    <div class="flex items-center gap-4">
+    <div class="flex shrink-0 items-center gap-2 sm:gap-4">
       <!-- Notifications -->
-      <button
-        class="relative p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-      >
-        <svg
-          class="w-5 h-5 text-neutral-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          ></path>
-        </svg>
-        <span
-          class="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"
-        ></span>
-      </button>
+      <CircularNotification
+        :notifications="notifications"
+        @mark-read="handleMarkAsRead"
+        @click="handleNotificationClick"
+        @view-all="handleViewAll"
+      />
 
       <!-- Profile Dropdown -->
       <div class="relative" ref="profileDropdownRef">
         <button
           @click="toggleProfileDropdown"
-          class="flex items-center gap-3 cursor-pointer hover:bg-neutral-50 px-2 py-1 rounded-lg transition-colors"
+          class="flex items-center gap-3 cursor-pointer hover:bg-neutral-50 px-1 py-1 rounded-lg transition-colors sm:px-2"
         >
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
@@ -82,11 +74,11 @@
           </div>
           <div class="hidden md:block">
             <p class="text-sm font-medium text-neutral-900">{{ authStore.user?.name || 'User' }}</p>
-            <p class="text-xs text-neutral-500">{{ authStore.user?.designation || authStore.user?.role || 'User' }}</p>
+            <p class="text-xs text-neutral-500">{{ authStore.user?.company || authStore.user?.designation || authStore.user?.role || 'User' }}</p>
           </div>
           <svg
             :class="[
-              'w-4 h-4 text-neutral-400 transition-transform duration-200',
+              'hidden w-4 h-4 text-neutral-400 transition-transform duration-200 sm:block',
               isProfileDropdownOpen ? 'rotate-180' : '',
             ]"
             fill="none"
@@ -140,7 +132,7 @@
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                Profile
+                {{ t("header.profile") }}
               </button>
               <router-link
                 v-if="authStore.isAdmin"
@@ -167,7 +159,7 @@
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                Settings
+                {{ t("header.settings") }}
               </router-link>
             </div>
 
@@ -193,7 +185,7 @@
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                Logout
+                {{ t("header.logout") }}
       </button>
             </div>
           </div>
@@ -204,31 +196,79 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { computed, ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
+import { useI18n } from "../../i18n/index.js";
+import { useAppShell } from "../../composables/useAppShell.js";
+import CircularNotification from "../common/CircularNotification.vue";
 
 const router = useRouter();
-const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
+const { sidebarOpen, toggleSidebar } = useAppShell();
 const isProfileDropdownOpen = ref(false);
 const profileDropdownRef = ref(null);
-const employeeName = ref(null);
 
-// Watch route changes to update employee name
-watch(
-  () => route.path,
-  (newPath) => {
-    if (newPath.startsWith("/employees/") && newPath !== "/employees" && newPath !== "/employees/new") {
-      // Extract employee name from route or set a default
-      // In a real app, you would fetch this from the route params or store
-      employeeName.value = "Brooklyn Simmons";
-    } else {
-      employeeName.value = null;
-    }
+// Notifications data
+const notifications = ref([
+  {
+    id: 1,
+    type: "leave",
+    title: "Demande de congé approuvée",
+    message: "Votre demande de congé du 15 au 20 janvier a été approuvée",
+    read: false,
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
   },
-  { immediate: true }
-);
+  {
+    id: 2,
+    type: "payslip",
+    title: "Nouvelle fiche de paie disponible",
+    message: "Votre fiche de paie de décembre 2025 est maintenant disponible",
+    read: false,
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+  },
+  {
+    id: 3,
+    type: "attendance",
+    title: "Rappel de pointage",
+    message: "N'oubliez pas de pointer votre arrivée aujourd'hui",
+    read: true,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+  },
+  {
+    id: 4,
+    type: "info",
+    title: "Mise à jour du système",
+    message: "Une nouvelle version de l'application est disponible",
+    read: true,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+  },
+]);
+
+const handleMarkAsRead = (notificationId) => {
+  if (notificationId === null) {
+    // Mark all as read
+    notifications.value.forEach((n) => (n.read = true));
+  } else {
+    // Mark specific notification as read
+    const notification = notifications.value.find((n) => n.id === notificationId);
+    if (notification) {
+      notification.read = true;
+    }
+  }
+};
+
+const handleNotificationClick = (notification) => {
+  // Handle notification click - navigate to relevant page
+  console.log("Notification clicked:", notification);
+  // Example: router.push(`/notifications/${notification.id}`);
+};
+
+const handleViewAll = () => {
+  // Navigate to all notifications page
+  router.push("/notifications");
+};
 
 const toggleProfileDropdown = () => {
   isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
@@ -243,15 +283,8 @@ const goToProfile = () => {
   router.push("/profile");
 };
 
-const handleLogout = () => {
-  // Clear local storage
-  localStorage.removeItem("token");
-  localStorage.removeItem("rememberMe");
-  
-  // Clear auth store
-  authStore.logout();
-  
-  // Redirect to login
+const handleLogout = async () => {
+  await authStore.logout();
   router.push("/login");
 };
 
@@ -289,20 +322,23 @@ const getUserInitialsColor = () => {
   if (!authStore.user?.name) return "#6699FF";
   const name = authStore.user.name;
   const colors = [
-    "#6699FF", "#FF6699", "#66FF99", "#FF9966", 
+    "#6699FF", "#FF6699", "#66FF99", "#FF9966",
     "#9966FF", "#FFCC66", "#66CCFF", "#FF6666"
   ];
   const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
 };
 
-// Get greeting based on time of day
-const getGreeting = () => {
+const greeting = computed(() => {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good Morning";
-  if (hour < 18) return "Good Afternoon";
-  return "Good Evening";
-};
+  if (hour < 12) return t("header.greeting.morning");
+  if (hour < 18) return t("header.greeting.afternoon");
+  return t("header.greeting.evening");
+});
+
+const firstName = computed(
+  () => authStore.user?.name?.split(" ")[0] || "User"
+);
 </script>
 
 <style scoped></style>

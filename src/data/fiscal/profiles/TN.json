@@ -1,0 +1,161 @@
+{
+  "country_code": "TN",
+  "status": "inactive",
+  "version": 1,
+  "last_updated": "2025-11-01T12:00:00.000Z",
+  "categories": [
+    { "id": "income_tax", "label": "IRPP", "is_active": true },
+    { "id": "social_security", "label": "CNSS", "is_active": true },
+    { "id": "health_insurance", "label": "CSS", "is_active": true }
+  ],
+  "calculation_bases": [
+    { "id": "gross_salary", "label": "Salaire brut", "description": "Total des éléments bruts du bulletin de paie", "source": "payroll", "is_active": true },
+    { "id": "taxable_income", "label": "Revenu imposable", "description": "Base IRPP après abattements", "source": "computed", "is_active": true }
+  ],
+  "rules": [
+    {
+      "id": "tn-cnss-ee",
+      "code": "CNSS_EE",
+      "name": "CNSS — Part salariale",
+      "category": "social_security",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 9.18,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Caisse nationale de sécurité sociale"
+    },
+    {
+      "id": "tn-cnss-er",
+      "code": "CNSS_ER",
+      "name": "CNSS — Part patronale",
+      "category": "social_security",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 16.57,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Cotisations patronales CNSS"
+    },
+    {
+      "id": "tn-css-er",
+      "code": "CSS_ER",
+      "name": "CSS — Part patronale",
+      "category": "health_insurance",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 2,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Caisse de sécurité sociale"
+    },
+    {
+      "id": "tn-irpp-ee",
+      "code": "IRPP_EE",
+      "name": "IRPP",
+      "category": "income_tax",
+      "applies_to": "employee",
+      "type": "scale",
+      "scale_id": "tn-irpp-annual",
+      "value": null,
+      "base": "taxable_income",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif IRPP — voir section Barèmes"
+    }
+  ],
+  "scales": [
+    {
+      "id": "tn-irpp-annual",
+      "code": "IRPP_BARAME_ANNUEL",
+      "name": "Barème IRPP — Revenu annuel",
+      "category": "income_tax",
+      "linked_rule_code": "IRPP_EE",
+      "period": "annual",
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif de l'impôt sur le revenu des personnes physiques",
+      "brackets": [
+        { "order": 1, "min": 0, "max": 5000, "rate": 0, "deduction": 0 },
+        { "order": 2, "min": 5000.01, "max": 20000, "rate": 26, "deduction": 1300 },
+        { "order": 3, "min": 20000.01, "max": 30000, "rate": 28, "deduction": 1700 },
+        { "order": 4, "min": 30000.01, "max": 50000, "rate": 32, "deduction": 2900 },
+        { "order": 5, "min": 50000.01, "max": null, "rate": 35, "deduction": 4400 }
+      ]
+    }
+  ],
+  "declaration_periods": [
+    {
+      "id": "tn-cnss-monthly",
+      "code": "CNSS_DECL",
+      "name": "Déclaration CNSS mensuelle",
+      "type": "social",
+      "authority": "CNSS",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["social_security"],
+      "linked_rule_codes": ["CNSS_EE", "CNSS_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Bordereau de déclaration des salaires CNSS"
+    },
+    {
+      "id": "tn-css-monthly",
+      "code": "CSS_DECL",
+      "name": "Déclaration CSS mensuelle",
+      "type": "social",
+      "authority": "CSS",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["health_insurance"],
+      "linked_rule_codes": ["CSS_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Cotisations caisse de sécurité sociale"
+    },
+    {
+      "id": "tn-irpp-annual",
+      "code": "IRPP_DECL",
+      "name": "Déclaration IRPP annuelle",
+      "type": "fiscal",
+      "authority": "Direction générale des Impôts",
+      "frequency": "annual",
+      "reference_period": "previous_year",
+      "due_rule": { "type": "fixed_day", "month": 2, "day": 28 },
+      "grace_days": 30,
+      "filing_channel": "online",
+      "linked_categories": ["income_tax"],
+      "linked_rule_codes": ["IRPP_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Déclaration annuelle de l'impôt sur le revenu des personnes physiques"
+    }
+  ],
+  "versions": [
+    {
+      "id": "tn-v1",
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "summary": "Configuration initiale Tunisie (brouillon)"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-6">
+  <div class="px-4 py-4 sm:px-8 sm:py-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
@@ -20,11 +20,11 @@
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back
+          {{ t("common.back") }}
         </button>
         <h1 class="text-2xl font-bold text-neutral-900">{{ department?.name }}</h1>
         <p class="text-sm text-neutral-600">
-          {{ department?.memberCount }} Members
+          {{ t("admin.org.departments.members", { count: department?.memberCount ?? 0 }) }}
         </p>
       </div>
     </div>
@@ -77,6 +77,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "../i18n/index.js";
+
+const { t } = useI18n();
 
 const route = useRoute();
 const router = useRouter();
@@ -248,7 +251,7 @@ const department = computed(() => {
 onMounted(() => {
   if (!department.value) {
     // Redirect to departments list if not found
-    router.push("/departments");
+    router.push("/organization/departments");
   }
 });
 </script>

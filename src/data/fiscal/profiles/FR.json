@@ -1,0 +1,229 @@
+{
+  "country_code": "FR",
+  "status": "active",
+  "version": 2,
+  "last_updated": "2026-02-10T09:00:00.000Z",
+  "categories": [
+    { "id": "income_tax", "label": "Impôt sur le revenu", "is_active": true },
+    { "id": "social_security", "label": "Sécurité sociale", "is_active": true },
+    { "id": "health_insurance", "label": "Assurance maladie", "is_active": true },
+    { "id": "unemployment", "label": "Assurance chômage", "is_active": true },
+    { "id": "csg_crds", "label": "CSG / CRDS", "is_active": true },
+    { "id": "local_taxes", "label": "Taxes locales", "is_active": true }
+  ],
+  "calculation_bases": [
+    { "id": "gross_salary", "label": "Salaire brut", "description": "Total des éléments bruts du bulletin de paie", "source": "payroll", "is_active": true },
+    { "id": "gross_salary_capped", "label": "Salaire brut plafonné", "description": "Brut plafonné au PASS ou plafonds URSSAF", "source": "computed", "is_active": true },
+    { "id": "net_taxable", "label": "Net imposable", "description": "Base imposable après abattements forfaitaires", "source": "computed", "is_active": true },
+    { "id": "company_revenue", "label": "Chiffre d'affaires", "description": "CA de l'entreprise pour taxes locales (CVAE, etc.)", "source": "manual", "is_active": true }
+  ],
+  "rules": [
+    {
+      "id": "fr-vieillesse-ee",
+      "code": "SS_VIEIL_EE",
+      "name": "Assurance vieillesse plafonnée — Salarié",
+      "category": "social_security",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 6.9,
+      "base": "gross_salary_capped",
+      "ceiling": 3925,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Retraite de base — part salariale (PASS mensuel)"
+    },
+    {
+      "id": "fr-vieillesse-er",
+      "code": "SS_VIEIL_ER",
+      "name": "Assurance vieillesse — Employeur",
+      "category": "social_security",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 8.55,
+      "base": "gross_salary_capped",
+      "ceiling": 3925,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Retraite de base — part patronale"
+    },
+    {
+      "id": "fr-maladie-er",
+      "code": "SS_MAL_ER",
+      "name": "Assurance maladie — Employeur",
+      "category": "health_insurance",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 7,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Assurance maladie, maternité, invalidité, décès"
+    },
+    {
+      "id": "fr-chomage-er",
+      "code": "SS_CHOM_ER",
+      "name": "Assurance chômage — Employeur",
+      "category": "unemployment",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 4.05,
+      "base": "gross_salary_capped",
+      "ceiling": 14400,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Unédic — part patronale"
+    },
+    {
+      "id": "fr-csg-ded-ee",
+      "code": "CSG_DED_EE",
+      "name": "CSG déductible",
+      "category": "csg_crds",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 6.8,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Contribution sociale généralisée déductible"
+    },
+    {
+      "id": "fr-csg-nd-ee",
+      "code": "CSG_ND_EE",
+      "name": "CSG non déductible",
+      "category": "csg_crds",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 2.4,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "CSG non déductible du revenu imposable"
+    },
+    {
+      "id": "fr-crds-ee",
+      "code": "CRDS_EE",
+      "name": "CRDS",
+      "category": "csg_crds",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 0.5,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Contribution au remboursement de la dette sociale"
+    },
+    {
+      "id": "fr-pas-ee",
+      "code": "PAS_EE",
+      "name": "Prélèvement à la source (PAS)",
+      "category": "income_tax",
+      "applies_to": "employee",
+      "type": "scale",
+      "scale_id": "fr-ir-annual",
+      "value": null,
+      "base": "net_taxable",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Barème progressif IR — voir section Barèmes"
+    },
+    {
+      "id": "fr-cvae-er",
+      "code": "CVAE_ER",
+      "name": "CVAE (référence locale)",
+      "category": "local_taxes",
+      "applies_to": "employer",
+      "type": "fixed",
+      "value": 0,
+      "currency": "EUR",
+      "base": "company_revenue",
+      "ceiling": null,
+      "is_mandatory": false,
+      "is_active": false,
+      "effective_from": "2025-01-01",
+      "description": "Contribution sur la valeur ajoutée des entreprises"
+    }
+  ],
+  "scales": [
+    {
+      "id": "fr-ir-annual",
+      "code": "IR_BARAME_ANNUEL",
+      "name": "Barème IR — Revenu annuel par part",
+      "category": "income_tax",
+      "linked_rule_code": "PAS_EE",
+      "period": "annual",
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Barème de l'impôt sur le revenu 2025 (revenu imposable annuel par part)",
+      "brackets": [
+        { "order": 1, "min": 0, "max": 11497, "rate": 0, "deduction": 0 },
+        { "order": 2, "min": 11497.01, "max": 29315, "rate": 11, "deduction": 1264.67 },
+        { "order": 3, "min": 29315.01, "max": 83823, "rate": 30, "deduction": 6836.38 },
+        { "order": 4, "min": 83823.01, "max": 180294, "rate": 41, "deduction": 16058.71 },
+        { "order": 5, "min": 180294.01, "max": null, "rate": 45, "deduction": 23270.47 }
+      ]
+    }
+  ],
+  "declaration_periods": [
+    {
+      "id": "fr-dsn-monthly",
+      "code": "DSN_DECL",
+      "name": "Déclaration sociale nominative (DSN)",
+      "type": "social",
+      "authority": "URSSAF / Net-entreprises",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "nth_working_day", "month_offset": 1, "working_day": 5 },
+      "grace_days": 0,
+      "filing_channel": "portal",
+      "linked_categories": ["social_security", "health_insurance", "family_allowance"],
+      "linked_rule_codes": ["SS_VIEIL_EE", "SS_VIEIL_ER", "SS_MAL_ER", "SS_CHOM_ER", "CSG_DED_EE", "CSG_ND_EE", "CRDS_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "DSN mensuelle — 5e jour ouvré du mois suivant"
+    },
+    {
+      "id": "fr-pas-monthly",
+      "code": "PAS_DECL",
+      "name": "Déclaration PAS (prélèvement à la source)",
+      "type": "fiscal",
+      "authority": "DGFIP",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "portal",
+      "linked_categories": ["income_tax"],
+      "linked_rule_codes": ["PAS_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2025-01-01",
+      "description": "Versement du prélèvement à la source de l'impôt sur le revenu"
+    }
+  ],
+  "versions": [
+    {
+      "id": "fr-v1",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "summary": "Configuration initiale France (URSSAF)"
+    },
+    {
+      "id": "fr-v2",
+      "timestamp": "2026-02-10T09:00:00.000Z",
+      "summary": "Mise à jour PASS 2025 et taux CSG/CRDS"
+    }
+  ]
+}

@@ -1,2766 +1,1192 @@
 <template>
-  <div class="px-8 py-6">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-neutral-900 mb-2">Add New Employee</h1>
-      <p class="text-neutral-600">Create a new employee profile and account</p>
-    </div>
-
-    <!-- Tab Navigation -->
-    <div class="flex gap-2 mb-6 border-b border-neutral-200">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        @click="activeTab = tab.id"
-        :class="[
-          'px-4 py-3 font-medium transition-colors',
-          activeTab === tab.id
-            ? 'border-b-2 border-primary-500 text-primary-600'
-            : 'text-neutral-600 hover:text-neutral-900',
-        ]"
+  <div class="px-4 py-4 sm:px-8 sm:py-6 max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <h1 class="text-2xl font-semibold text-neutral-900">{{ t("admin.employees.create.title") }}</h1>
+      <nav
+        class="text-sm text-neutral-500 flex items-center gap-1.5"
+        :aria-label="t('common.breadcrumb')"
       >
-        {{ tab.label }}
-      </button>
+        <RouterLink to="/" class="hover:text-secondary-600 inline-flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 10.5L12 4l9 6.5M5 10v9a1 1 0 001 1h3m10-10v9a1 1 0 01-1 1h-3m-6 0h6m-6 0v-5a1 1 0 011-1h4a1 1 0 011 1v5"
+            />
+          </svg>
+          {{ t("common.home") }}
+        </RouterLink>
+        <span>/</span>
+        <RouterLink to="/employees" class="hover:text-secondary-600">{{ t("admin.employees.title") }}</RouterLink>
+        <span>/</span>
+        <span class="text-neutral-800 font-medium">{{ t("admin.employees.create.breadcrumb") }}</span>
+      </nav>
     </div>
 
-    <div class="card bg-white rounded-lg shadow">
-      <form @submit.prevent="handleSubmit" class="p-6">
-        <!-- Personal Information Tab -->
-        <div v-if="activeTab === 'personal'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Personal Information
-          </h2>
+    <!-- Carte unique : stepper + steps + navigation -->
+    <div class="rounded-xl border border-neutral-200 bg-white shadow-sm flex flex-col">
+      <!-- Stepper -->
+      <div
+        class="flex flex-col sm:flex-row gap-3 sm:gap-6 p-4 sm:p-5 border-b border-neutral-200 bg-neutral-50/40"
+      >
+        <button
+          v-for="s in steps"
+          :key="s.id"
+          type="button"
+          class="flex items-center gap-3 flex-1 min-w-0 text-left rounded-lg px-3 py-2 transition-colors"
+          :class="
+            step === s.id
+              ? 'bg-white ring-1 ring-secondary-200 shadow-sm'
+              : step > s.id
+                ? 'hover:bg-neutral-100'
+                : ''
+          "
+          @click="goToStep(s.id)"
+        >
+          <span
+            class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 [&_svg]:w-5 [&_svg]:h-5"
+            :class="
+              step === s.id
+                ? 'bg-secondary-500 text-white'
+                : step > s.id
+                  ? 'bg-secondary-100 text-secondary-600'
+                  : 'bg-neutral-100 text-neutral-400'
+            "
+            v-html="s.icon"
+          ></span>
+          <span class="min-w-0">
+            <span
+              class="block font-semibold text-sm"
+              :class="step === s.id ? 'text-secondary-600' : 'text-neutral-700'"
+            >
+              {{ s.title }}
+            </span>
+            <span class="block text-xs text-neutral-500 truncate">{{ s.sub }}</span>
+          </span>
+        </button>
+      </div>
 
-          <!-- Profile Photo Section -->
-          <div class="flex items-start gap-6">
-            <div class="flex-shrink-0">
-              <div
-                class="w-24 h-24 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden"
-              >
-                <img
-                  v-if="profilePhotoPreview"
-                  :src="profilePhotoPreview"
-                  alt="Profile"
-                  class="w-full h-full object-cover"
-                />
+      <!-- Corps -->
+      <div class="p-5 sm:p-8 flex-1 min-h-0">
+        <!-- ============== STEP 1 : Personal Information ============== -->
+        <div v-show="step === 1" class="space-y-6">
+          <div>
+            <h2 class="text-xl font-semibold text-neutral-900">{{ t("admin.employees.create.step1.title") }}</h2>
+            <p class="text-sm text-neutral-500 mt-1">
+              {{ t("admin.employees.create.step1.intro") }}
+            </p>
+          </div>
+
+          <!-- Profile Picture dropzone -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+              {{ t("admin.employees.create.photo") }}
+            </label>
+            <label
+              class="block cursor-pointer rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50/60 hover:bg-neutral-50 transition-colors px-6 py-10 text-center"
+            >
+              <input
+                ref="photoInput"
+                type="file"
+                class="hidden"
+                accept="image/png,image/jpeg,image/jpg"
+                @change="handlePhotoUpload"
+              />
+              <div v-if="!profilePhotoPreview">
                 <svg
-                  v-else
-                  class="w-12 h-12 text-neutral-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+                  class="w-10 h-10 mx-auto text-neutral-400 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
                   <path
-                    fill-rule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clip-rule="evenodd"
-                  ></path>
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M3 15a4 4 0 004 4h10a4 4 0 003.8-5.4A4 4 0 0016 10a5 5 0 00-9.9 1A4 4 0 003 15z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M12 12v6m0-6l-2 2m2-2l2 2"
+                  />
                 </svg>
+                <p class="text-sm font-medium text-neutral-600">
+                  {{ t("admin.employees.create.photoHint") }}
+                </p>
+                <p class="text-xs text-neutral-400 mt-1">
+                  {{ t("admin.employees.create.photoTypes") }}
+                </p>
               </div>
-            </div>
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Profile Photo</label
-              >
+              <div v-else class="flex items-center justify-center gap-4">
+                <img
+                  :src="profilePhotoPreview"
+                  :alt="t('admin.employees.create.photoAlt')"
+                  class="w-24 h-24 rounded-lg object-cover border border-neutral-200"
+                />
+                <button
+                  type="button"
+                  class="text-sm text-error-600 hover:underline"
+                  @click.prevent="clearPhoto"
+                >
+                  {{ t("admin.employees.create.removePhoto") }}
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <!-- Ligne 1 : Code / Email / Phone -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <FieldLabel required>{{ t("admin.employees.create.code") }}</FieldLabel>
               <input
-                type="file"
-                @change="handlePhotoUpload"
-                class="hidden"
-                ref="photoInput"
-                accept="image/*"
+                v-model="form.employeeCode"
+                type="text"
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.employeeCode }"
+                :placeholder="t('admin.employees.create.codePlaceholder')"
               />
-              <button
-                type="button"
-                @click="$refs.photoInput.click()"
-                class="btn-primary mb-2"
-              >
-                Upload Photo
-              </button>
-              <p class="text-xs text-neutral-500">JPG, PNG or GIF • Max 5MB</p>
-              <p
-                v-if="profilePhotoPreview"
-                class="text-xs text-success-600 mt-2"
-              >
-                ✓ Photo selected
+              <p v-if="errors.employeeCode" class="text-xs text-error-600 mt-1">
+                {{ errors.employeeCode }}
+              </p>
+              <p v-else class="text-xs text-neutral-400 mt-1">
+                {{ t("admin.employees.create.codeHint") }}
+              </p>
+            </div>
+            <div>
+              <FieldLabel required>{{ t("admin.employees.create.email") }}</FieldLabel>
+              <input
+                v-model="form.email"
+                type="email"
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.email }"
+                :placeholder="t('admin.employees.create.emailPlaceholder')"
+              />
+              <p v-if="errors.email" class="text-xs text-error-600 mt-1">
+                {{ errors.email }}
+              </p>
+              <p v-else class="text-xs text-neutral-400 mt-1">
+                {{ t("admin.employees.create.emailHint") }}
+              </p>
+            </div>
+            <div>
+              <FieldLabel required>{{ t("admin.employees.create.phone") }}</FieldLabel>
+              <input
+                v-model="form.phone"
+                type="tel"
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.phone }"
+                :placeholder="t('admin.employees.create.phonePlaceholder')"
+              />
+              <p v-if="errors.phone" class="text-xs text-error-600 mt-1">
+                {{ errors.phone }}
+              </p>
+              <p v-else class="text-xs text-neutral-400 mt-1">
+                {{ t("admin.employees.create.phoneHint") }}
               </p>
             </div>
           </div>
 
+          <!-- Ligne 2 : First / Last Name -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >First Name *</label
-              >
+              <FieldLabel required>{{ t("admin.employees.create.firstName") }}</FieldLabel>
               <input
-                v-model="formData.firstName"
+                v-model="form.firstName"
                 type="text"
-                placeholder="John"
-                class="input-base"
-                required
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.firstName }"
+                :placeholder="t('admin.employees.create.firstNamePlaceholder')"
               />
+              <p v-if="errors.firstName" class="text-xs text-error-600 mt-1">
+                {{ errors.firstName }}
+              </p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Last Name *</label
-              >
+              <FieldLabel required>{{ t("admin.employees.create.lastName") }}</FieldLabel>
               <input
-                v-model="formData.lastName"
+                v-model="form.lastName"
                 type="text"
-                placeholder="Doe"
-                class="input-base"
-                required
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.lastName }"
+                :placeholder="t('admin.employees.create.lastNamePlaceholder')"
               />
+              <p v-if="errors.lastName" class="text-xs text-error-600 mt-1">
+                {{ errors.lastName }}
+              </p>
             </div>
           </div>
 
+          <!-- Ligne 3 : Gender / DOB -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Email Address *</label
-              >
-              <input
-                v-model="formData.email"
-                type="email"
-                placeholder="john.doe@company.com"
-                class="input-base"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Phone Number</label
-              >
-              <input
-                v-model="formData.phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                class="input-base"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Date of Birth</label
-              >
-              <input v-model="formData.dob" type="date" class="input-base" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Gender</label
-              >
-              <select v-model="formData.gender" class="input-base">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Nationality</label
-              >
-              <input
-                v-model="formData.nationality"
-                type="text"
-                placeholder="French"
-                class="input-base"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Marital Status</label
-              >
-              <select v-model="formData.maritalStatus" class="input-base">
-                <option value="">Select Status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Divorced">Divorced</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-1"
-              >Address</label
-            >
-            <input
-              v-model="formData.address"
-              type="text"
-              placeholder="123 Main Street"
-              class="input-base"
-            />
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >City</label
-              >
-              <input
-                v-model="formData.city"
-                type="text"
-                placeholder="Paris"
-                class="input-base"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >State/Province</label
-              >
-              <input
-                v-model="formData.state"
-                type="text"
-                placeholder="Île-de-France"
-                class="input-base"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >ZIP Code</label
-              >
-              <input
-                v-model="formData.zip"
-                type="text"
-                placeholder="75000"
-                class="input-base"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Professional Information Tab -->
-        <div v-if="activeTab === 'professional'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Professional Information
-          </h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Department *</label
-              >
-              <select v-model="formData.department" class="input-base" required>
-                <option value="">Select Department</option>
-                <option value="Sales">Sales</option>
-                <option value="Engineering">Engineering</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="Marketing">Marketing</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Job Title *</label
-              >
-              <input
-                v-model="formData.jobTitle"
-                type="text"
-                placeholder="Senior Developer"
-                class="input-base"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Employment Type *</label
-              >
+              <FieldLabel required>{{ t("admin.employees.create.gender") }}</FieldLabel>
               <select
-                v-model="formData.employmentType"
-                class="input-base"
-                required
+                v-model="form.gender"
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.gender }"
               >
-                <option value="">Select Type</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
+                <option value="">{{ t("admin.employees.create.selectGender") }}</option>
+                <option value="male">{{ t("admin.employees.create.gender.male") }}</option>
+                <option value="female">{{ t("admin.employees.create.gender.female") }}</option>
+                <option value="other">{{ t("admin.employees.create.gender.other") }}</option>
               </select>
+              <p v-if="errors.gender" class="text-xs text-error-600 mt-1">
+                {{ errors.gender }}
+              </p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Start Date *</label
-              >
+              <FieldLabel required>{{ t("admin.employees.create.dob") }}</FieldLabel>
               <input
-                v-model="formData.startDate"
+                v-model="form.dateOfBirth"
                 type="date"
-                class="input-base"
-                required
+                class="input-base text-sm"
+                :class="{ 'border-error-500 ring-1 ring-error-500': errors.dateOfBirth }"
+                :placeholder="t('admin.employees.create.dobPlaceholder')"
               />
+              <p v-if="errors.dateOfBirth" class="text-xs text-error-600 mt-1">
+                {{ errors.dateOfBirth }}
+              </p>
             </div>
           </div>
 
+          <!-- Ligne 4 : Blood / Alt Phone -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Manager</label
-              >
-              <select v-model="formData.manager" class="input-base">
-                <option value="">Select Manager</option>
-                <option value="Alice Johnson">Alice Johnson</option>
-                <option value="Bob Smith">Bob Smith</option>
+              <FieldLabel>{{ t("admin.employees.create.bloodGroup") }}</FieldLabel>
+              <select v-model="form.bloodGroup" class="input-base text-sm">
+                <option value="">{{ t("admin.employees.create.selectBloodGroup") }}</option>
+                <option v-for="bg in bloodGroups" :key="bg" :value="bg">{{ bg }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Salary</label
-              >
+              <FieldLabel>{{ t("admin.employees.create.altPhone") }}</FieldLabel>
               <input
-                v-model="formData.salary"
-                type="number"
-                placeholder="50000"
-                class="input-base"
+                v-model="form.alternativePhone"
+                type="tel"
+                class="input-base text-sm"
+                :placeholder="t('admin.employees.create.altPhonePlaceholder')"
               />
             </div>
           </div>
 
+          <!-- Address -->
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-3"
-              >Employee Status</label
-            >
-            <div class="space-y-2">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  v-model="formData.status"
-                  value="active"
-                  class="w-4 h-4"
+            <FieldLabel>{{ t("admin.employees.create.address") }}</FieldLabel>
+            <textarea
+              v-model="form.address"
+              rows="2"
+              class="input-base text-sm"
+              :placeholder="t('admin.employees.create.addressPlaceholder')"
+            ></textarea>
+          </div>
+
+          <!-- Emergency Contact Information -->
+          <div class="pt-6 border-t border-neutral-100">
+            <div class="flex items-center gap-2 mb-4 text-sm font-semibold text-neutral-700">
+              <svg class="w-5 h-5 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"
                 />
-                <span class="ml-2 text-sm text-neutral-700">Active</span>
-              </label>
-              <label class="flex items-center">
+              </svg>
+              {{ t("admin.employees.create.emergency") }}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.contactName") }}</FieldLabel>
                 <input
-                  type="radio"
-                  v-model="formData.status"
-                  value="inactive"
-                  class="w-4 h-4"
+                  v-model="form.emergencyContactName"
+                  type="text"
+                  class="input-base text-sm"
+                  :placeholder="t('admin.employees.create.contactNamePlaceholder')"
                 />
-                <span class="ml-2 text-sm text-neutral-700">Inactive</span>
-              </label>
-              <label class="flex items-center">
+              </div>
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.relationship") }}</FieldLabel>
+                <select v-model="form.emergencyRelationship" class="input-base text-sm">
+                  <option value="">{{ t("admin.employees.create.selectRelationship") }}</option>
+                  <option v-for="r in relationships" :key="r.value" :value="r.value">{{ r.label }}</option>
+                </select>
+              </div>
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.contactPhone") }}</FieldLabel>
                 <input
-                  type="radio"
-                  v-model="formData.status"
-                  value="onLeave"
-                  class="w-4 h-4"
+                  v-model="form.emergencyContactPhone"
+                  type="tel"
+                  class="input-base text-sm"
+                  :placeholder="t('admin.employees.create.contactPhonePlaceholder')"
                 />
-                <span class="ml-2 text-sm text-neutral-700">On Leave</span>
-              </label>
+              </div>
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.contactAddress") }}</FieldLabel>
+                <textarea
+                  v-model="form.emergencyContactAddress"
+                  rows="1"
+                  class="input-base text-sm"
+                  :placeholder="t('admin.employees.create.contactAddressPlaceholder')"
+                ></textarea>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Rémunérations Tab -->
-        <div v-if="activeTab === 'remuneration'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Rémunérations
-          </h2>
+        <!-- ============== STEP 2 : Employment & Account ============== -->
+        <div v-show="step === 2" class="space-y-6">
+          <div>
+            <h2 class="text-xl font-semibold text-neutral-900">
+              {{ t("admin.employees.create.step2.title") }}
+            </h2>
+            <p class="text-sm text-neutral-500 mt-1">
+              {{ t("admin.employees.create.step2.intro") }}
+            </p>
+          </div>
 
-          <!-- Base Salary Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Salaire de Base
-              </h3>
+          <div
+            v-if="resourcesLoading"
+            class="rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600"
+          >
+            {{ t("admin.employees.create.loadingResources") }}
+          </div>
+          <div
+            v-else-if="resourcesError"
+            class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          >
+            {{ resourcesError }}
+            <button
+              type="button"
+              class="ml-2 underline font-medium"
+              @click="loadResources"
+            >
+              {{ t("admin.employees.create.retry") }}
+            </button>
+          </div>
+
+          <!-- Employment Details -->
+          <div>
+            <div class="flex items-center gap-2 mb-4 text-sm font-semibold text-secondary-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              {{ t("admin.employees.create.employment") }}
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">
-                  Montant Annuel (CTC)
-                </label>
-                <div class="relative">
-                  <input
-                    v-model.number="remuneration.baseSalary.annual"
-                    type="number"
-                    placeholder="50000"
-                    class="input-base pl-8"
-                  />
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-                </div>
+                <FieldLabel required>{{ t("admin.employees.create.joiningDate") }}</FieldLabel>
+                <input
+                  v-model="form.dateOfJoining"
+                  type="date"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.dateOfJoining }"
+                />
+                <p v-if="errors.dateOfJoining" class="text-xs text-error-600 mt-1">
+                  {{ errors.dateOfJoining }}
+                </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">
-                  Montant Mensuel
-                </label>
-                <div class="relative">
-                  <input
-                    v-model.number="remuneration.baseSalary.monthly"
-                    type="number"
-                    placeholder="4167"
-                    class="input-base pl-8"
-                  />
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">
-                  Période de Paiement
-                </label>
-                <select v-model="remuneration.baseSalary.paymentPeriod" class="input-base">
-                  <option value="monthly">Mensuel</option>
-                  <option value="biweekly">Bi-mensuel</option>
-                  <option value="weekly">Hebdomadaire</option>
+                <FieldLabel required>{{ t("admin.employees.create.designation") }}</FieldLabel>
+                <select
+                  v-model="form.designation"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.designation }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectDesignation") }}</option>
+                  <option v-for="d in designations" :key="d.id" :value="d.name">
+                    {{ d.label }}
+                  </option>
                 </select>
+                <p v-if="errors.designation" class="text-xs text-error-600 mt-1">
+                  {{ errors.designation }}
+                </p>
+              </div>
+              <div>
+                <FieldLabel required>{{ t("admin.employees.create.team") }}</FieldLabel>
+                <select
+                  v-model="form.team"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.team }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectTeam") }}</option>
+                  <option v-for="team in teams" :key="team.id" :value="team.name">
+                    {{ team.label }}
+                  </option>
+                </select>
+                <p v-if="errors.team" class="text-xs text-error-600 mt-1">
+                  {{ errors.team }}
+                </p>
+              </div>
+              <div>
+                <FieldLabel required>{{ t("admin.employees.create.manager") }}</FieldLabel>
+                <select
+                  v-model="form.reportingManager"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.reportingManager }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectManager") }}</option>
+                  <option v-for="m in managers" :key="m.id" :value="m.name">
+                    {{ m.label }}
+                  </option>
+                </select>
+                <p v-if="errors.reportingManager" class="text-xs text-error-600 mt-1">
+                  {{ errors.reportingManager }}
+                </p>
+              </div>
+              <div>
+                <FieldLabel required>{{ t("admin.employees.create.shift") }}</FieldLabel>
+                <select
+                  v-model="form.shiftId"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.shiftId }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectShift") }}</option>
+                  <option v-for="s in shifts" :key="s.id" :value="String(s.id)">
+                    {{ s.label }}
+                  </option>
+                </select>
+                <p v-if="errors.shiftId" class="text-xs text-error-600 mt-1">
+                  {{ errors.shiftId }}
+                </p>
+              </div>
+              <div>
+                <FieldLabel required>{{ t("admin.employees.create.department") }}</FieldLabel>
+                <select
+                  v-model="form.department"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.department }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectDepartment") }}</option>
+                  <option v-for="d in departments" :key="d.id" :value="d.name">
+                    {{ d.label }}
+                  </option>
+                </select>
+                <p v-if="!resourcesLoading && !departments.length" class="text-xs text-neutral-500 mt-1">
+                  {{ t("admin.employees.create.noDepartments") }}
+                </p>
+                <p v-if="errors.department" class="text-xs text-error-600 mt-1">
+                  {{ errors.department }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Settings -->
+          <div class="pt-6 border-t border-neutral-100">
+            <div class="flex items-center gap-2 mb-4 text-sm font-semibold text-secondary-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 11c1.657 0 3-1.343 3-3V6a3 3 0 10-6 0v2c0 1.657 1.343 3 3 3zm-7 8a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5z"
+                />
+              </svg>
+              {{ t("admin.employees.create.account") }}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              <div>
+                <FieldLabel required>{{ t("admin.employees.create.role") }}</FieldLabel>
+                <select
+                  v-model="form.role"
+                  class="input-base text-sm"
+                  :class="{ 'border-error-500': errors.role }"
+                  :disabled="resourcesLoading"
+                >
+                  <option value="">{{ t("admin.employees.create.selectRole") }}</option>
+                  <option v-for="r in roleOptions" :key="r.slug" :value="r.slug">
+                    {{ r.name }}
+                  </option>
+                </select>
+                <p v-if="!resourcesLoading && !roleOptions.length" class="text-xs text-neutral-500 mt-1">
+                  {{ t("admin.employees.create.noRoles") }}
+                </p>
+                <p v-if="errors.role" class="text-xs text-error-600 mt-1">
+                  {{ errors.role }}
+                </p>
+                <p v-else class="text-xs text-neutral-400 mt-1">
+                  {{ t("admin.employees.create.roleHint") }}
+                </p>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-3">
+                    <button
+                      type="button"
+                      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                      :class="form.useDefaultPassword ? 'bg-secondary-500' : 'bg-neutral-300'"
+                      @click="form.useDefaultPassword = !form.useDefaultPassword"
+                    >
+                      <span
+                        class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                        :class="form.useDefaultPassword ? 'translate-x-6' : 'translate-x-1'"
+                      ></span>
+                    </button>
+                    <span class="text-sm font-medium text-neutral-700">
+                      {{ t("admin.employees.create.useDefaultPassword") }}
+                    </span>
+                  </div>
+                </div>
+                <p v-if="form.useDefaultPassword" class="text-xs text-neutral-500">
+                  {{ t("admin.employees.create.defaultPassword") }} <span class="font-mono text-neutral-700">12345678</span>
+                </p>
+                <div v-else class="mt-2">
+                  <input
+                    v-model="form.password"
+                    type="password"
+                    class="input-base text-sm"
+                    :class="{ 'border-error-500': errors.password }"
+                    :placeholder="t('admin.employees.create.passwordPlaceholder')"
+                  />
+                  <p v-if="errors.password" class="text-xs text-error-600 mt-1">
+                    {{ errors.password }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Configuration -->
+          <div class="pt-6 border-t border-neutral-100">
+            <div class="flex items-center gap-2 mb-4 text-sm font-semibold text-secondary-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              {{ t("admin.employees.create.attendance") }}
+            </div>
+            <div>
+              <FieldLabel required>{{ t("admin.employees.create.attendanceType") }}</FieldLabel>
+              <select
+                v-model="form.attendanceType"
+                class="input-base text-sm"
+                :disabled="resourcesLoading"
+              >
+                <option value="">{{ t("admin.employees.create.selectAttendanceType") }}</option>
+                <option v-for="attType in attendanceTypes" :key="attType.id" :value="attType.code">
+                  {{ attType.name }}
+                </option>
+              </select>
+              <p class="text-xs text-neutral-400 mt-1">
+                {{ t("admin.employees.create.attendanceHint") }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Probation Period -->
+          <div class="pt-6 border-t border-neutral-100">
+            <div class="flex items-center gap-2 mb-4 text-sm font-semibold text-secondary-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ t("admin.employees.create.probation") }}
+              <span class="ml-1 text-xs px-2 py-0.5 rounded bg-neutral-100 text-neutral-500 font-normal">
+                {{ t("common.optional") }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.probationDuration") }}</FieldLabel>
+                <select v-model.number="form.probationMonths" class="input-base text-sm">
+                  <option :value="0">{{ t("admin.employees.create.noProbation") }}</option>
+                  <option :value="1">{{ t("admin.employees.create.months", { n: 1 }) }}</option>
+                  <option :value="3">{{ t("admin.employees.create.months", { n: 3 }) }}</option>
+                  <option :value="6">{{ t("admin.employees.create.months", { n: 6 }) }}</option>
+                  <option :value="12">{{ t("admin.employees.create.months", { n: 12 }) }}</option>
+                </select>
+              </div>
+              <div>
+                <FieldLabel>{{ t("admin.employees.create.probationEnd") }}</FieldLabel>
+                <input
+                  :value="probationEndDate"
+                  type="text"
+                  class="input-base text-sm bg-neutral-50 text-neutral-500 cursor-not-allowed"
+                  :placeholder="t('admin.employees.create.autoCalculated')"
+                  readonly
+                />
+                <p class="text-xs text-neutral-400 mt-1">
+                  {{ t("admin.employees.create.probationEndHint") }}
+                </p>
               </div>
             </div>
             <div class="mt-4">
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
-                Date d'Effet
-              </label>
-              <input
-                v-model="remuneration.baseSalary.effectiveDate"
-                type="date"
-                class="input-base"
-              />
-            </div>
-          </div>
-
-          <!-- Primes Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">Primes</h3>
-              <button
-                type="button"
-                @click="openAddPrimeModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Prime
-              </button>
-            </div>
-
-            <div v-if="remuneration.primes.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucune prime ajoutée
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(prime, index) in remuneration.primes"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type de Prime
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ prime.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Montant
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        €{{ formatNumber(prime.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Fréquence
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ prime.frequency }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Date d'Effet
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ prime.effectiveDate || "N/A" }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removePrime(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Avantages en Nature Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Avantages en Nature
-              </h3>
-              <button
-                type="button"
-                @click="openAddBenefitModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Avantage
-              </button>
-            </div>
-
-            <div v-if="remuneration.benefits.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucun avantage ajouté
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(benefit, index) in remuneration.benefits"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type d'Avantage
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ benefit.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Valeur Taxable
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        €{{ formatNumber(benefit.taxableValue) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Fréquence
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ benefit.frequency }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Description
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ benefit.description || "N/A" }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeBenefit(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Other Remuneration Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Autres Éléments de Rémunération
-              </h3>
-              <button
-                type="button"
-                @click="openAddOtherModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Élément
-              </button>
-            </div>
-
-            <div v-if="remuneration.others.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucun élément ajouté
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(other, index) in remuneration.others"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Libellé
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ other.label }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Montant
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        €{{ formatNumber(other.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ other.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Fréquence
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ other.frequency }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeOther(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Summary Section -->
-          <div class="bg-primary-50 rounded-lg p-6 border border-primary-200">
-            <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Récapitulatif Annuel
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Salaire de Base
-                </label>
-                <p class="text-lg font-bold text-primary-700">
-                  €{{ formatNumber(remuneration.baseSalary.annual || 0) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Primes
-                </label>
-                <p class="text-lg font-bold text-primary-700">
-                  €{{ formatNumber(calculateTotalPrimes()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Avantages
-                </label>
-                <p class="text-lg font-bold text-primary-700">
-                  €{{ formatNumber(calculateTotalBenefits()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  CTC Total
-                </label>
-                <p class="text-xl font-bold text-primary-800">
-                  €{{ formatNumber(calculateTotalCTC()) }}
-                </p>
-              </div>
+              <FieldLabel>{{ t("admin.employees.create.probationNotes") }}</FieldLabel>
+              <textarea
+                v-model="form.probationNotes"
+                rows="2"
+                class="input-base text-sm"
+                :placeholder="t('admin.employees.create.probationNotesPlaceholder')"
+              ></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Déductions Tab -->
-        <div v-if="activeTab === 'deductions'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Déductions
-          </h2>
-
-          <!-- Taxes Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">Impôts</h3>
-              <button
-                type="button"
-                @click="openAddTaxModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Impôt
-              </button>
-            </div>
-
-            <div v-if="deductions.taxes.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucun impôt ajouté
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(tax, index) in deductions.taxes"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type d'Impôt
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ tax.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Montant / Taux
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ tax.isPercentage ? tax.amount + "%" : "€" + formatNumber(tax.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Base de Calcul
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ tax.base }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Fréquence
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ tax.frequency }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeTax(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Social Security Contributions Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Cotisations Sociales
-              </h3>
-              <button
-                type="button"
-                @click="openAddSocialSecurityModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Cotisation
-              </button>
-            </div>
-
-            <div v-if="deductions.socialSecurity.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucune cotisation sociale ajoutée
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(contribution, index) in deductions.socialSecurity"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type de Cotisation
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ contribution.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Taux / Montant
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ contribution.isPercentage ? contribution.rate + "%" : "€" + formatNumber(contribution.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Base de Calcul
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ contribution.base }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Part Employé
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ contribution.employeeShare }}%
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeSocialSecurity(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Insurance Deductions Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Assurances
-              </h3>
-              <button
-                type="button"
-                @click="openAddInsuranceModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Assurance
-              </button>
-            </div>
-
-            <div v-if="deductions.insurance.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucune assurance ajoutée
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(insurance, index) in deductions.insurance"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type d'Assurance
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ insurance.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Montant Mensuel
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        €{{ formatNumber(insurance.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Part Employé
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        €{{ formatNumber(insurance.employeeShare) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Date d'Effet
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ insurance.effectiveDate || "N/A" }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeInsurance(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Other Deductions Section -->
-          <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold text-neutral-900">
-                Autres Déductions
-              </h3>
-              <button
-                type="button"
-                @click="openAddOtherDeductionModal"
-                class="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Ajouter Déduction
-              </button>
-            </div>
-
-            <div v-if="deductions.others.length === 0" class="text-center py-8 text-neutral-500 text-sm">
-              Aucune déduction ajoutée
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(other, index) in deductions.others"
-                :key="index"
-                class="bg-white rounded-lg p-4 border border-neutral-200"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Libellé
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        {{ other.label }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Montant
-                      </label>
-                      <p class="text-sm font-medium text-neutral-900">
-                        €{{ formatNumber(other.amount) }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Type
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ other.type }}
-                      </p>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-500 mb-1">
-                        Fréquence
-                      </label>
-                      <p class="text-sm text-neutral-700">
-                        {{ other.frequency }}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    @click="removeOtherDeduction(index)"
-                    class="ml-4 text-error-600 hover:text-error-700"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Summary Section -->
-          <div class="bg-error-50 rounded-lg p-6 border border-error-200">
-            <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Récapitulatif des Déductions Annuelles
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Impôts
-                </label>
-                <p class="text-lg font-bold text-error-700">
-                  €{{ formatNumber(calculateTotalTaxes()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Cotisations
-                </label>
-                <p class="text-lg font-bold text-error-700">
-                  €{{ formatNumber(calculateTotalSocialSecurity()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Assurances
-                </label>
-                <p class="text-lg font-bold text-error-700">
-                  €{{ formatNumber(calculateTotalInsurance()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Déductions
-                </label>
-                <p class="text-xl font-bold text-error-800">
-                  €{{ formatNumber(calculateTotalDeductions()) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Net Salary Calculation -->
-          <div class="bg-primary-50 rounded-lg p-6 border border-primary-200">
-            <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Salaire Net
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Salaire Brut Annuel
-                </label>
-                <p class="text-lg font-bold text-primary-700">
-                  €{{ formatNumber(remuneration.baseSalary.annual || 0) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Total Déductions Annuelles
-                </label>
-                <p class="text-lg font-bold text-error-700">
-                  €{{ formatNumber(calculateTotalDeductions()) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1">
-                  Salaire Net Annuel
-                </label>
-                <p class="text-xl font-bold text-primary-800">
-                  €{{ formatNumber(calculateNetSalary()) }}
-                </p>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-primary-200">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-neutral-500 mb-1">
-                    Salaire Net Mensuel
-                  </label>
-                  <p class="text-lg font-bold text-primary-800">
-                    €{{ formatNumber(calculateNetSalary() / 12) }}
-                  </p>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-neutral-500 mb-1">
-                    Taux de Déduction
-                  </label>
-                  <p class="text-lg font-bold text-error-700">
-                    {{ calculateDeductionRate() }}%
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Documents Tab -->
-        <div v-if="activeTab === 'documents'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Documents
-          </h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Upload Appointment Letter -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-3"
-                >Upload Appointment Letter</label
-              >
-              <div
-                class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-secondary-400 hover:bg-secondary-50/30 transition-all cursor-pointer group"
-                @click="$refs.appointmentLetterInput.click()"
-              >
-                <input
-                  type="file"
-                  @change="handleFileSelect('appointmentLetter', $event)"
-                  class="hidden"
-                  ref="appointmentLetterInput"
-                />
-                <div
-                  class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary-200 transition-colors"
-                >
-                  <svg
-                    class="w-6 h-6 text-secondary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <p class="text-sm text-neutral-600 font-medium">
-                  Drag & Drop or choose file to upload
-                </p>
-                <p class="text-xs text-neutral-500 mt-1">
-                  Supported formats - .jpeg, .pdf
-                </p>
-                <p
-                  v-if="documents.appointmentLetter"
-                  class="text-xs text-success-600 mt-3 font-medium"
-                >
-                  ✓ {{ documents.appointmentLetter.name }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Upload Salary Slips -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-3"
-                >Upload Salary Slips</label
-              >
-              <div
-                class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-secondary-400 hover:bg-secondary-50/30 transition-all cursor-pointer group"
-                @click="$refs.salarySlipsInput.click()"
-              >
-                <input
-                  type="file"
-                  multiple
-                  @change="handleFileSelect('salarySlips', $event)"
-                  class="hidden"
-                  ref="salarySlipsInput"
-                />
-                <div
-                  class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary-200 transition-colors"
-                >
-                  <svg
-                    class="w-6 h-6 text-secondary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <p class="text-sm text-neutral-600 font-medium">
-                  Drag & Drop or choose file to upload
-                </p>
-                <p class="text-xs text-neutral-500 mt-1">
-                  Supported formats - .jpeg, .pdf
-                </p>
-                <p
-                  v-if="documents.salarySlips.length > 0"
-                  class="text-xs text-success-600 mt-3 font-medium"
-                >
-                  ✓ {{ documents.salarySlips.length }} file{{
-                    documents.salarySlips.length > 1 ? "s" : ""
-                  }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Upload Relieving Letter -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-3"
-                >Upload Relieving Letter</label
-              >
-              <div
-                class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-secondary-400 hover:bg-secondary-50/30 transition-all cursor-pointer group"
-                @click="$refs.relievingLetterInput.click()"
-              >
-                <input
-                  type="file"
-                  @change="handleFileSelect('relievingLetter', $event)"
-                  class="hidden"
-                  ref="relievingLetterInput"
-                />
-                <div
-                  class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary-200 transition-colors"
-                >
-                  <svg
-                    class="w-6 h-6 text-secondary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <p class="text-sm text-neutral-600 font-medium">
-                  Drag & Drop or choose file to upload
-                </p>
-                <p class="text-xs text-neutral-500 mt-1">
-                  Supported formats - .jpeg, .pdf
-                </p>
-                <p
-                  v-if="documents.relievingLetter"
-                  class="text-xs text-success-600 mt-3 font-medium"
-                >
-                  ✓ {{ documents.relievingLetter.name }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Upload Experience Letter -->
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-3"
-                >Upload Experience Letter</label
-              >
-              <div
-                class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center hover:border-secondary-400 hover:bg-secondary-50/30 transition-all cursor-pointer group"
-                @click="$refs.experienceLetterInput.click()"
-              >
-                <input
-                  type="file"
-                  @change="handleFileSelect('experienceLetter', $event)"
-                  class="hidden"
-                  ref="experienceLetterInput"
-                />
-                <div
-                  class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary-200 transition-colors"
-                >
-                  <svg
-                    class="w-6 h-6 text-secondary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <p class="text-sm text-neutral-600 font-medium">
-                  Drag & Drop or choose file to upload
-                </p>
-                <p class="text-xs text-neutral-500 mt-1">
-                  Supported formats - .jpeg, .pdf
-                </p>
-                <p
-                  v-if="documents.experienceLetter"
-                  class="text-xs text-success-600 mt-3 font-medium"
-                >
-                  ✓ {{ documents.experienceLetter.name }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Account Access Tab -->
-        <div v-if="activeTab === 'account'" class="space-y-6">
-          <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Account Access
-          </h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Username *</label
-              >
-              <input
-                v-model="formData.username"
-                type="text"
-                placeholder="john.doe"
-                class="input-base"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Email for Login *</label
-              >
-              <input
-                v-model="formData.loginEmail"
-                type="email"
-                placeholder="john.doe@company.com"
-                class="input-base"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Password *</label
-              >
-              <input
-                v-model="formData.password"
-                type="password"
-                placeholder="••••••••"
-                class="input-base"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1"
-                >Confirm Password *</label
-              >
-              <input
-                v-model="formData.confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                class="input-base"
-                required
-              />
-            </div>
-          </div>
-
+        <!-- ============== STEP 3 : Review & Create ============== -->
+        <div v-show="step === 3" class="space-y-6">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-3"
-              >User Role</label
-            >
-            <div class="space-y-2">
-              <div
-                v-for="role in userRoles"
-                :key="role"
-                class="flex items-center"
-              >
-                <input
-                  type="radio"
-                  :id="`role-${role}`"
-                  :value="role"
-                  v-model="formData.role"
-                  class="w-4 h-4"
-                />
-                <label
-                  :for="`role-${role}`"
-                  class="ml-2 text-sm font-medium text-neutral-700 cursor-pointer"
-                  >{{ role }}</label
-                >
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-info-50 border border-info-200 rounded-lg p-4">
-            <p class="text-sm text-info-700">
-              An email with login credentials will be sent to the employee
-              automatically.
+            <h2 class="text-xl font-semibold text-neutral-900">{{ t("admin.employees.create.reviewTitle") }}</h2>
+            <p class="text-sm text-neutral-500 mt-1">
+              {{ t("admin.employees.create.step3.intro") }}
             </p>
           </div>
-        </div>
 
-        <!-- Error Message -->
-        <div
-          v-if="errorMessage"
-          class="mt-6 bg-error-50 border border-error-200 rounded-lg p-4 flex gap-3"
+          <div
+            v-if="submitError"
+            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {{ submitError }}
+          </div>
+
+          <ReviewSection :title="t('admin.employees.create.step1.title')" icon="user">
+            <ReviewRow :label="t('admin.employees.create.firstName')" :value="form.firstName" />
+            <ReviewRow :label="t('admin.employees.create.lastName')" :value="form.lastName" />
+            <ReviewRow :label="t('admin.employees.create.code')" :value="form.employeeCode" />
+            <ReviewRow :label="t('admin.employees.create.email')" :value="form.email" />
+            <ReviewRow :label="t('admin.employees.create.review.phone')" :value="form.phone" />
+            <ReviewRow :label="t('admin.employees.create.altPhone')" :value="form.alternativePhone" />
+            <ReviewRow :label="t('admin.employees.create.gender')" :value="genderLabel" />
+            <ReviewRow :label="t('admin.employees.create.dob')" :value="form.dateOfBirth" />
+            <ReviewRow :label="t('admin.employees.create.address')" :value="form.address" />
+          </ReviewSection>
+
+          <ReviewSection :title="t('admin.employees.create.employment')" icon="briefcase">
+            <ReviewRow :label="t('admin.employees.create.joiningDate')" :value="form.dateOfJoining" />
+            <ReviewRow :label="t('admin.employees.create.designation')" :value="form.designation" />
+            <ReviewRow :label="t('admin.employees.create.team')" :value="form.team" />
+            <ReviewRow :label="t('admin.employees.create.manager')" :value="form.reportingManager" />
+            <ReviewRow :label="t('admin.employees.create.shift')" :value="shiftLabel" />
+            <ReviewRow :label="t('admin.employees.create.department')" :value="form.department" />
+          </ReviewSection>
+
+          <ReviewSection :title="t('admin.employees.create.account')" icon="lock">
+            <ReviewRow :label="t('admin.employees.create.role')" :value="roleLabel" />
+            <ReviewRow
+              :label="t('admin.employees.create.review.password')"
+              :value="form.useDefaultPassword ? t('admin.employees.create.review.defaultPassword') : form.password ? '••••••••' : ''"
+            />
+          </ReviewSection>
+
+          <ReviewSection :title="t('admin.employees.create.attendance')" icon="calendar">
+            <ReviewRow :label="t('admin.employees.create.attendanceType')" :value="attendanceTypeLabel" />
+            <ReviewRow :label="t('admin.employees.create.review.configuration')" :value="attendanceConfigLabel" />
+          </ReviewSection>
+
+          <ReviewSection :title="t('admin.employees.create.probation')" icon="clock">
+            <ReviewRow :label="t('admin.employees.create.review.duration')" :value="probationDurationLabel" />
+            <ReviewRow :label="t('admin.employees.create.review.endDate')" :value="probationEndDate" />
+          </ReviewSection>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div
+        class="flex flex-row justify-between items-center gap-4 px-5 sm:px-8 py-4 border-t border-neutral-200 bg-white"
+      >
+        <button
+          v-if="step === 1"
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+          @click="backToList"
         >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          {{ t("admin.employees.create.backToList") }}
+        </button>
+        <button
+          v-else
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+          @click="prevStep"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          {{ t("common.previous") }}
+        </button>
+
+        <button
+          v-if="step < 3"
+          type="button"
+          class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg bg-secondary-500 hover:bg-secondary-600 text-white shadow-sm"
+          @click="nextStep"
+        >
+          {{ step === 1 ? t("common.next") : t("admin.employees.create.review") }}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+        <button
+          v-else
+          type="button"
+          class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-sm disabled:opacity-50"
+          :disabled="saving"
+          @click="createEmployee"
+        >
+          <span
+            v-if="saving"
+            class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+          />
           <svg
-            class="w-5 h-5 text-error-600 flex-shrink-0 mt-0.5"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+            v-else
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
             <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clip-rule="evenodd"
-            ></path>
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
           </svg>
-          <p class="text-sm text-error-700">{{ errorMessage }}</p>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3 pt-6 border-t border-neutral-200 mt-6">
-          <button type="submit" :disabled="isLoading" class="btn-primary px-8">
-            {{ isLoading ? "Creating..." : "Create Employee" }}
-          </button>
-          <router-link to="/employees" class="btn-outline px-8">
-            Cancel
-          </router-link>
-        </div>
-      </form>
-    </div>
-
-    <!-- Add Prime Modal -->
-    <div
-      v-if="isPrimeModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isPrimeModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter une Prime</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type de Prime <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="primeForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="">Sélectionner</option>
-              <option value="Performance">Prime de Performance</option>
-              <option value="Annual">Prime Annuelle</option>
-              <option value="Project">Prime de Projet</option>
-              <option value="Retention">Prime de Fidélité</option>
-              <option value="Holiday">Prime de Vacances</option>
-              <option value="Other">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Montant <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="primeForm.amount"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Fréquence <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="primeForm.frequency"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="annual">Annuelle</option>
-              <option value="monthly">Mensuelle</option>
-              <option value="quarterly">Trimestrielle</option>
-              <option value="one-time">Unique</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Date d'Effet
-            </label>
-            <input
-              v-model="primeForm.effectiveDate"
-              type="date"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isPrimeModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addPrime"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Benefit Modal -->
-    <div
-      v-if="isBenefitModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isBenefitModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter un Avantage en Nature</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type d'Avantage <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="benefitForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="">Sélectionner</option>
-              <option value="Transport">Transport (Véhicule de société)</option>
-              <option value="Meal">Tickets Restaurant</option>
-              <option value="Housing">Logement</option>
-              <option value="Health">Assurance Santé</option>
-              <option value="Phone">Téléphone/Internet</option>
-              <option value="Other">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Valeur Taxable (mensuelle) <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="benefitForm.taxableValue"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Fréquence <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="benefitForm.frequency"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="monthly">Mensuelle</option>
-              <option value="annual">Annuelle</option>
-              <option value="quarterly">Trimestrielle</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Description
-            </label>
-            <textarea
-              v-model="benefitForm.description"
-              rows="3"
-              placeholder="Description de l'avantage..."
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            ></textarea>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isBenefitModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addBenefit"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Other Modal -->
-    <div
-      v-if="isOtherModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isOtherModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter un Élément de Rémunération</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Libellé <span class="text-error-600">*</span>
-            </label>
-            <input
-              v-model="otherForm.label"
-              type="text"
-              placeholder="Ex: Indemnité de transport"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Montant <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="otherForm.amount"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="otherForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="allowance">Indemnité</option>
-              <option value="bonus">Bonus</option>
-              <option value="commission">Commission</option>
-              <option value="overtime">Heures Supplémentaires</option>
-              <option value="other">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Fréquence <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="otherForm.frequency"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="monthly">Mensuelle</option>
-              <option value="annual">Annuelle</option>
-              <option value="quarterly">Trimestrielle</option>
-              <option value="one-time">Unique</option>
-            </select>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isOtherModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addOther"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Tax Modal -->
-    <div
-      v-if="isTaxModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isTaxModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter un Impôt</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type d'Impôt <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="taxForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="">Sélectionner</option>
-              <option value="Impôt sur le Revenu">Impôt sur le Revenu</option>
-              <option value="CSG">CSG (Contribution Sociale Généralisée)</option>
-              <option value="CRDS">CRDS (Contribution au Remboursement de la Dette Sociale)</option>
-              <option value="Précompte">Précompte</option>
-              <option value="Autre">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="flex items-center gap-2 mb-2">
-              <input
-                v-model="taxForm.isPercentage"
-                type="checkbox"
-                class="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span class="text-sm text-neutral-700">Calcul en pourcentage</span>
-            </label>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              {{ taxForm.isPercentage ? "Taux (%)" : "Montant" }} <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="taxForm.amount"
-                type="number"
-                :placeholder="taxForm.isPercentage ? '0' : '0'"
-                min="0"
-                :max="taxForm.isPercentage ? 100 : null"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">
-                {{ taxForm.isPercentage ? "%" : "€" }}
-              </span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Base de Calcul
-            </label>
-            <select
-              v-model="taxForm.base"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="grossSalary">Salaire Brut</option>
-              <option value="netSalary">Salaire Net</option>
-            </select>
-          </div>
-          <div v-if="!taxForm.isPercentage">
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Fréquence
-            </label>
-            <select
-              v-model="taxForm.frequency"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="monthly">Mensuelle</option>
-              <option value="annual">Annuelle</option>
-              <option value="quarterly">Trimestrielle</option>
-            </select>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isTaxModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addTax"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Social Security Modal -->
-    <div
-      v-if="isSocialSecurityModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isSocialSecurityModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter une Cotisation Sociale</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type de Cotisation <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="socialSecurityForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="">Sélectionner</option>
-              <option value="Sécurité Sociale">Sécurité Sociale</option>
-              <option value="Assurance Chômage">Assurance Chômage</option>
-              <option value="Retraite">Retraite</option>
-              <option value="Prévoyance">Prévoyance</option>
-              <option value="Mutuelle">Mutuelle</option>
-              <option value="Autre">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="flex items-center gap-2 mb-2">
-              <input
-                v-model="socialSecurityForm.isPercentage"
-                type="checkbox"
-                class="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span class="text-sm text-neutral-700">Calcul en pourcentage</span>
-            </label>
-          </div>
-          <div v-if="socialSecurityForm.isPercentage">
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Taux Total (%) <span class="text-error-600">*</span>
-            </label>
-            <input
-              v-model.number="socialSecurityForm.rate"
-              type="number"
-              placeholder="0"
-              min="0"
-              max="100"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-          <div v-else>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Montant Mensuel <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="socialSecurityForm.amount"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Base de Calcul
-            </label>
-            <select
-              v-model="socialSecurityForm.base"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="grossSalary">Salaire Brut</option>
-              <option value="netSalary">Salaire Net</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Part Employé (%) <span class="text-error-600">*</span>
-            </label>
-            <input
-              v-model.number="socialSecurityForm.employeeShare"
-              type="number"
-              placeholder="50"
-              min="0"
-              max="100"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isSocialSecurityModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addSocialSecurity"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Insurance Modal -->
-    <div
-      v-if="isInsuranceModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isInsuranceModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter une Assurance</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type d'Assurance <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="insuranceForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="">Sélectionner</option>
-              <option value="Santé">Assurance Santé</option>
-              <option value="Vie">Assurance Vie</option>
-              <option value="Invalidité">Assurance Invalidité</option>
-              <option value="Décès">Assurance Décès</option>
-              <option value="Complémentaire">Complémentaire</option>
-              <option value="Autre">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Montant Total Mensuel <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="insuranceForm.amount"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Part Employé (mensuelle) <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="insuranceForm.employeeShare"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Date d'Effet
-            </label>
-            <input
-              v-model="insuranceForm.effectiveDate"
-              type="date"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isInsuranceModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addInsurance"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Other Deduction Modal -->
-    <div
-      v-if="isOtherDeductionModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click.self="isOtherDeductionModalOpen = false"
-    >
-      <div
-        class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
-        @click.stop
-      >
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Ajouter une Déduction</h2>
-        </div>
-        <div class="px-6 py-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Libellé <span class="text-error-600">*</span>
-            </label>
-            <input
-              v-model="otherDeductionForm.label"
-              type="text"
-              placeholder="Ex: Prêt salarial"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Montant <span class="text-error-600">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="otherDeductionForm.amount"
-                type="number"
-                placeholder="0"
-                min="0"
-                class="w-full px-4 py-2.5 pl-8 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-              />
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">€</span>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="otherDeductionForm.type"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="loan">Prêt</option>
-              <option value="advance">Avance sur Salaire</option>
-              <option value="penalty">Pénalité</option>
-              <option value="union">Cotisation Syndicale</option>
-              <option value="other">Autre</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Fréquence <span class="text-error-600">*</span>
-            </label>
-            <select
-              v-model="otherDeductionForm.frequency"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            >
-              <option value="monthly">Mensuelle</option>
-              <option value="annual">Annuelle</option>
-              <option value="quarterly">Trimestrielle</option>
-              <option value="one-time">Unique</option>
-            </select>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button
-            @click="isOtherDeductionModalOpen = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            @click="addOtherDeduction"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Ajouter
-          </button>
-        </div>
+          {{ saving ? t("admin.employees.create.creating") : t("admin.employees.create.submit") }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, h, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "../i18n/index.js";
+import { useNewEmployeeResources } from "./employees/composables/useNewEmployeeResources.js";
+import { employeesApiService } from "./employees/services/employees.api.service.js";
+import { parseApiError } from "../utils/apiErrors.js";
 
+const { t } = useI18n();
 const router = useRouter();
 
-// Tabs
-const tabs = [
-  { id: "personal", label: "Personal Information" },
-  { id: "professional", label: "Professional Information" },
-  { id: "remuneration", label: "Rémunérations" },
-  { id: "deductions", label: "Déductions" },
-  { id: "documents", label: "Documents" },
-  { id: "account", label: "Account Access" },
-];
-const activeTab = ref("personal");
+const {
+  loading: resourcesLoading,
+  error: resourcesError,
+  teams,
+  designations,
+  shifts,
+  managers,
+  departments,
+  attendanceTypes,
+  roleOptions,
+  existingEmails,
+  existingCodes,
+  loadResources,
+} = useNewEmployeeResources();
 
-// Form data
-const formData = ref({
-  firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  dob: "",
-  gender: "",
-  nationality: "",
-  maritalStatus: "",
-  address: "",
-  city: "",
-  state: "",
-  zip: "",
-  department: "",
-  jobTitle: "",
-  employmentType: "",
-  startDate: "",
-  manager: "",
-  salary: "",
-  status: "active",
-  username: "",
-  loginEmail: "",
-  password: "",
-  confirmPassword: "",
-  role: "Employee",
-  photoFile: null,
-});
+onMounted(loadResources);
 
-// Profile photo preview
-const profilePhotoPreview = ref(null);
+const step = ref(1);
+const saving = ref(false);
+const submitError = ref("");
 
-// UI States
-const isLoading = ref(false);
-const errorMessage = ref("");
-
-// Documents
-const documents = ref({
-  appointmentLetter: null,
-  salarySlips: [],
-  relievingLetter: null,
-  experienceLetter: null,
-});
-
-// Rémunérations
-const remuneration = ref({
-  baseSalary: {
-    annual: null,
-    monthly: null,
-    paymentPeriod: "monthly",
-    effectiveDate: "",
+const steps = computed(() => [
+  {
+    id: 1,
+    title: t("admin.employees.create.step1.title"),
+    sub: t("admin.employees.create.step1.sub"),
+    icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`,
   },
-  primes: [],
-  benefits: [],
-  others: [],
-});
+  {
+    id: 2,
+    title: t("admin.employees.create.step2.title"),
+    sub: t("admin.employees.create.step2.sub"),
+    icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`,
+  },
+  {
+    id: 3,
+    title: t("admin.employees.create.step3.title"),
+    sub: t("admin.employees.create.step3.sub"),
+    icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+  },
+]);
 
-// Modals
-const isPrimeModalOpen = ref(false);
-const isBenefitModalOpen = ref(false);
-const isOtherModalOpen = ref(false);
+function emptyForm() {
+  return {
+    // Personal
+    employeeCode: "",
+    email: "",
+    phone: "",
+    firstName: "",
+    lastName: "",
+    gender: "",
+    dateOfBirth: "",
+    bloodGroup: "",
+    alternativePhone: "",
+    address: "",
+    emergencyContactName: "",
+    emergencyRelationship: "",
+    emergencyContactPhone: "",
+    emergencyContactAddress: "",
+    // Employment
+    dateOfJoining: "",
+    designation: "",
+    team: "",
+    reportingManager: "",
+    shiftId: "",
+    department: "",
+    // Account
+    role: "",
+    useDefaultPassword: true,
+    password: "",
+    // Attendance
+    attendanceType: "open",
+    // Probation
+    probationMonths: 0,
+    probationNotes: "",
+  };
+}
 
-// Form data for modals
-const primeForm = ref({
-  type: "",
-  amount: null,
-  frequency: "annual",
-  effectiveDate: "",
-});
-
-const benefitForm = ref({
-  type: "",
-  taxableValue: null,
-  frequency: "monthly",
-  description: "",
-});
-
-const otherForm = ref({
-  label: "",
-  amount: null,
-  type: "allowance",
-  frequency: "monthly",
-});
-
-// Déductions
-const deductions = ref({
-  taxes: [],
-  socialSecurity: [],
-  insurance: [],
-  others: [],
-});
-
-// Modals for deductions
-const isTaxModalOpen = ref(false);
-const isSocialSecurityModalOpen = ref(false);
-const isInsuranceModalOpen = ref(false);
-const isOtherDeductionModalOpen = ref(false);
-
-// Form data for deduction modals
-const taxForm = ref({
-  type: "",
-  amount: null,
-  isPercentage: true,
-  base: "grossSalary",
-  frequency: "monthly",
-});
-
-const socialSecurityForm = ref({
-  type: "",
-  rate: null,
-  amount: null,
-  isPercentage: true,
-  base: "grossSalary",
-  employeeShare: 50,
-});
-
-const insuranceForm = ref({
-  type: "",
-  amount: null,
-  employeeShare: null,
-  effectiveDate: "",
-});
-
-const otherDeductionForm = ref({
-  label: "",
-  amount: null,
-  type: "loan",
-  frequency: "monthly",
-});
-
-const userRoles = ["Employee", "Manager", "HR", "Admin"];
-
-// File inputs refs
+const form = ref(emptyForm());
+const errors = ref({});
+const profilePhoto = ref(null);
+const profilePhotoPreview = ref("");
 const photoInput = ref(null);
-const appointmentLetterInput = ref(null);
-const salarySlipsInput = ref(null);
-const relievingLetterInput = ref(null);
-const experienceLetterInput = ref(null);
 
-// Methods
-const handleFileSelect = (docType, event) => {
-  const files = event.target.files;
-  if (docType === "appointmentLetter") {
-    documents.value.appointmentLetter = files[0];
-  } else if (docType === "salarySlips") {
-    documents.value.salarySlips = Array.from(files);
-  } else if (docType === "relievingLetter") {
-    documents.value.relievingLetter = files[0];
-  } else if (docType === "experienceLetter") {
-    documents.value.experienceLetter = files[0];
-  }
-};
+// Listes statiques (hors API)
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const relationships = computed(() => [
+  { value: "Father", label: t("admin.employees.create.rel.father") },
+  { value: "Mother", label: t("admin.employees.create.rel.mother") },
+  { value: "Spouse", label: t("admin.employees.create.rel.spouse") },
+  { value: "Sibling", label: t("admin.employees.create.rel.sibling") },
+  { value: "Friend", label: t("admin.employees.create.rel.friend") },
+  { value: "Other", label: t("admin.employees.create.rel.other") },
+]);
 
-const handlePhotoUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      errorMessage.value = "Photo must be less than 5MB";
-      return;
-    }
-    formData.value.photoFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profilePhotoPreview.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-};
+// === Computeds ===
 
-const validateForm = () => {
-  errorMessage.value = "";
-
-  if (!formData.value.firstName.trim()) {
-    errorMessage.value = "First name is required";
-    activeTab.value = "personal";
-    return false;
-  }
-
-  if (!formData.value.lastName.trim()) {
-    errorMessage.value = "Last name is required";
-    activeTab.value = "personal";
-    return false;
-  }
-
-  if (!formData.value.email.trim()) {
-    errorMessage.value = "Email is required";
-    activeTab.value = "personal";
-    return false;
-  }
-
-  if (!formData.value.department) {
-    errorMessage.value = "Department is required";
-    activeTab.value = "professional";
-    return false;
-  }
-
-  if (!formData.value.jobTitle.trim()) {
-    errorMessage.value = "Job title is required";
-    activeTab.value = "professional";
-    return false;
-  }
-
-  if (!formData.value.username.trim()) {
-    errorMessage.value = "Username is required";
-    activeTab.value = "account";
-    return false;
-  }
-
-  if (!formData.value.password.trim() || formData.value.password.length < 8) {
-    errorMessage.value = "Password must be at least 8 characters";
-    activeTab.value = "account";
-    return false;
-  }
-
-  if (formData.value.password !== formData.value.confirmPassword) {
-    errorMessage.value = "Passwords do not match";
-    activeTab.value = "account";
-    return false;
-  }
-
-  return true;
-};
-
-// Rémunération Functions
-const formatNumber = (num) => {
-  if (!num) return "0";
-  return Number(num).toLocaleString("fr-FR");
-};
-
-const openAddPrimeModal = () => {
-  primeForm.value = {
-    type: "",
-    amount: null,
-    frequency: "annual",
-    effectiveDate: "",
+const genderLabel = computed(() => {
+  const map = {
+    male: t("admin.employees.create.gender.male"),
+    female: t("admin.employees.create.gender.female"),
+    other: t("admin.employees.create.gender.other"),
   };
-  isPrimeModalOpen.value = true;
-};
+  return map[form.value.gender] || "";
+});
 
-const addPrime = () => {
-  if (!primeForm.value.type || !primeForm.value.amount) {
-    alert("Veuillez remplir tous les champs requis");
-    return;
-  }
-  remuneration.value.primes.push({ ...primeForm.value });
-  isPrimeModalOpen.value = false;
-};
+const attendanceTypeLabel = computed(() => {
+  const found = attendanceTypes.value.find((t) => t.code === form.value.attendanceType);
+  return found?.name || form.value.attendanceType || "";
+});
 
-const removePrime = (index) => {
-  remuneration.value.primes.splice(index, 1);
-};
+const roleLabel = computed(() => {
+  const found = roleOptions.value.find((r) => r.slug === form.value.role);
+  return found?.name || form.value.role || "";
+});
 
-const openAddBenefitModal = () => {
-  benefitForm.value = {
-    type: "",
-    taxableValue: null,
-    frequency: "monthly",
-    description: "",
-  };
-  isBenefitModalOpen.value = true;
-};
+const shiftLabel = computed(() => {
+  const found = shifts.value.find((s) => String(s.id) === String(form.value.shiftId));
+  return found?.label || "";
+});
 
-const addBenefit = () => {
-  if (!benefitForm.value.type || !benefitForm.value.taxableValue) {
-    alert("Veuillez remplir tous les champs requis");
-    return;
-  }
-  remuneration.value.benefits.push({ ...benefitForm.value });
-  isBenefitModalOpen.value = false;
-};
-
-const removeBenefit = (index) => {
-  remuneration.value.benefits.splice(index, 1);
-};
-
-const openAddOtherModal = () => {
-  otherForm.value = {
-    label: "",
-    amount: null,
-    type: "allowance",
-    frequency: "monthly",
-  };
-  isOtherModalOpen.value = true;
-};
-
-const addOther = () => {
-  if (!otherForm.value.label || !otherForm.value.amount) {
-    alert("Veuillez remplir tous les champs requis");
-    return;
-  }
-  remuneration.value.others.push({ ...otherForm.value });
-  isOtherModalOpen.value = false;
-};
-
-const removeOther = (index) => {
-  remuneration.value.others.splice(index, 1);
-};
-
-const calculateTotalPrimes = () => {
-  return remuneration.value.primes.reduce((total, prime) => {
-    const multiplier = prime.frequency === "annual" ? 1 : prime.frequency === "monthly" ? 12 : prime.frequency === "quarterly" ? 4 : 0;
-    return total + (prime.amount * multiplier);
-  }, 0);
-};
-
-const calculateTotalBenefits = () => {
-  return remuneration.value.benefits.reduce((total, benefit) => {
-    const multiplier = benefit.frequency === "annual" ? 1 : benefit.frequency === "monthly" ? 12 : benefit.frequency === "quarterly" ? 4 : 0;
-    return total + (benefit.taxableValue * multiplier);
-  }, 0);
-};
-
-const calculateTotalOthers = () => {
-  return remuneration.value.others.reduce((total, other) => {
-    const multiplier = other.frequency === "annual" ? 1 : other.frequency === "monthly" ? 12 : other.frequency === "quarterly" ? 4 : 0;
-    return total + (other.amount * multiplier);
-  }, 0);
-};
-
-const calculateTotalCTC = () => {
-  return (remuneration.value.baseSalary.annual || 0) + calculateTotalPrimes() + calculateTotalBenefits() + calculateTotalOthers();
-};
-
-// Watch for salary changes to sync annual and monthly
-watch(
-  () => remuneration.value.baseSalary.annual,
-  (newVal) => {
-    if (newVal) {
-      remuneration.value.baseSalary.monthly = Math.round(newVal / 12);
-    }
-  }
+const attendanceConfigLabel = computed(() =>
+  form.value.attendanceType === "open"
+    ? t("admin.employees.create.attendanceOpen")
+    : t("admin.employees.create.attendanceRestricted")
 );
 
-watch(
-  () => remuneration.value.baseSalary.monthly,
-  (newVal) => {
-    if (newVal) {
-      remuneration.value.baseSalary.annual = newVal * 12;
-    }
+const probationDurationLabel = computed(() => {
+  const m = form.value.probationMonths;
+  if (!m) return t("admin.employees.create.noProbation");
+  return t("admin.employees.create.months", { n: m });
+});
+
+const probationEndDate = computed(() => {
+  if (!form.value.probationMonths || !form.value.dateOfJoining) return "";
+  const d = new Date(form.value.dateOfJoining);
+  if (Number.isNaN(d.getTime())) return "";
+  d.setMonth(d.getMonth() + Number(form.value.probationMonths));
+  return d.toISOString().slice(0, 10);
+});
+
+// === Validation ===
+
+function validateStep1() {
+  const e = {};
+  if (!form.value.employeeCode.trim()) e.employeeCode = t("admin.employees.create.error.codeRequired");
+  else if (existingCodes.value.includes(form.value.employeeCode.trim().toUpperCase()))
+    e.employeeCode = t("admin.employees.create.error.codeExists");
+
+  if (!form.value.email.trim()) e.email = t("admin.employees.create.error.emailRequired");
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email))
+    e.email = t("admin.employees.create.error.emailInvalid");
+  else if (existingEmails.value.includes(form.value.email.trim().toLowerCase()))
+    e.email = t("admin.employees.create.error.emailExists");
+
+  if (!form.value.phone.trim()) e.phone = t("admin.employees.create.error.phoneRequired");
+
+  if (!form.value.firstName.trim()) e.firstName = t("admin.employees.create.error.firstNameRequired");
+  if (!form.value.lastName.trim()) e.lastName = t("admin.employees.create.error.lastNameRequired");
+  if (!form.value.gender) e.gender = t("admin.employees.create.error.genderRequired");
+  if (!form.value.dateOfBirth) e.dateOfBirth = t("admin.employees.create.error.dobRequired");
+
+  errors.value = e;
+  return Object.keys(e).length === 0;
+}
+
+function validateStep2() {
+  const e = {};
+  if (!form.value.dateOfJoining) e.dateOfJoining = t("admin.employees.create.error.joiningRequired");
+  if (!form.value.designation) e.designation = t("admin.employees.create.error.designationRequired");
+  if (!form.value.team) e.team = t("admin.employees.create.error.teamRequired");
+  if (!form.value.reportingManager)
+    e.reportingManager = t("admin.employees.create.error.managerRequired");
+  if (!form.value.shiftId) e.shiftId = t("admin.employees.create.error.shiftRequired");
+  if (!form.value.department) e.department = t("admin.employees.create.error.departmentRequired");
+  if (!form.value.role) e.role = t("admin.employees.create.error.roleRequired");
+  if (!form.value.useDefaultPassword) {
+    if (!form.value.password || form.value.password.length < 8)
+      e.password = t("admin.employees.create.error.passwordMin");
   }
-);
+  errors.value = e;
+  return Object.keys(e).length === 0;
+}
 
-// Déductions Functions
-const openAddTaxModal = () => {
-  taxForm.value = {
-    type: "",
-    amount: null,
-    isPercentage: true,
-    base: "grossSalary",
-    frequency: "monthly",
-  };
-  isTaxModalOpen.value = true;
-};
+// === Navigation ===
 
-const addTax = () => {
-  if (!taxForm.value.type || !taxForm.value.amount) {
-    alert("Veuillez remplir tous les champs requis");
+function nextStep() {
+  if (step.value === 1 && !validateStep1()) return;
+  if (step.value === 2 && !validateStep2()) return;
+  if (step.value < 3) step.value += 1;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function prevStep() {
+  if (step.value > 1) step.value -= 1;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function goToStep(target) {
+  if (target === step.value) return;
+  if (target < step.value) {
+    step.value = target;
     return;
   }
-  deductions.value.taxes.push({ ...taxForm.value });
-  isTaxModalOpen.value = false;
-};
+  if (target === 2 && validateStep1()) step.value = 2;
+  else if (target === 3 && validateStep1() && validateStep2()) step.value = 3;
+}
 
-const removeTax = (index) => {
-  deductions.value.taxes.splice(index, 1);
-};
+function backToList() {
+  router.push("/employees");
+}
 
-const openAddSocialSecurityModal = () => {
-  socialSecurityForm.value = {
-    type: "",
-    rate: null,
-    amount: null,
-    isPercentage: true,
-    base: "grossSalary",
-    employeeShare: 50,
-  };
-  isSocialSecurityModalOpen.value = true;
-};
-
-const addSocialSecurity = () => {
-  if (!socialSecurityForm.value.type || (!socialSecurityForm.value.rate && !socialSecurityForm.value.amount)) {
-    alert("Veuillez remplir tous les champs requis");
+async function createEmployee() {
+  if (!validateStep1() || !validateStep2()) {
+    step.value = !validateStep1() ? 1 : 2;
     return;
   }
-  deductions.value.socialSecurity.push({ ...socialSecurityForm.value });
-  isSocialSecurityModalOpen.value = false;
-};
+  if (saving.value) return;
 
-const removeSocialSecurity = (index) => {
-  deductions.value.socialSecurity.splice(index, 1);
-};
+  saving.value = true;
+  submitError.value = "";
 
-const openAddInsuranceModal = () => {
-  insuranceForm.value = {
-    type: "",
-    amount: null,
-    employeeShare: null,
-    effectiveDate: "",
+  const selectedShift = shifts.value.find(
+    (s) => String(s.id) === String(form.value.shiftId),
+  );
+  const selectedManager = managers.value.find(
+    (m) => m.name === form.value.reportingManager,
+  );
+
+  const payload = {
+    matricule: form.value.employeeCode.trim(),
+    first_name: form.value.firstName.trim(),
+    last_name: form.value.lastName.trim(),
+    email: form.value.email.trim(),
+    phone: form.value.phone.trim() || null,
+    date_of_birth: form.value.dateOfBirth || null,
+    hired_at: form.value.dateOfJoining || null,
+    job_title: form.value.designation || null,
+    department: form.value.department || null,
+    role: form.value.role,
+    create_user: true,
+    use_default_password: !!form.value.useDefaultPassword,
+    password: form.value.useDefaultPassword ? null : form.value.password,
+    metadata: {
+      gender: form.value.gender || null,
+      blood_group: form.value.bloodGroup || null,
+      alternative_phone: form.value.alternativePhone || null,
+      address: form.value.address || null,
+      emergency_contact_name: form.value.emergencyContactName || null,
+      emergency_relationship: form.value.emergencyRelationship || null,
+      emergency_contact_phone: form.value.emergencyContactPhone || null,
+      emergency_contact_address: form.value.emergencyContactAddress || null,
+      designation: form.value.designation || null,
+      team: form.value.team || null,
+      reporting_manager: form.value.reportingManager || null,
+      reporting_manager_id: selectedManager?.id ?? null,
+      shift: selectedShift?.name || selectedShift?.label || null,
+      shift_id: selectedShift?.id ?? null,
+      attendance_type: form.value.attendanceType || null,
+      probation_months: Number(form.value.probationMonths) || 0,
+      probation_notes: form.value.probationNotes || null,
+      probation_end_date: probationEndDate.value || null,
+    },
   };
-  isInsuranceModalOpen.value = true;
-};
-
-const addInsurance = () => {
-  if (!insuranceForm.value.type || !insuranceForm.value.amount || !insuranceForm.value.employeeShare) {
-    alert("Veuillez remplir tous les champs requis");
-    return;
-  }
-  deductions.value.insurance.push({ ...insuranceForm.value });
-  isInsuranceModalOpen.value = false;
-};
-
-const removeInsurance = (index) => {
-  deductions.value.insurance.splice(index, 1);
-};
-
-const openAddOtherDeductionModal = () => {
-  otherDeductionForm.value = {
-    label: "",
-    amount: null,
-    type: "loan",
-    frequency: "monthly",
-  };
-  isOtherDeductionModalOpen.value = true;
-};
-
-const addOtherDeduction = () => {
-  if (!otherDeductionForm.value.label || !otherDeductionForm.value.amount) {
-    alert("Veuillez remplir tous les champs requis");
-    return;
-  }
-  deductions.value.others.push({ ...otherDeductionForm.value });
-  isOtherDeductionModalOpen.value = false;
-};
-
-const removeOtherDeduction = (index) => {
-  deductions.value.others.splice(index, 1);
-};
-
-const calculateTotalTaxes = () => {
-  const grossSalary = remuneration.value.baseSalary.annual || 0;
-  return deductions.value.taxes.reduce((total, tax) => {
-    if (tax.isPercentage) {
-      const base = tax.base === "grossSalary" ? grossSalary : grossSalary;
-      return total + (base * tax.amount / 100);
-    } else {
-      const multiplier = tax.frequency === "annual" ? 1 : tax.frequency === "monthly" ? 12 : tax.frequency === "quarterly" ? 4 : 0;
-      return total + (tax.amount * multiplier);
-    }
-  }, 0);
-};
-
-const calculateTotalSocialSecurity = () => {
-  const grossSalary = remuneration.value.baseSalary.annual || 0;
-  return deductions.value.socialSecurity.reduce((total, contribution) => {
-    if (contribution.isPercentage) {
-      const base = contribution.base === "grossSalary" ? grossSalary : grossSalary;
-      const totalRate = contribution.rate || 0;
-      const employeeRate = (totalRate * contribution.employeeShare) / 100;
-      return total + (base * employeeRate / 100);
-    } else {
-      const employeeAmount = (contribution.amount * contribution.employeeShare) / 100;
-      return total + (employeeAmount * 12);
-    }
-  }, 0);
-};
-
-const calculateTotalInsurance = () => {
-  return deductions.value.insurance.reduce((total, insurance) => {
-    return total + (insurance.employeeShare * 12);
-  }, 0);
-};
-
-const calculateTotalOtherDeductions = () => {
-  return deductions.value.others.reduce((total, other) => {
-    const multiplier = other.frequency === "annual" ? 1 : other.frequency === "monthly" ? 12 : other.frequency === "quarterly" ? 4 : 0;
-    return total + (other.amount * multiplier);
-  }, 0);
-};
-
-const calculateTotalDeductions = () => {
-  return calculateTotalTaxes() + calculateTotalSocialSecurity() + calculateTotalInsurance() + calculateTotalOtherDeductions();
-};
-
-const calculateNetSalary = () => {
-  const grossSalary = remuneration.value.baseSalary.annual || 0;
-  return Math.max(0, grossSalary - calculateTotalDeductions());
-};
-
-const calculateDeductionRate = () => {
-  const grossSalary = remuneration.value.baseSalary.annual || 0;
-  if (grossSalary === 0) return 0;
-  return ((calculateTotalDeductions() / grossSalary) * 100).toFixed(2);
-};
-
-const handleSubmit = async () => {
-  if (!validateForm()) return;
-
-  isLoading.value = true;
-  errorMessage.value = "";
 
   try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Mock API response
-    const response = {
-      success: true,
-      message: "Employee created successfully",
-      data: {
-        id: Math.floor(Math.random() * 10000),
-        name: `${formData.value.firstName} ${formData.value.lastName}`,
-        email: formData.value.email,
-      },
-    };
-
-    if (response.success) {
-      // Redirect after 1 second
-      setTimeout(() => {
-        router.push("/employees");
-      }, 1000);
-    } else {
-      errorMessage.value = response.message || "Failed to create employee";
-    }
-  } catch (error) {
-    errorMessage.value = "An error occurred. Please try again.";
-    console.error("Error:", error);
+    await employeesApiService.create(payload);
+    router.push("/employees");
+  } catch (e) {
+    submitError.value = parseApiError(e) || t("admin.employees.create.error.submit");
   } finally {
-    isLoading.value = false;
+    saving.value = false;
   }
+}
+
+// === Photo ===
+
+function handlePhotoUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert(t("admin.employees.create.error.fileSize"));
+    return;
+  }
+  profilePhoto.value = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => (profilePhotoPreview.value = ev.target.result);
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  profilePhoto.value = null;
+  profilePhotoPreview.value = "";
+  if (photoInput.value) photoInput.value.value = "";
+}
+
+// === Sub-components légers ===
+
+const FieldLabel = {
+  props: { required: { type: Boolean, default: false } },
+  setup(props, { slots }) {
+    return () =>
+      h(
+        "label",
+        { class: "block text-sm font-medium text-neutral-700 mb-1.5" },
+        [
+          slots.default?.(),
+          props.required
+            ? h("span", { class: "text-error-600 ml-0.5" }, "*")
+            : null,
+        ]
+      );
+  },
+};
+
+const ReviewSection = {
+  props: {
+    title: String,
+    icon: { type: String, default: "user" },
+  },
+  setup(props, { slots }) {
+    const iconPaths = {
+      user: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+      briefcase:
+        "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+      lock: "M12 11c1.657 0 3-1.343 3-3V6a3 3 0 10-6 0v2c0 1.657 1.343 3 3 3zm-7 8a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5z",
+      calendar:
+        "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+      clock: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+    };
+    return () =>
+      h(
+        "section",
+        {
+          class:
+            "rounded-xl border border-neutral-200 bg-white overflow-hidden",
+        },
+        [
+          h(
+            "header",
+            {
+              class:
+                "flex items-center gap-2 px-5 py-3 border-b border-neutral-100 text-sm font-semibold text-neutral-700",
+            },
+            [
+              h(
+                "svg",
+                {
+                  class: "w-5 h-5 text-neutral-500",
+                  fill: "none",
+                  stroke: "currentColor",
+                  viewBox: "0 0 24 24",
+                },
+                [
+                  h("path", {
+                    "stroke-linecap": "round",
+                    "stroke-linejoin": "round",
+                    "stroke-width": "2",
+                    d: iconPaths[props.icon] || iconPaths.user,
+                  }),
+                ]
+              ),
+              props.title,
+            ]
+          ),
+          h(
+            "div",
+            { class: "divide-y divide-neutral-100" },
+            slots.default?.()
+          ),
+        ]
+      );
+  },
+};
+
+const ReviewRow = {
+  props: { label: String, value: [String, Number] },
+  setup(props) {
+    return () =>
+      h(
+        "div",
+        { class: "flex items-center justify-between px-5 py-2.5 text-sm" },
+        [
+          h("span", { class: "text-neutral-600" }, props.label),
+          h(
+            "span",
+            { class: "text-neutral-900 text-right" },
+            props.value !== "" && props.value != null ? String(props.value) : "-"
+          ),
+        ]
+      );
+  },
 };
 </script>

@@ -1,77 +1,108 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { authApiService } from "../services/auth.api.service.js";
+
+function mapApiUser(apiUser) {
+  if (!apiUser) return null;
+
+  return {
+    id: apiUser.id,
+    name: apiUser.name,
+    email: apiUser.email,
+    role: apiUser.role,
+    company_id: apiUser.company_id,
+    company: apiUser.company_name ?? apiUser.company ?? null,
+  };
+}
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
   const isAuthenticated = ref(false);
 
-  // Determine role based on email
-  const determineRole = (email) => {
-    if (email === "employee@bravorh.com") {
-      return "Employee";
-    }
-    return "Admin";
-  };
+  const isSuperAdmin = computed(() => user.value?.role === "super_admin");
+  const isAdmin = computed(() =>
+    ["admin", "team_manager"].includes(user.value?.role)
+  );
+  const isEmployee = computed(() => user.value?.role === "employe");
+  const isTenant = computed(() => user.value?.role === "tenant");
+  const homePath = computed(() => {
+    if (isTenant.value) return "/tenant/dashboard";
+    if (isSuperAdmin.value) return "/sup-admin/entreprises";
+    if (isEmployee.value) return "/dashboard-2";
+    return "/dashboard";
+  });
 
-  // Mock user data based on role
-  const getUserData = (email, role) => {
-    if (role === "Employee") {
-      return {
-        id: 2,
-        name: "Brooklyn Simmons",
-        email: "employee@bravorh.com",
-        role: "Employee",
-        designation: "UI/UX Designer",
-        department: "Design",
-      };
-    } else {
-      return {
-        id: 1,
-        name: "Robert Anderson",
-        email: "admin@bravorh.com",
-        role: "Admin",
-      };
+  function persistUser() {
+    if (user.value) {
+      localStorage.setItem("user", JSON.stringify(user.value));
     }
-  };
+  }
 
-  const login = (credentials) => {
-    const role = determineRole(credentials.email);
-    user.value = getUserData(credentials.email, role);
+  function hydrateAuth() {
+    const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (savedUser && token) {
+      try {
+        user.value = JSON.parse(savedUser);
+        isAuthenticated.value = true;
+      } catch {
+        logout();
+      }
+    }
+  }
+
+  async function validateAuth() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const apiUser = await authApiService.me();
+      user.value = mapApiUser(apiUser);
+      isAuthenticated.value = true;
+      persistUser();
+    } catch {
+      logout();
+    }
+  }
+
+  async function login(credentials) {
+    const data = await authApiService.login(credentials);
+    localStorage.setItem("token", data.token);
+    user.value = mapApiUser(data.user);
     isAuthenticated.value = true;
-    
-    // Save to localStorage
-    localStorage.setItem("token", "mock-jwt-token");
-    localStorage.setItem("user", JSON.stringify(user.value));
-  };
+    persistUser();
+  }
 
-  const logout = () => {
+  async function logout() {
+    try {
+      await authApiService.logout();
+    } catch {
+      // Token déjà invalide ou session expirée
+    }
+
     user.value = null;
     isAuthenticated.value = false;
     localStorage.removeItem("token");
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("user");
-  };
+  }
 
-  // Initialize user from localStorage on app start
-  const initAuth = () => {
-    const savedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-    
-    if (savedUser && token) {
-      user.value = JSON.parse(savedUser);
-      isAuthenticated.value = true;
-    }
-  };
-
-  // Computed properties
-  const isAdmin = computed(() => user.value?.role === "Admin");
-  const isEmployee = computed(() => user.value?.role === "Employee");
+  async function initAuth() {
+    hydrateAuth();
+    await validateAuth();
+  }
 
   return {
     user,
     isAuthenticated,
     isAdmin,
     isEmployee,
+    isTenant,
+    isSuperAdmin,
+    homePath,
+    hydrateAuth,
+    validateAuth,
     login,
     logout,
     initAuth,

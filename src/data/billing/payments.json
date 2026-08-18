@@ -1,0 +1,41 @@
+[
+  {
+    "id": "pay-001",
+    "invoice_id": "inv-001",
+    "invoice_number": "INV-2026-00001",
+    "company_id": "cmp-001",
+    "company_name": "Acme Corporation",
+    "amount": 149,
+    "currency": "EUR",
+    "paid_at": "2026-02-08",
+    "method": "bank_transfer",
+    "reference": "VIR-20260208-001",
+    "notes": "Paiement intégral"
+  },
+  {
+    "id": "pay-002",
+    "invoice_id": "inv-002",
+    "invoice_number": "INV-2026-00002",
+    "company_id": "cmp-002",
+    "company_name": "Bravo RH Demo",
+    "amount": 499,
+    "currency": "EUR",
+    "paid_at": "2026-03-05",
+    "method": "card",
+    "reference": "CB-****4821",
+    "notes": ""
+  },
+  {
+    "id": "pay-003",
+    "invoice_id": "inv-004",
+    "invoice_number": "INV-2026-00004",
+    "company_id": "cmp-004",
+    "company_name": "GreenLogistics",
+    "amount": 20,
+    "currency": "XOF",
+    "paid_at": "2026-02-10",
+    "method": "bank_transfer",
+    "reference": "VIR-SN-0210",
+    "notes": "Acompte — solde en attente"
+  }
+]

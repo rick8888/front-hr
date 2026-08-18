@@ -13,7 +13,11 @@ html {
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900 font-sans;
+  @apply bg-neutral-50 text-neutral-900 font-sans overflow-x-hidden;
+}
+
+#app {
+  @apply max-w-full overflow-x-hidden;
 }
 
 /* Component utilities */
@@ -39,7 +43,7 @@ body {
   }
 
   .input-base {
-    @apply w-full px-3 py-2 border border-neutral-300 rounded-lg text-neutral-900 placeholder-neutral-400 transition-colors duration-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
+    @apply w-full px-3 py-2.5 border border-neutral-300 rounded-lg text-base text-neutral-900 placeholder-neutral-400 transition-colors duration-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 sm:text-sm sm:py-2;
   }
 
   .badge {

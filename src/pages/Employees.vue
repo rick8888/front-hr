@@ -1,18 +1,21 @@
 <template>
-  <div class="px-8 py-6">
+  <div class="px-4 py-4 sm:px-8 sm:py-6 max-w-7xl mx-auto">
     <!-- Header with Actions -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-neutral-900">Employees</h1>
-        <p class="text-sm text-neutral-600">Manage your team members</p>
+        <h1 class="text-2xl font-bold text-neutral-900">{{ t("admin.employees.title") }}</h1>
+        <p class="text-sm text-neutral-600">{{ t("admin.employees.subtitle") }}</p>
       </div>
       <div class="flex items-center gap-3">
         <button
+          type="button"
           @click="exportEmployees"
           class="flex items-center gap-2 btn-outline"
+          :disabled="exporting || loading"
         >
           <svg
             class="w-4 h-4"
+            :class="{ 'animate-spin': exporting }"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -24,14 +27,17 @@
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             ></path>
           </svg>
-          Export
+          {{ exporting ? t("admin.employees.exporting") : t("admin.employees.export") }}
         </button>
         <button
+          type="button"
           @click="importEmployees"
           class="flex items-center gap-2 btn-outline"
+          :disabled="importing || loading"
         >
           <svg
             class="w-4 h-4"
+            :class="{ 'animate-spin': importing }"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -43,7 +49,7 @@
               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
             ></path>
           </svg>
-          Import
+          {{ importing ? t("admin.employees.importing") : t("admin.employees.import") }}
         </button>
         <router-link
           to="/employees/new"
@@ -62,9 +68,40 @@
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             ></path>
           </svg>
-          Add Employee
+          {{ t("admin.employees.add") }}
         </router-link>
       </div>
+    </div>
+
+    <div
+      v-if="displayError"
+      class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ displayError }}
+    </div>
+    <div
+      v-else-if="ioSuccess"
+      class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+    >
+      {{ ioSuccess }}
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
+      <KpiCard
+        v-for="kpi in kpiCards"
+        :key="kpi.key"
+        :title="kpi.label"
+        :value="kpi.value"
+        :subtitle="kpi.hint"
+        :unit-label="t('admin.employees.unit')"
+        :tone="kpi.tone"
+        :loading="loading"
+      >
+        <template #icon>
+          <component :is="kpi.icon" class="w-5 h-5" />
+        </template>
+      </KpiCard>
     </div>
 
     <!-- Bulk Actions Bar (shown when items selected) -->
@@ -74,27 +111,32 @@
     >
       <div class="flex items-center gap-3">
         <span class="text-sm font-medium text-primary-700"
-          >{{ selectedEmployees.length }} employee(s) selected</span
+          >{{ t("admin.employees.selected", { n: selectedEmployees.length }) }}</span
         >
         <button
           @click="clearSelection"
           class="text-sm underline text-primary-600 hover:text-primary-700"
         >
-          Clear selection
+          {{ t("admin.employees.clearSelection") }}
         </button>
       </div>
       <div class="flex items-center gap-2">
         <button @click="bulkSendEmail" class="text-sm btn-outline">
-          Send Email
+          {{ t("admin.employees.sendEmail") }}
         </button>
         <button @click="bulkChangeStatus" class="text-sm btn-outline">
-          Change Status
+          {{ t("admin.employees.changeStatus") }}
         </button>
-        <button @click="bulkExport" class="text-sm btn-outline">
-          Export Selected
+        <button
+          type="button"
+          @click="bulkExport"
+          class="text-sm btn-outline"
+          :disabled="exporting"
+        >
+          {{ exporting ? t("admin.employees.exporting") : t("admin.employees.exportSelected") }}
         </button>
-        <button @click="bulkDelete" class="text-sm btn-error">
-          Delete Selected
+        <button @click="bulkDelete" class="text-sm btn-error" :disabled="deleting">
+          {{ t("admin.employees.deleteSelected") }}
         </button>
       </div>
     </div>
@@ -106,7 +148,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search by name, email..."
+            :placeholder="t('admin.employees.searchPlaceholder')"
             class="pl-10 input-base"
           />
           <svg
@@ -124,30 +166,28 @@
           </svg>
         </div>
         <select v-model="selectedDepartment" class="input-base">
-          <option value="">All Departments</option>
-          <option value="Sales">Sales</option>
-          <option value="Engineering">Engineering</option>
-          <option value="HR">HR</option>
-          <option value="Finance">Finance</option>
-          <option value="Marketing">Marketing</option>
+          <option value="">{{ t("admin.employees.allDepartments") }}</option>
+          <option v-for="dept in departmentOptions" :key="dept" :value="dept">
+            {{ dept }}
+          </option>
         </select>
         <select v-model="selectedStatus" class="input-base">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="on-leave">On Leave</option>
+          <option value="">{{ t("admin.employees.allStatus") }}</option>
+          <option
+            v-for="opt in employeeStatusOptions"
+            :key="opt.value"
+            :value="opt.value"
+          >
+            {{ opt.label }}
+          </option>
         </select>
         <select v-model="selectedRole" class="input-base">
-          <option value="">All Roles</option>
-          <option value="Manager">Manager</option>
-          <option value="Developer">Developer</option>
-          <option value="Executive">Executive</option>
-          <option value="Specialist">Specialist</option>
-          <option value="Accountant">Accountant</option>
-          <option value="Lead">Lead</option>
-          <option value="Representative">Representative</option>
+          <option value="">{{ t("admin.employees.allRoles") }}</option>
+          <option v-for="role in roleOptions" :key="role" :value="role">
+            {{ role }}
+          </option>
         </select>
-        <button @click="clearFilters" class="btn-outline">Clear Filters</button>
+        <button @click="clearFilters" class="btn-outline">{{ t("admin.employees.clearFilters") }}</button>
       </div>
     </div>
 
@@ -171,46 +211,57 @@
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Employee
+                {{ t("admin.employees.col.employee") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Contact
+                {{ t("admin.employees.col.contact") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Department
+                {{ t("admin.employees.col.department") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Role
+                {{ t("admin.employees.col.role") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Status
+                {{ t("admin.employees.col.status") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-left text-neutral-600"
               >
-                Join Date
+                {{ t("admin.employees.col.joinDate") }}
               </th>
               <th
                 class="px-6 py-3 text-sm font-medium text-right text-neutral-600"
               >
-                Actions
+                {{ t("common.actions") }}
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="employee in paginatedEmployees"
-              :key="employee.id"
-              class="transition-colors border-b border-neutral-100 hover:bg-neutral-50"
-            >
+            <tr v-if="loading">
+              <td colspan="8" class="px-6 py-12 text-center text-sm text-neutral-500">
+                {{ t("common.loading") }}
+              </td>
+            </tr>
+            <tr v-else-if="!paginatedEmployees.length">
+              <td colspan="8" class="px-6 py-12 text-center text-sm text-neutral-500">
+                {{ t("admin.employees.noResults") }}
+              </td>
+            </tr>
+            <template v-else>
+              <tr
+                v-for="employee in paginatedEmployees"
+                :key="employee.id"
+                class="transition-colors border-b border-neutral-100 hover:bg-neutral-50"
+              >
               <td class="px-6 py-4">
                 <input
                   type="checkbox"
@@ -240,7 +291,7 @@
                 <div class="text-sm">
                   <div class="text-neutral-900">{{ employee.email }}</div>
                   <div class="text-neutral-500">
-                    {{ employee.phone || "No phone" }}
+                    {{ employee.phone || t("admin.employees.noPhone") }}
                   </div>
                 </div>
               </td>
@@ -256,14 +307,14 @@
                 </span>
               </td>
               <td class="px-6 py-4 text-sm text-neutral-600">
-                {{ employee.joinDate || "N/A" }}
+                {{ employee.joinDate || t("common.notApplicable") }}
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
                   <button
                     @click="viewEmployee(employee)"
                     class="p-1 transition-colors text-neutral-400 hover:text-neutral-600"
-                    title="View Details"
+                    :title="t('admin.employees.viewDetails')"
                   >
                     <svg
                       class="w-4 h-4"
@@ -285,113 +336,10 @@
                       ></path>
                     </svg>
                   </button>
-                  <button
-                    @click="editEmployee(employee)"
-                    class="p-1 transition-colors text-neutral-400 hover:text-primary-600"
-                    title="Edit Employee"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      ></path>
-                    </svg>
-                  </button>
-                  <button
-                    @click="downloadProfile(employee)"
-                    class="p-1 transition-colors text-neutral-400 hover:text-neutral-600"
-                    title="Download Profile"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      ></path>
-                    </svg>
-                  </button>
-                  <div class="relative">
-                    <button
-                      @click="toggleActionMenu(employee.id)"
-                      class="p-1 transition-colors text-neutral-400 hover:text-neutral-600"
-                      title="More Actions"
-                    >
-                      <svg
-                        class="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <div
-                      v-if="actionMenuOpen === employee.id"
-                      class="absolute right-0 z-10 w-48 mt-1 bg-white border rounded-md shadow-lg border-neutral-200"
-                    >
-                      <div class="py-1">
-                        <button
-                          @click="viewAttendance(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-neutral-700 hover:bg-neutral-100"
-                        >
-                          View Attendance
-                        </button>
-                        <button
-                          @click="viewPayroll(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-neutral-700 hover:bg-neutral-100"
-                        >
-                          View Payroll
-                        </button>
-                        <button
-                          @click="viewPerformance(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-neutral-700 hover:bg-neutral-100"
-                        >
-                          Performance Review
-                        </button>
-                        <div class="border-t border-neutral-100"></div>
-                        <button
-                          @click="duplicateEmployee(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-neutral-700 hover:bg-neutral-100"
-                        >
-                          Duplicate
-                        </button>
-                        <button
-                          @click="archiveEmployee(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-neutral-700 hover:bg-neutral-100"
-                        >
-                          Archive
-                        </button>
-                        <div class="border-t border-neutral-100"></div>
-                        <button
-                          @click="confirmDelete(employee)"
-                          class="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </td>
             </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -402,7 +350,7 @@
       >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
-            <span class="text-sm text-neutral-600">Rows per page:</span>
+            <span class="text-sm text-neutral-600">{{ t("admin.employees.rowsPerPage") }}</span>
             <select
               v-model="itemsPerPage"
               @change="currentPage = 1"
@@ -415,11 +363,11 @@
             </select>
           </div>
           <p class="text-sm text-neutral-600">
-            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-            {{
-              Math.min(currentPage * itemsPerPage, filteredEmployees.length)
-            }}
-            of {{ filteredEmployees.length }} employees
+            {{ t("admin.employees.showingRange", {
+              from: (currentPage - 1) * itemsPerPage + 1,
+              to: Math.min(currentPage * itemsPerPage, filteredEmployees.length),
+              total: filteredEmployees.length,
+            }) }}
           </p>
         </div>
         <div class="flex gap-2">
@@ -428,424 +376,190 @@
             :disabled="currentPage === 1"
             class="px-3 py-1 text-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {{ t("common.previous") }}
           </button>
           <span class="px-3 py-1 text-sm text-neutral-600">
-            Page {{ currentPage }} of {{ totalPages }}
+            {{ t("admin.employees.pageOf", { page: currentPage, total: totalPages }) }}
           </span>
           <button
             @click="currentPage++"
             :disabled="currentPage === totalPages"
             class="px-3 py-1 text-sm btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {{ t("common.next") }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <Modal
-      v-model="isDeleteModalOpen"
-      title="Delete Employee"
-      @confirm="handleDeleteEmployee"
-    >
-      <p class="text-neutral-600">
-        Are you sure you want to delete
-        <strong>{{ selectedEmployee?.name }}</strong
-        >? This action cannot be undone.
-      </p>
-    </Modal>
-
-    <!-- Bulk Delete Confirmation Modal -->
-    <Modal
-      v-model="isBulkDeleteModalOpen"
-      title="Delete Selected Employees"
-      @confirm="handleBulkDelete"
-    >
-      <p class="text-neutral-600">
-        Are you sure you want to delete
-        <strong>{{ selectedEmployees.length }}</strong> selected employees? This
-        action cannot be undone.
-      </p>
-    </Modal>
+    <ConfirmDialog
+      v-model="deleteOpen"
+      :title="t('admin.employees.deleteTitle')"
+      :message="deleteMessage"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.deleting')"
+      variant="danger"
+      :busy="deleting"
+      :close-on-backdrop="!deleting"
+      @confirm="confirmBulkDelete"
+      @cancel="cancelBulkDelete"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import Modal from "../components/common/Modal.vue";
+import { computed, h, onMounted } from "vue";
+import ConfirmDialog from "../components/common/ConfirmDialog.vue";
+import KpiCard from "../components/common/KpiCard.vue";
+import { useEmployees } from "./employees/composables/useEmployees.js";
+import { useI18n } from "../i18n/index.js";
 
-const router = useRouter();
+const { t, locale } = useI18n();
 
-// Reactive data
-const employees = ref([
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+1 (555) 123-4567",
-    department: "Sales",
-    role: "Manager",
-    status: "active",
-    joinDate: "2020-03-15",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "+1 (555) 234-5678",
-    department: "Engineering",
-    role: "Developer",
-    status: "active",
-    joinDate: "2021-06-20",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    email: "mike@example.com",
-    phone: "+1 (555) 345-6789",
-    department: "Sales",
-    role: "Executive",
-    status: "active",
-    joinDate: "2019-11-10",
-  },
-  {
-    id: 4,
-    name: "Sarah Williams",
-    email: "sarah@example.com",
-    phone: "+1 (555) 456-7890",
-    department: "HR",
-    role: "Specialist",
-    status: "inactive",
-    joinDate: "2022-01-05",
-  },
-  {
-    id: 5,
-    name: "Tom Brown",
-    email: "tom@example.com",
-    phone: "+1 (555) 567-8901",
-    department: "Finance",
-    role: "Accountant",
-    status: "active",
-    joinDate: "2020-08-12",
-  },
-  {
-    id: 6,
-    name: "Lisa Anderson",
-    email: "lisa@example.com",
-    phone: "+1 (555) 678-9012",
-    department: "Engineering",
-    role: "Lead",
-    status: "active",
-    joinDate: "2018-04-18",
-  },
-  {
-    id: 7,
-    name: "David Martinez",
-    email: "david@example.com",
-    phone: "+1 (555) 789-0123",
-    department: "Sales",
-    role: "Representative",
-    status: "active",
-    joinDate: "2023-02-28",
-  },
-  {
-    id: 8,
-    name: "Emma Davis",
-    email: "emma@example.com",
-    phone: "+1 (555) 890-1234",
-    department: "Marketing",
-    role: "Manager",
-    status: "active",
-    joinDate: "2021-09-14",
-  },
-  {
-    id: 9,
-    name: "James Wilson",
-    email: "james@example.com",
-    phone: "+1 (555) 901-2345",
-    department: "Engineering",
-    role: "Developer",
-    status: "active",
-    joinDate: "2022-07-22",
-  },
-  {
-    id: 10,
-    name: "Patricia Garcia",
-    email: "patricia@example.com",
-    phone: "+1 (555) 012-3456",
-    department: "HR",
-    role: "Manager",
-    status: "active",
-    joinDate: "2017-12-03",
-  },
-  {
-    id: 11,
-    name: "Robert Taylor",
-    email: "robert@example.com",
-    phone: "+1 (555) 123-4567",
-    department: "Finance",
-    role: "Senior Accountant",
-    status: "active",
-    joinDate: "2019-05-16",
-  },
-  {
-    id: 12,
-    name: "Jennifer Lee",
-    email: "jennifer@example.com",
-    phone: "+1 (555) 234-5678",
-    department: "Marketing",
-    role: "Specialist",
-    status: "on-leave",
-    joinDate: "2023-01-10",
-  },
-]);
+const {
+  departmentOptions,
+  roleOptions,
+  loading,
+  deleting,
+  exporting,
+  importing,
+  error,
+  ioError,
+  ioSuccess,
+  searchQuery,
+  selectedDepartment,
+  selectedStatus,
+  selectedRole,
+  selectedEmployees,
+  currentPage,
+  itemsPerPage,
+  deleteOpen,
+  deleteMessage,
+  employeeStats,
+  filteredEmployees,
+  totalPages,
+  paginatedEmployees,
+  loadEmployees,
+  getInitials,
+  getStatusBadgeClass,
+  getStatusLabel,
+  employeeStatusOptions,
+  selectAllEmployees,
+  toggleEmployeeSelection,
+  clearSelection,
+  clearFilters,
+  viewEmployee,
+  bulkSendEmail,
+  bulkChangeStatus,
+  bulkExport,
+  exportEmployees,
+  importEmployees,
+  requestBulkDelete,
+  confirmBulkDelete,
+  cancelBulkDelete,
+} = useEmployees();
 
-// Search and filters
-const searchQuery = ref("");
-const selectedDepartment = ref("");
-const selectedStatus = ref("");
-const selectedRole = ref("");
+const displayError = computed(() => error.value || ioError.value || "");
 
-// Selection
-const selectedEmployees = ref([]);
-const actionMenuOpen = ref(null);
+const bulkDelete = requestBulkDelete;
 
-// Pagination
-const currentPage = ref(1);
-const itemsPerPage = ref(10);
+onMounted(loadEmployees);
 
-// Modals
-const isDeleteModalOpen = ref(false);
-const isBulkDeleteModalOpen = ref(false);
-const selectedEmployee = ref(null);
-
-// Computed properties
-const filteredEmployees = computed(() => {
-  let filtered = employees.value;
-
-  if (searchQuery.value) {
-    filtered = filtered.filter(
-      (employee) =>
-        employee.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        employee.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  }
-
-  if (selectedDepartment.value) {
-    filtered = filtered.filter(
-      (employee) => employee.department === selectedDepartment.value
-    );
-  }
-
-  if (selectedStatus.value) {
-    filtered = filtered.filter(
-      (employee) => employee.status === selectedStatus.value
-    );
-  }
-
-  if (selectedRole.value) {
-    filtered = filtered.filter(
-      (employee) => employee.role === selectedRole.value
-    );
-  }
-
-  return filtered;
-});
-
-const totalPages = computed(() =>
-  Math.ceil(filteredEmployees.value.length / itemsPerPage.value)
-);
-
-const paginatedEmployees = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return filteredEmployees.value.slice(start, end);
-});
-
-// Helper functions
-const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
-
-const getStatusBadgeClass = (status) => {
-  switch (status) {
-    case "active":
-      return "badge-success";
-    case "inactive":
-      return "badge-warning";
-    case "on-leave":
-      return "badge-info";
-    default:
-      return "badge-neutral";
-  }
-};
-
-const getStatusLabel = (status) => {
-  switch (status) {
-    case "active":
-      return "Active";
-    case "inactive":
-      return "Inactive";
-    case "on-leave":
-      return "On Leave";
-    default:
-      return status;
-  }
-};
-
-// Selection functions
-const selectAllEmployees = (event) => {
-  if (event.target.checked) {
-    selectedEmployees.value = paginatedEmployees.value.map((emp) => emp.id);
-  } else {
-    selectedEmployees.value = [];
-  }
-};
-
-const toggleEmployeeSelection = (employeeId) => {
-  const index = selectedEmployees.value.indexOf(employeeId);
-  if (index > -1) {
-    selectedEmployees.value.splice(index, 1);
-  } else {
-    selectedEmployees.value.push(employeeId);
-  }
-};
-
-const clearSelection = () => {
-  selectedEmployees.value = [];
-};
-
-// Filter functions
-const clearFilters = () => {
-  searchQuery.value = "";
-  selectedDepartment.value = "";
-  selectedStatus.value = "";
-  selectedRole.value = "";
-  currentPage.value = 1;
-};
-
-// Action functions
-const viewEmployee = (employee) => {
-  router.push(`/employees/${employee.id}`);
-};
-
-const editEmployee = (employee) => {
-  router.push(`/employees/edit/${employee.id}`);
-};
-
-const sendEmail = (employee) => {
-  window.open(`mailto:${employee.email}`, "_blank");
-};
-
-const downloadProfile = (employee) => {
-  // Simulate profile download
-  console.log("Downloading profile for:", employee.name);
-  // In real app, this would trigger a file download
-};
-
-const toggleActionMenu = (employeeId) => {
-  actionMenuOpen.value =
-    actionMenuOpen.value === employeeId ? null : employeeId;
-};
-
-// Close action menu when clicking outside
-onMounted(() => {
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".relative")) {
-      actionMenuOpen.value = null;
-    }
-  });
-});
-
-// Additional action functions
-const viewAttendance = (employee) => {
-  router.push(`/attendance?employee=${employee.id}`);
-};
-
-const viewPayroll = (employee) => {
-  router.push(`/payroll?employee=${employee.id}`);
-};
-
-const viewPerformance = (employee) => {
-  router.push(`/performance/${employee.id}`);
-};
-
-const duplicateEmployee = (employee) => {
-  const newEmployee = {
-    ...employee,
-    id: Math.max(...employees.value.map((e) => e.id)) + 1,
-    name: `${employee.name} (Copy)`,
-    email: `copy.${employee.email}`,
-  };
-  employees.value.push(newEmployee);
-};
-
-const archiveEmployee = (employee) => {
-  employee.status = "inactive";
-};
-
-const confirmDelete = (employee) => {
-  selectedEmployee.value = employee;
-  isDeleteModalOpen.value = true;
-  actionMenuOpen.value = null;
-};
-
-// Bulk actions
-const bulkSendEmail = () => {
-  const selectedEmails = employees.value
-    .filter((emp) => selectedEmployees.value.includes(emp.id))
-    .map((emp) => emp.email)
-    .join(",");
-  window.open(`mailto:${selectedEmails}`, "_blank");
-};
-
-const bulkChangeStatus = () => {
-  // In real app, this would open a modal to select new status
-  console.log("Bulk change status for:", selectedEmployees.value);
-};
-
-const bulkExport = () => {
-  console.log("Exporting selected employees:", selectedEmployees.value);
-};
-
-const bulkDelete = () => {
-  isBulkDeleteModalOpen.value = true;
-};
-
-// Header actions
-const exportEmployees = () => {
-  console.log("Exporting all employees");
-  // In real app, this would trigger CSV/Excel download
-};
-
-const importEmployees = () => {
-  console.log("Opening import modal");
-  // In real app, this would open file upload modal
-};
-
-// Delete handlers
-const handleDeleteEmployee = () => {
-  employees.value = employees.value.filter(
-    (e) => e.id !== selectedEmployee.value.id
+// === KPI Cards (en-tête) ====================================================
+const IconUser = () =>
+  h(
+    "svg",
+    { fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" },
+    [
+      h("path", {
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-width": "2",
+        d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+      }),
+    ]
   );
-  isDeleteModalOpen.value = false;
-  selectedEmployee.value = null;
-};
-
-const handleBulkDelete = () => {
-  employees.value = employees.value.filter(
-    (e) => !selectedEmployees.value.includes(e.id)
+const IconUserCheck = () =>
+  h(
+    "svg",
+    { fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" },
+    [
+      h("path", {
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-width": "2",
+        d: "M9 12l2 2 4-4m5.5 2a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0z",
+      }),
+    ]
   );
-  selectedEmployees.value = [];
-  isBulkDeleteModalOpen.value = false;
-};
+const IconUserMinus = () =>
+  h(
+    "svg",
+    { fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" },
+    [
+      h("path", {
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-width": "2",
+        d: "M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z",
+      }),
+    ]
+  );
+const IconUserX = () =>
+  h(
+    "svg",
+    { fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" },
+    [
+      h("path", {
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-width": "2",
+        d: "M15 9l-6 6m0-6l6 6m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+      }),
+    ]
+  );
+
+const employeeStatsComputed = employeeStats;
+
+const kpiCards = computed(() => {
+  void locale.value;
+  return [
+  {
+    key: "total",
+    label: t("admin.employees.kpi.total"),
+    value: employeeStatsComputed.value.total,
+    hint: t("admin.employees.kpi.all"),
+    icon: IconUser,
+    tone: "violet",
+  },
+  {
+    key: "active",
+    label: t("admin.employees.kpi.active"),
+    value: employeeStatsComputed.value.active,
+    hint: t("admin.employees.kpi.activeHint"),
+    icon: IconUserCheck,
+    tone: "green",
+  },
+  {
+    key: "inactive",
+    label: t("admin.employees.kpi.inactive"),
+    value: employeeStatsComputed.value.inactive,
+    hint: t("admin.employees.kpi.inactiveHint"),
+    icon: IconUserMinus,
+    tone: "neutral",
+  },
+  {
+    key: "exited",
+    label: t("admin.employees.kpi.exited"),
+    value: employeeStatsComputed.value.exited,
+    hint: t("admin.employees.kpi.exitedHint"),
+    icon: IconUserX,
+    tone: "red",
+  },
+];
+});
+
 </script>
 
 <style scoped>

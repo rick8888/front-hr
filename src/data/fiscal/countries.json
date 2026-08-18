@@ -1,0 +1,47 @@
+[
+  {
+    "code": "MA",
+    "name": "Maroc",
+    "region": "Afrique",
+    "currency": "MAD",
+    "locale": "fr_MA",
+    "fiscal_year_start": "01-01",
+    "legal_framework": "Code général des impôts, CNSS, AMO"
+  },
+  {
+    "code": "FR",
+    "name": "France",
+    "region": "Europe",
+    "currency": "EUR",
+    "locale": "fr_FR",
+    "fiscal_year_start": "01-01",
+    "legal_framework": "Code général des impôts, URSSAF, DGFIP"
+  },
+  {
+    "code": "SN",
+    "name": "Sénégal",
+    "region": "Afrique",
+    "currency": "XOF",
+    "locale": "fr_SN",
+    "fiscal_year_start": "01-01",
+    "legal_framework": "Code général des impôts, IPRES, CSS"
+  },
+  {
+    "code": "CI",
+    "name": "Côte d'Ivoire",
+    "region": "Afrique",
+    "currency": "XOF",
+    "locale": "fr_CI",
+    "fiscal_year_start": "01-01",
+    "legal_framework": "CNPS, ITS, FDFP"
+  },
+  {
+    "code": "TN",
+    "name": "Tunisie",
+    "region": "Afrique",
+    "currency": "TND",
+    "locale": "fr_TN",
+    "fiscal_year_start": "01-01",
+    "legal_framework": "CNSS, IRPP, CSS"
+  }
+]

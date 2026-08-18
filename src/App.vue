@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-neutral-50">
-    <AppLayout v-if="!isAuthPage">
+    <AppLayout v-if="usesStandardLayout">
       <RouterView />
     </AppLayout>
     <RouterView v-else />
@@ -8,31 +8,45 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
+import { useEntityStatusCatalogStore } from "./stores/entityStatusCatalog.store.js";
+import { isPublicPath } from "./router/publicRoutes.js";
 import AppLayout from "./components/layout/AppLayout.vue";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const statusCatalog = useEntityStatusCatalogStore();
 
-const isAuthPage = computed(() => {
+const isPublicPage = computed(() => isPublicPath(route.path));
+
+const usesStandardLayout = computed(() => {
   return (
-    route.path === "/login" ||
-    route.path === "/register" ||
-    route.path === "/forgot-password" ||
-    route.path === "/reset-password"
+    authStore.isAuthenticated &&
+    !isPublicPage.value &&
+    !route.path.startsWith("/sup-admin")
   );
 });
 
-// Initialize auth on app mount
-onMounted(() => {
-  authStore.initAuth();
-  
-  // Redirect to login if not authenticated and not on auth page
-  if (!authStore.isAuthenticated && !isAuthPage.value) {
+watch(
+  () => authStore.isAuthenticated,
+  (ok) => {
+    if (ok) statusCatalog.load();
+  }
+);
+
+onMounted(async () => {
+  await authStore.initAuth();
+
+  if (!authStore.isAuthenticated && !isPublicPage.value) {
     router.push("/login");
+    return;
+  }
+
+  if (authStore.isAuthenticated) {
+    await statusCatalog.load();
   }
 });
 </script>

@@ -1,0 +1,14 @@
+[
+  { "id": "employees", "label": "Gestion des employés", "category": "core", "description": "Fiches employés, organigramme, contrats" },
+  { "id": "attendance", "label": "Présences & pointage", "category": "core", "description": "Suivi des heures, retards, absences" },
+  { "id": "leave", "label": "Congés & absences", "category": "core", "description": "Demandes, soldes, calendrier d'équipe" },
+  { "id": "self_service", "label": "Espace salarié", "category": "core", "description": "Portail self-service pour les collaborateurs" },
+  { "id": "documents", "label": "Documents RH", "category": "hr", "description": "GED, demandes de documents, modèles" },
+  { "id": "payroll", "label": "Paie", "category": "hr", "description": "Bulletins, composantes, déclarations" },
+  { "id": "expenses", "label": "Notes de frais", "category": "hr", "description": "Soumission et validation des dépenses" },
+  { "id": "recruitment", "label": "Recrutement", "category": "advanced", "description": "Offres, candidats, pipeline" },
+  { "id": "training", "label": "Formation", "category": "advanced", "description": "Catalogue, sessions, suivi" },
+  { "id": "analytics", "label": "Analytique RH", "category": "advanced", "description": "Tableaux de bord et indicateurs avancés" },
+  { "id": "api_access", "label": "API & intégrations", "category": "enterprise", "description": "Accès API, webhooks, connecteurs" },
+  { "id": "support_priority", "label": "Support prioritaire", "category": "enterprise", "description": "SLA renforcé et account manager dédié" }
+]

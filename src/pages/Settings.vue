@@ -1,40 +1,128 @@
-<template>
-  <div class="px-8 py-6">
-    <h1 class="text-2xl font-bold text-neutral-900 mb-6">Settings</h1>
-
-    <!-- Tabs -->
-    <div class="flex gap-1 mb-6 border-b border-neutral-200 overflow-x-auto">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        @click="activeTab = tab.id"
-        :class="[
-          'px-4 py-3 font-medium text-sm transition-colors duration-200 border-b-2 whitespace-nowrap',
-          activeTab === tab.id
-            ? 'text-primary-600 border-primary-600'
-            : 'text-neutral-600 border-transparent hover:text-neutral-900 hover:border-neutral-300',
-        ]"
-      >
-        {{ tab.label }}
-      </button>
+﻿<template>
+  <div class="flex min-h-0 w-full flex-col bg-neutral-50 lg:min-h-screen lg:flex-row">
+    <!-- Mobile tabs -->
+    <div class="border-b border-neutral-200 bg-white lg:hidden">
+      <div class="px-4 py-3">
+        <h1 class="text-lg font-bold text-neutral-900">{{ t('settings.title') }}</h1>
+        <p class="text-xs text-neutral-600">{{ t('settings.subtitle') }}</p>
+      </div>
+      <nav class="flex gap-1 overflow-x-auto px-3 pb-3">
+        <button
+          v-for="tab in tabs"
+          :key="`m-${tab.id}`"
+          type="button"
+          class="shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap"
+          :class="
+            activeTab === tab.id
+              ? 'bg-primary-50 text-primary-700'
+              : 'bg-neutral-100 text-neutral-600'
+          "
+          @click="activeTab = tab.id"
+        >
+          {{ tabLabel(tab) }}
+        </button>
+      </nav>
     </div>
 
-    <!-- Tab Content -->
-    <div class="bg-white rounded-xl border border-neutral-200 shadow-sm">
-      <!-- General Tab -->
-      <div v-if="activeTab === 'general'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">Company Information</h2>
-          <button @click="saveGeneralSettings" class="btn-primary">
-            Save Changes
+    <!-- Sidebar Navigation - Vertical Menu -->
+    <div class="hidden w-64 shrink-0 border-r border-neutral-200 bg-white shadow-sm lg:block">
+      <div class="p-6 border-b border-neutral-200">
+        <h1 class="text-2xl font-bold text-neutral-900 mb-1">{{ t('settings.title') }}</h1>
+        <p class="text-xs text-neutral-600">{{ t('settings.subtitle') }}</p>
+      </div>
+      <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 120px);">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          :class="[
+            'w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 group',
+            activeTab === tab.id
+              ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-600 shadow-sm'
+              : 'text-neutral-600 hover:bg-neutral-50 hover:text-primary-600 border-l-4 border-transparent',
+          ]"
+        >
+          <component
+            :is="tab.icon"
+            v-if="tab.icon"
+            :class="[
+              'w-5 h-5 flex-shrink-0 transition-colors',
+              activeTab === tab.id ? 'text-primary-600' : 'text-neutral-400 group-hover:text-primary-500'
+            ]"
+          />
+          <span class="text-left flex-1">{{ tabLabel(tab) }}</span>
+          <div
+            v-if="activeTab === tab.id"
+            class="w-1.5 h-1.5 rounded-full bg-primary-600"
+          ></div>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="min-w-0 flex-1 overflow-y-auto">
+      <div class="p-4 sm:p-8">
+        <!-- Tab Content -->
+        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm">
+          <!-- General Tab -->
+          <div v-if="activeTab === 'general'" class="p-4 sm:p-8">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-neutral-900 mb-2">{{ t('settings.general.title') }}</h2>
+            <p class="text-sm text-neutral-600">{{ t('settings.general.subtitle') }}</p>
+          </div>
+          <button @click="saveGeneralSettings" class="px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md text-sm font-semibold">
+            {{ t('settings.general.save') }}
           </button>
         </div>
 
+        <div class="mb-6">
+          <div class="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-1">
+            <button
+              type="button"
+              @click="generalSectionTab = 'company'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                generalSectionTab === 'company'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-neutral-600 hover:text-primary-700'
+              ]"
+            >
+              {{ t('settings.general.section.company') }}
+            </button>
+            <button
+              type="button"
+              @click="generalSectionTab = 'legal'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                generalSectionTab === 'legal'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-neutral-600 hover:text-primary-700'
+              ]"
+            >
+              {{ t('settings.general.section.legal') }}
+            </button>
+            <button
+              type="button"
+              @click="generalSectionTab = 'contact'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                generalSectionTab === 'contact'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-neutral-600 hover:text-primary-700'
+              ]"
+            >
+              {{ t('settings.general.section.contact') }}
+            </button>
+          </div>
+        </div>
+
         <div class="space-y-8 max-w-4xl">
+          <div v-show="generalSectionTab === 'company'" class="space-y-8">
           <!-- Company Logo Section -->
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Company Logo
+              {{ t('settings.general.logo') }}
             </h3>
             <div class="flex items-center gap-6">
               <div class="relative">
@@ -44,7 +132,7 @@
                 >
                   <img
                     :src="generalSettings.logo"
-                    alt="Company Logo"
+                    :alt="t('settings.general.logo')"
                     class="w-full h-full object-cover"
                   />
                 </div>
@@ -84,7 +172,7 @@
                       d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                     />
                   </svg>
-                  Upload Logo
+                  {{ t('settings.general.uploadLogo') }}
                   <input
                     type="file"
                     accept="image/*"
@@ -93,14 +181,14 @@
                   />
                 </label>
                 <p class="text-xs text-neutral-500 mt-2">
-                  Recommended: 200x200px, PNG or JPG, max 2MB
+                  {{ t('settings.general.logoHint') }}
                 </p>
                 <button
                   v-if="generalSettings.logo"
                   @click="removeLogo"
                   class="text-sm text-error-600 hover:text-error-700 mt-2"
                 >
-                  Remove Logo
+                  {{ t('settings.general.removeLogo') }}
                 </button>
               </div>
             </div>
@@ -109,12 +197,12 @@
           <!-- Basic Information -->
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Basic Information
+              {{ t('settings.general.basicInfo') }}
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Company Name <span class="text-error-600">*</span>
+                  {{ t('settings.general.companyName') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.name"
@@ -124,7 +212,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Company Type
+                  {{ t('settings.general.companyType') }}
                 </label>
                 <select
                   v-model="generalSettings.companyType"
@@ -140,7 +228,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Company Email <span class="text-error-600">*</span>
+                  {{ t('settings.general.companyEmail') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.email"
@@ -150,7 +238,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Phone <span class="text-error-600">*</span>
+                  {{ t('settings.general.phone') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.phone"
@@ -160,7 +248,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Website
+                  {{ t('settings.general.website') }}
                 </label>
                 <input
                   v-model="generalSettings.website"
@@ -171,7 +259,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Founded Year
+                  {{ t('settings.general.foundedYear') }}
                 </label>
                 <input
                   v-model.number="generalSettings.foundedYear"
@@ -185,12 +273,12 @@
             </div>
             <div class="mt-4">
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Description
+                {{ t('settings.general.description') }}
               </label>
               <textarea
                 v-model="generalSettings.description"
                 rows="3"
-                placeholder="Company description..."
+                :placeholder="t('settings.general.descriptionPlaceholder')"
                 class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
               ></textarea>
             </div>
@@ -199,12 +287,12 @@
           <!-- Address Information -->
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Address Information
+              {{ t('settings.general.addressInfo') }}
             </h3>
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Street Address <span class="text-error-600">*</span>
+                  {{ t('settings.general.streetAddress') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.address"
@@ -216,7 +304,7 @@
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
-                    City <span class="text-error-600">*</span>
+                    {{ t('settings.general.city') }} <span class="text-error-600">*</span>
                   </label>
                   <input
                     v-model="generalSettings.city"
@@ -227,7 +315,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
-                    State/Province
+                    {{ t('settings.general.state') }}
                   </label>
                   <input
                     v-model="generalSettings.state"
@@ -238,7 +326,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-neutral-700 mb-2">
-                    Postal Code <span class="text-error-600">*</span>
+                    {{ t('settings.general.postalCode') }} <span class="text-error-600">*</span>
                   </label>
                   <input
                     v-model="generalSettings.postalCode"
@@ -250,7 +338,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Country <span class="text-error-600">*</span>
+                  {{ t('settings.general.country') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.country"
@@ -261,16 +349,18 @@
               </div>
             </div>
           </div>
+          </div>
 
           <!-- Legal Information -->
+          <div v-show="generalSectionTab === 'legal'" class="space-y-8">
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Legal Information
+              {{ t('settings.general.legalInfo') }}
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  SIRET Number
+                  {{ t('settings.general.siret') }}
                 </label>
                 <input
                   v-model="generalSettings.siret"
@@ -281,7 +371,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  SIREN Number
+                  {{ t('settings.general.siren') }}
                 </label>
                 <input
                   v-model="generalSettings.siren"
@@ -292,7 +382,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  VAT Number (TVA)
+                  {{ t('settings.general.vatNumber') }}
                 </label>
                 <input
                   v-model="generalSettings.vatNumber"
@@ -303,7 +393,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  RCS (Trade Register)
+                  {{ t('settings.general.rcs') }}
                 </label>
                 <input
                   v-model="generalSettings.rcs"
@@ -314,7 +404,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  APE Code (Activity Code)
+                  {{ t('settings.general.apeCode') }}
                 </label>
                 <input
                   v-model="generalSettings.apeCode"
@@ -325,7 +415,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Share Capital
+                  {{ t('settings.general.shareCapital') }}
                 </label>
                 <input
                   v-model="generalSettings.shareCapital"
@@ -337,15 +427,71 @@
             </div>
           </div>
 
-          <!-- Contact Person -->
+          <!-- Banking Information -->
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Contact Person / Responsible
+              {{ t('settings.general.bankInfo') }}
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Full Name <span class="text-error-600">*</span>
+                  {{ t('settings.general.bankName') }}
+                </label>
+                <input
+                  v-model="generalSettings.bankName"
+                  type="text"
+                  placeholder="Bank Name"
+                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  {{ t('settings.general.iban') }}
+                </label>
+                <input
+                  v-model="generalSettings.iban"
+                  type="text"
+                  placeholder="FR76 1234 5678 9012 3456 7890 123"
+                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  {{ t('settings.general.bic') }}
+                </label>
+                <input
+                  v-model="generalSettings.bic"
+                  type="text"
+                  placeholder="ABCDEFGH"
+                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  {{ t('settings.general.accountHolder') }}
+                </label>
+                <input
+                  v-model="generalSettings.accountHolder"
+                  type="text"
+                  placeholder="Company Name"
+                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Contact & Social -->
+          <div v-show="generalSectionTab === 'contact'" class="space-y-8">
+          <!-- Contact Person -->
+          <div class="bg-white border border-neutral-200 rounded-xl p-6">
+            <h3 class="text-base font-semibold text-neutral-900 mb-4">
+              {{ t('settings.general.contactInfo') }}
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-2">
+                  {{ t('settings.general.contactName') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.contactName"
@@ -356,7 +502,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Position/Title
+                  {{ t('settings.general.contactPosition') }}
                 </label>
                 <input
                   v-model="generalSettings.contactPosition"
@@ -367,7 +513,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Email <span class="text-error-600">*</span>
+                  {{ t('settings.general.contactEmail') }} <span class="text-error-600">*</span>
                 </label>
                 <input
                   v-model="generalSettings.contactEmail"
@@ -378,7 +524,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Phone
+                  {{ t('settings.general.contactPhone') }}
                 </label>
                 <input
                   v-model="generalSettings.contactPhone"
@@ -390,68 +536,15 @@
             </div>
           </div>
 
-          <!-- Banking Information -->
-          <div class="bg-white border border-neutral-200 rounded-xl p-6">
-            <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Banking Information
-            </h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Bank Name
-                </label>
-                <input
-                  v-model="generalSettings.bankName"
-                  type="text"
-                  placeholder="Bank Name"
-                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Account Number (IBAN)
-                </label>
-                <input
-                  v-model="generalSettings.iban"
-                  type="text"
-                  placeholder="FR76 1234 5678 9012 3456 7890 123"
-                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  BIC/SWIFT Code
-                </label>
-                <input
-                  v-model="generalSettings.bic"
-                  type="text"
-                  placeholder="ABCDEFGH"
-                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Account Holder Name
-                </label>
-                <input
-                  v-model="generalSettings.accountHolder"
-                  type="text"
-                  placeholder="Company Name"
-                  class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
           <!-- Social Media -->
           <div class="bg-white border border-neutral-200 rounded-xl p-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Social Media
+              {{ t('settings.general.socialMedia') }}
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  LinkedIn
+                  {{ t('settings.general.linkedin') }}
                 </label>
                 <input
                   v-model="generalSettings.linkedin"
@@ -462,7 +555,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Twitter/X
+                  {{ t('settings.general.twitter') }}
                 </label>
                 <input
                   v-model="generalSettings.twitter"
@@ -473,7 +566,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Facebook
+                  {{ t('settings.general.facebook') }}
                 </label>
                 <input
                   v-model="generalSettings.facebook"
@@ -484,7 +577,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Instagram
+                  {{ t('settings.general.instagram') }}
                 </label>
                 <input
                   v-model="generalSettings.instagram"
@@ -495,362 +588,276 @@
               </div>
             </div>
           </div>
+          </div>
 
           <!-- Action Buttons -->
           <div class="flex gap-3 justify-end">
             <button @click="resetGeneralSettings" class="btn-outline">
-              Reset Changes
+              {{ t('settings.general.resetChanges') }}
             </button>
             <button @click="saveGeneralSettings" class="btn-primary">
-              Save All Changes
+              {{ t('settings.general.saveAll') }}
             </button>
           </div>
-        </div>
-      </div>
+	          </div>
+	          </div>
+	
+	          <!-- Tous les types (Primes, Indemnités, Déductions, Absences, Avantages) -->
+	          <div v-else-if="activeTab === 'types'" class="p-4 sm:p-8 space-y-8">
+        <div class="flex flex-col gap-5">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold text-neutral-900 mb-2">Catalogue RH</h2>
+              <p class="text-sm text-neutral-600">Organisation par domaine: rémunération, temps et avantages</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button @click="openAddPrimeModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors">+ Prime</button>
+              <button @click="openAddAbsenceTypeModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">+ Absence</button>
+              <button @click="openAddBenefitModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">+ Avantage</button>
+            </div>
+          </div>
 
-      <!-- Prime (Bonuses) Tab -->
-      <div v-else-if="activeTab === 'prime'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">Prime (Bonuses)</h2>
-          <button
-            @click="openAddPrimeModal"
-            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Prime
-          </button>
-        </div>
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+              <p class="text-xs text-neutral-500 uppercase tracking-wider">Primes</p>
+              <p class="text-xl font-bold text-neutral-900">{{ primes.length }}</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+              <p class="text-xs text-neutral-500 uppercase tracking-wider">Indemnités</p>
+              <p class="text-xl font-bold text-neutral-900">{{ indemnites.length }}</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+              <p class="text-xs text-neutral-500 uppercase tracking-wider">Déductions</p>
+              <p class="text-xl font-bold text-neutral-900">{{ reductions.length }}</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+              <p class="text-xs text-neutral-500 uppercase tracking-wider">Absences</p>
+              <p class="text-xl font-bold text-neutral-900">{{ absenceTypes.length }}</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+              <p class="text-xs text-neutral-500 uppercase tracking-wider">Avantages</p>
+              <p class="text-xl font-bold text-neutral-900">{{ benefits.length }}</p>
+            </div>
+          </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="bg-neutral-50 border-b border-neutral-200">
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Prime Name
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Type
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Amount
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Status
-                </th>
-                <th
-                  class="text-right px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-neutral-100">
-              <tr
-                v-for="prime in primes"
-                :key="prime.id"
-                class="hover:bg-neutral-50 transition-colors"
-              >
-                <td class="px-6 py-4 text-sm font-medium text-neutral-900">
-                  {{ prime.name }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-600">
-                  {{ prime.type }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-900">
-                  ${{ formatNumber(prime.amount) }}
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      prime.status === 'Active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800',
-                    ]"
-                  >
-                    {{ prime.status }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button
-                    @click="editPrime(prime)"
-                    class="text-primary-600 hover:text-primary-700 font-medium text-sm mr-3"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    @click="confirmDeletePrime(prime)"
-                    class="text-error-600 hover:text-error-700 font-medium text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Absences Type Tab -->
-      <div v-else-if="activeTab === 'absences-type'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">Absences Type</h2>
-          <button
-            @click="openAddAbsenceTypeModal"
-            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Absence Type
-          </button>
+          <nav class="flex flex-wrap gap-2" aria-label="Accès rapide aux domaines">
+            <button type="button" @click="scrollToTypesSection('types-compensation')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-primary-100 hover:text-primary-800 rounded-lg transition-colors">Rémunération</button>
+            <button type="button" @click="scrollToTypesSection('types-absences')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-primary-100 hover:text-primary-800 rounded-lg transition-colors">Temps & Absences</button>
+            <button type="button" @click="scrollToTypesSection('types-avantages')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-primary-100 hover:text-primary-800 rounded-lg transition-colors">Avantages</button>
+          </nav>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="bg-neutral-50 border-b border-neutral-200">
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Type Name
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Code
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Max Days
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Requires Approval
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Status
-                </th>
-                <th
-                  class="text-right px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-neutral-100">
-              <tr
-                v-for="absenceType in absenceTypes"
-                :key="absenceType.id"
-                class="hover:bg-neutral-50 transition-colors"
-              >
-                <td class="px-6 py-4 text-sm font-medium text-neutral-900">
-                  {{ absenceType.name }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-600">
-                  {{ absenceType.code }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-900">
-                  {{ absenceType.maxDays }} days
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      absenceType.requiresApproval
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-green-100 text-green-800',
-                    ]"
-                  >
-                    {{ absenceType.requiresApproval ? "Yes" : "No" }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      absenceType.status === 'Active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800',
-                    ]"
-                  >
-                    {{ absenceType.status }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button
-                    @click="editAbsenceType(absenceType)"
-                    class="text-primary-600 hover:text-primary-700 font-medium text-sm mr-3"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    @click="confirmDeleteAbsenceType(absenceType)"
-                    class="text-error-600 hover:text-error-700 font-medium text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <section id="types-compensation" class="space-y-4 scroll-mt-8">
+          <h3 class="text-lg font-semibold text-neutral-900">Rémunération variable</h3>
 
-      <!-- Avantage en Nature (Benefits in Kind) Tab -->
-      <div v-else-if="activeTab === 'avantage-nature'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">
-            Avantage en Nature (Benefits in Kind)
-          </h2>
-          <button
-            @click="openAddBenefitModal"
-            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Benefit
-          </button>
-        </div>
+          <div id="types-primes" class="bg-white border border-neutral-200 rounded-xl">
+            <div class="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-neutral-900">Types de primes</p>
+                <p class="text-xs text-neutral-500">Bonus, performance, ancienneté</p>
+              </div>
+              <button @click="openAddPrimeModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors">Ajouter</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-neutral-50 border-b border-neutral-200">
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Nom</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Catégorie</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Statut</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                  <tr v-for="prime in primes" :key="prime.id" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-5 py-3 text-sm font-medium text-neutral-900">{{ prime.name }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ prime.type }}</td>
+                    <td class="px-5 py-3">
+                      <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', prime.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-700']">
+                        {{ prime.status === "Active" ? "Actif" : "Inactif" }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                      <button @click="editPrime(prime)" class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3">Modifier</button>
+                      <button @click="confirmDeletePrime(prime)" class="text-error-600 hover:text-error-700 text-sm font-medium">Supprimer</button>
+                    </td>
+                  </tr>
+                  <tr v-if="primes.length === 0"><td colspan="4" class="px-5 py-8 text-center text-sm text-neutral-500">Aucun type de prime.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="bg-neutral-50 border-b border-neutral-200">
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Benefit Name
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Category
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Taxable Value
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Description
-                </th>
-                <th
-                  class="text-left px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Status
-                </th>
-                <th
-                  class="text-right px-6 py-3 text-sm font-medium text-neutral-600"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-neutral-100">
-              <tr
-                v-for="benefit in benefits"
-                :key="benefit.id"
-                class="hover:bg-neutral-50 transition-colors"
-              >
-                <td class="px-6 py-4 text-sm font-medium text-neutral-900">
-                  {{ benefit.name }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-600">
-                  {{ benefit.category }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-900">
-                  ${{ formatNumber(benefit.taxableValue) }}
-                </td>
-                <td class="px-6 py-4 text-sm text-neutral-600 max-w-xs truncate">
-                  {{ benefit.description }}
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      benefit.status === 'Active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800',
-                    ]"
-                  >
-                    {{ benefit.status }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button
-                    @click="editBenefit(benefit)"
-                    class="text-primary-600 hover:text-primary-700 font-medium text-sm mr-3"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    @click="confirmDeleteBenefit(benefit)"
-                    class="text-error-600 hover:text-error-700 font-medium text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div id="types-indemnites" class="bg-white border border-neutral-200 rounded-xl">
+            <div class="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-neutral-900">Types d'indemnités</p>
+                <p class="text-xs text-neutral-500">Transport, repas, déplacement</p>
+              </div>
+              <button @click="openAddIndemniteModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors">Ajouter</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-neutral-50 border-b border-neutral-200">
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Nom</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Type</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Statut</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                  <tr v-for="indemnite in indemnites" :key="indemnite.id" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-5 py-3 text-sm font-medium text-neutral-900">{{ indemnite.name }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ indemnite.type }}</td>
+                    <td class="px-5 py-3">
+                      <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', indemnite.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-700']">
+                        {{ indemnite.status === "Active" ? "Actif" : "Inactif" }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                      <button @click="editIndemnite(indemnite)" class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3">Modifier</button>
+                      <button @click="confirmDeleteIndemnite(indemnite)" class="text-error-600 hover:text-error-700 text-sm font-medium">Supprimer</button>
+                    </td>
+                  </tr>
+                  <tr v-if="indemnites.length === 0"><td colspan="4" class="px-5 py-8 text-center text-sm text-neutral-500">Aucun type d'indemnité.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <!-- Régime Horaire Tab -->
-      <div v-else-if="activeTab === 'regime-horaire'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">Régime Horaire</h2>
+          <div id="types-deductions" class="bg-white border border-neutral-200 rounded-xl">
+            <div class="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-neutral-900">Types de déductions</p>
+                <p class="text-xs text-neutral-500">Mutuelle, prévoyance, retenues</p>
+              </div>
+              <button @click="openAddReductionModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors">Ajouter</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-neutral-50 border-b border-neutral-200">
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Libellé</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Catégorie</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Statut</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                  <tr v-for="reduction in reductions" :key="reduction.id" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-5 py-3 text-sm font-medium text-neutral-900">{{ reduction.label }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ reduction.category }}</td>
+                    <td class="px-5 py-3">
+                      <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', reduction.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-700']">
+                        {{ reduction.status === "Active" ? "Actif" : "Inactif" }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                      <button @click="editReduction(reduction)" class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3">Modifier</button>
+                      <button @click="confirmDeleteReduction(reduction)" class="text-error-600 hover:text-error-700 text-sm font-medium">Supprimer</button>
+                    </td>
+                  </tr>
+                  <tr v-if="reductions.length === 0"><td colspan="4" class="px-5 py-8 text-center text-sm text-neutral-500">Aucun type de déduction.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="types-absences" class="scroll-mt-8">
+          <div class="bg-white border border-neutral-200 rounded-xl">
+            <div class="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-neutral-900">Temps & Absences</h3>
+                <p class="text-xs text-neutral-500">Types d'absence, quotas et approbation</p>
+              </div>
+              <button @click="openAddAbsenceTypeModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Ajouter</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-neutral-50 border-b border-neutral-200">
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Nom</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Code</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Quota max</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Validation</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Statut</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                  <tr v-for="absenceType in absenceTypes" :key="absenceType.id" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-5 py-3 text-sm font-medium text-neutral-900">{{ absenceType.name }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ absenceType.code }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-900">{{ absenceType.maxDays }} jours</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ absenceType.requiresApproval ? "Obligatoire" : "Non" }}</td>
+                    <td class="px-5 py-3">
+                      <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', absenceType.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-700']">
+                        {{ absenceType.status === "Active" ? "Actif" : "Inactif" }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                      <button @click="editAbsenceType(absenceType)" class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3">Modifier</button>
+                      <button @click="confirmDeleteAbsenceType(absenceType)" class="text-error-600 hover:text-error-700 text-sm font-medium">Supprimer</button>
+                    </td>
+                  </tr>
+                  <tr v-if="absenceTypes.length === 0"><td colspan="6" class="px-5 py-8 text-center text-sm text-neutral-500">Aucun type d'absence.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="types-avantages" class="scroll-mt-8">
+          <div class="bg-white border border-neutral-200 rounded-xl">
+            <div class="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-neutral-900">Avantages en nature</h3>
+                <p class="text-xs text-neutral-500">Par catégorie et statut</p>
+              </div>
+              <button @click="openAddBenefitModal" class="px-3 py-2 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">Ajouter</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-neutral-50 border-b border-neutral-200">
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Nom</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Catégorie</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Statut</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                  <tr v-for="benefit in benefits" :key="benefit.id" class="hover:bg-neutral-50 transition-colors">
+                    <td class="px-5 py-3 text-sm font-medium text-neutral-900">{{ benefit.name }}</td>
+                    <td class="px-5 py-3 text-sm text-neutral-600">{{ benefit.category }}</td>
+                    <td class="px-5 py-3">
+                      <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', benefit.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-700']">
+                        {{ benefit.status === "Active" ? "Actif" : "Inactif" }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                      <button @click="editBenefit(benefit)" class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3">Modifier</button>
+                      <button @click="confirmDeleteBenefit(benefit)" class="text-error-600 hover:text-error-700 text-sm font-medium">Supprimer</button>
+                    </td>
+                  </tr>
+                  <tr v-if="benefits.length === 0"><td colspan="4" class="px-5 py-8 text-center text-sm text-neutral-500">Aucun avantage en nature.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+          </div>
+          <div v-else-if="activeTab === 'regime-horaire'" class="p-8">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-neutral-900 mb-2">Régime horaire</h2>
+            <p class="text-sm text-neutral-600">Configurez les régimes horaires de travail</p>
+          </div>
           <button
             @click="openAddRegimeModal"
-            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+            class="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md text-sm font-semibold"
           >
             <svg
               class="w-4 h-4"
@@ -957,16 +964,19 @@
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
+          </div>
+          </div>
 
-      <!-- Régime Absences Tab -->
-      <div v-else-if="activeTab === 'regime-absences'" class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-neutral-900">Régime Absences</h2>
+          <!-- Régime Absences Tab -->
+          <div v-else-if="activeTab === 'regime-absences'" class="p-8">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-neutral-900 mb-2">Régime absences</h2>
+            <p class="text-sm text-neutral-600">Configurez les régimes d'absences et congés</p>
+          </div>
           <button
             @click="openAddAbsenceRegimeModal"
-            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+            class="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md text-sm font-semibold"
           >
             <svg
               class="w-4 h-4"
@@ -1076,12 +1086,79 @@
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
+          </div>
+          </div>
 
-      <!-- Security Tab -->
-      <div v-else-if="activeTab === 'security'" class="p-6">
-        <h2 class="text-lg font-bold text-neutral-900 mb-6">Security Settings</h2>
+          <SettingsBusinessPanel
+            v-else-if="activeTab === 'business-central'"
+            @go-tab="activeTab = $event"
+          />
+
+          <SettingsDepartmentsPanel v-else-if="activeTab === 'departments'" />
+
+          <SettingsHolidaysPanel v-else-if="activeTab === 'holidays'" />
+
+          <SettingsWhatsAppPanel v-else-if="activeTab === 'whatsapp'" />
+
+          <div v-else-if="activeTab === 'preferences'" class="p-8">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-neutral-900 mb-2">{{ t('settings.preferences.title') }}</h2>
+            <p class="text-sm text-neutral-600">{{ t('settings.preferences.subtitle') }}</p>
+          </div>
+          <button @click="savePreferences" class="px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md text-sm font-semibold">
+            {{ t('settings.preferences.save') }}
+          </button>
+        </div>
+        <div
+          v-if="preferencesFeedback"
+          class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 max-w-4xl"
+        >
+          {{ preferencesFeedback }}
+        </div>
+        <div class="space-y-8 max-w-4xl">
+          <div class="bg-white border border-neutral-200 rounded-xl p-6">
+            <h3 class="text-base font-semibold text-neutral-900 mb-4">{{ t('settings.preferences.language') }}</h3>
+            <select
+              v-model="preferenceSettings.language"
+              class="w-full max-w-xs px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="fr">{{ t('settings.preferences.lang.fr') }}</option>
+              <option value="en">{{ t('settings.preferences.lang.en') }}</option>
+            </select>
+          </div>
+          <div class="bg-white border border-neutral-200 rounded-xl p-6">
+            <h3 class="text-base font-semibold text-neutral-900 mb-4">{{ t('settings.preferences.timezone') }}</h3>
+            <select
+              v-model="preferenceSettings.timezone"
+              class="w-full max-w-xs px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="Europe/Paris">Europe/Paris</option>
+              <option value="Europe/London">Europe/London</option>
+              <option value="America/New_York">America/New_York</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <div class="bg-white border border-neutral-200 rounded-xl p-6">
+            <h3 class="text-base font-semibold text-neutral-900 mb-4">{{ t('settings.preferences.dateFormat') }}</h3>
+            <select
+              v-model="preferenceSettings.dateFormat"
+              class="w-full max-w-xs px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="DD/MM/YYYY">JJ/MM/AAAA</option>
+              <option value="MM/DD/YYYY">MM/JJ/AAAA</option>
+              <option value="YYYY-MM-DD">AAAA-MM-JJ</option>
+            </select>
+          </div>
+        </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div v-else-if="activeTab === 'security'" class="p-8">
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-neutral-900 mb-2">Paramètres de sécurité</h2>
+          <p class="text-sm text-neutral-600">Gérez la sécurité de votre compte et de votre entreprise</p>
+        </div>
         <div class="space-y-6 max-w-2xl">
           <div class="p-4 bg-neutral-50 rounded-lg">
             <p class="text-sm font-medium text-neutral-900">Change Password</p>
@@ -1107,22 +1184,23 @@
             </button>
           </div>
         </div>
-      </div>
+          </div>
 
-      <!-- Notifications Tab -->
-      <div v-else-if="activeTab === 'notifications'" class="p-6">
-        <h2 class="text-lg font-bold text-neutral-900 mb-6">
-          Notification Settings
-        </h2>
+          <!-- Notifications Tab -->
+          <div v-else-if="activeTab === 'notifications'" class="p-8">
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-neutral-900 mb-2">{{ t('settings.notifications.title') }}</h2>
+          <p class="text-sm text-neutral-600">{{ t('settings.notifications.subtitle') }}</p>
+        </div>
         <div class="space-y-4 max-w-2xl">
           <div
             class="flex items-center justify-between p-4 bg-neutral-50 rounded-lg"
           >
             <div>
               <p class="text-sm font-medium text-neutral-900">
-                Email Notifications
+                {{ t('settings.notifications.email') }}
               </p>
-              <p class="text-xs text-neutral-600">Receive updates via email</p>
+              <p class="text-xs text-neutral-600">{{ t('settings.notifications.emailHint') }}</p>
             </div>
             <input
               v-model="notificationSettings.email"
@@ -1134,9 +1212,9 @@
             class="flex items-center justify-between p-4 bg-neutral-50 rounded-lg"
           >
             <div>
-              <p class="text-sm font-medium text-neutral-900">Payroll Alerts</p>
+              <p class="text-sm font-medium text-neutral-900">{{ t('settings.notifications.payroll') }}</p>
               <p class="text-xs text-neutral-600">
-                Alerts for payroll processing
+                {{ t('settings.notifications.payrollHint') }}
               </p>
             </div>
             <input
@@ -1150,10 +1228,10 @@
           >
             <div>
               <p class="text-sm font-medium text-neutral-900">
-                Attendance Reminders
+                {{ t('settings.notifications.attendance') }}
               </p>
               <p class="text-xs text-neutral-600">
-                Daily attendance check reminders
+                {{ t('settings.notifications.attendanceHint') }}
               </p>
             </div>
             <input
@@ -1161,6 +1239,16 @@
               type="checkbox"
               class="w-5 h-5 text-primary-600 rounded border-neutral-300 focus:ring-primary-500"
             />
+          </div>
+          <div class="pt-6">
+            <button
+              @click="saveNotificationSettings"
+              class="px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md text-sm font-semibold"
+            >
+              {{ t('settings.notifications.save') }}
+            </button>
+          </div>
+          </div>
           </div>
         </div>
       </div>
@@ -1176,74 +1264,239 @@
         class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
         @click.stop
       >
-        <div class="px-6 py-4 border-b border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-primary-50 to-primary-100">
           <h2 class="text-lg font-bold text-neutral-900">
-            {{ editingPrime ? "Edit Prime" : "Add Prime" }}
+            {{ editingPrime ? "Modifier le type de prime" : "Ajouter un type de prime" }}
           </h2>
         </div>
-        <div class="px-6 py-4 space-y-4">
+        <div class="px-6 py-6 space-y-5">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Prime Name <span class="text-error-600">*</span>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Nom du type <span class="text-error-600">*</span>
             </label>
             <input
               v-model="primeForm.name"
               type="text"
-              placeholder="e.g., Performance Bonus"
+              placeholder="Ex: Prime de performance"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Type <span class="text-error-600">*</span>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Catégorie <span class="text-error-600">*</span>
             </label>
             <select
               v-model="primeForm.type"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             >
               <option value="Performance">Performance</option>
-              <option value="Annual">Annual</option>
-              <option value="Project">Project</option>
-              <option value="Retention">Retention</option>
+              <option value="Annuelle">Annuelle</option>
+              <option value="Projet">Projet</option>
+              <option value="Fidélité">Fidélité</option>
+              <option value="Exceptionnelle">Exceptionnelle</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Amount <span class="text-error-600">*</span>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Description
             </label>
-            <input
-              v-model.number="primeForm.amount"
-              type="number"
-              placeholder="0"
-              min="0"
+            <textarea
+              v-model="primeForm.description"
+              rows="3"
+              placeholder="Description du type de prime..."
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
+            ></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Status
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Statut
             </label>
             <select
               v-model="primeForm.status"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Active">Actif</option>
+              <option value="Inactive">Inactif</option>
             </select>
           </div>
         </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
+        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3 bg-neutral-50">
           <button
             @click="closePrimeModal"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            class="px-5 py-2.5 text-sm font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
           >
-            Cancel
+            Annuler
           </button>
           <button
             @click="savePrime"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            class="px-5 py-2.5 text-sm font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
           >
-            {{ editingPrime ? "Update" : "Add" }} Prime
+            {{ editingPrime ? "Modifier" : "Ajouter" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Indemnité Modal -->
+    <div
+      v-if="isIndemniteModalOpen"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click.self="closeIndemniteModal"
+    >
+      <div
+        class="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-primary-50 to-primary-100">
+          <h2 class="text-lg font-bold text-neutral-900">
+            {{ editingIndemnite ? "Modifier le type d'indemnité" : "Ajouter un type d'indemnité" }}
+          </h2>
+        </div>
+        <div class="px-6 py-6 space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Nom du type <span class="text-error-600">*</span>
+            </label>
+            <input
+              v-model="indemniteForm.name"
+              type="text"
+              placeholder="Ex: Indemnité de transport"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Catégorie <span class="text-error-600">*</span>
+            </label>
+            <select
+              v-model="indemniteForm.type"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="Transport">Transport</option>
+              <option value="Repas">Repas</option>
+              <option value="Déplacement">Déplacement</option>
+              <option value="Logement">Logement</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Description
+            </label>
+            <textarea
+              v-model="indemniteForm.description"
+              rows="3"
+              placeholder="Description du type d'indemnité..."
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Statut
+            </label>
+            <select
+              v-model="indemniteForm.status"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="Active">Actif</option>
+              <option value="Inactive">Inactif</option>
+            </select>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3 bg-neutral-50">
+          <button
+            @click="closeIndemniteModal"
+            class="px-5 py-2.5 text-sm font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            @click="saveIndemnite"
+            class="px-5 py-2.5 text-sm font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+          >
+            {{ editingIndemnite ? "Modifier" : "Ajouter" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Déduction Modal -->
+    <div
+      v-if="isReductionModalOpen"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click.self="closeReductionModal"
+    >
+      <div
+        class="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-purple-50 to-purple-100">
+          <h2 class="text-lg font-bold text-neutral-900">
+            {{ editingReduction ? "Modifier le type de déduction" : "Ajouter un type de déduction" }}
+          </h2>
+        </div>
+        <div class="px-6 py-6 space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Libellé <span class="text-error-600">*</span>
+            </label>
+            <input
+              v-model="reductionForm.label"
+              type="text"
+              placeholder="Ex: Cotisation mutuelle"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Catégorie <span class="text-error-600">*</span>
+            </label>
+            <select
+              v-model="reductionForm.category"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="Santé">Santé</option>
+              <option value="Assurance">Assurance</option>
+              <option value="Retraite">Retraite</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Description
+            </label>
+            <textarea
+              v-model="reductionForm.description"
+              rows="3"
+              placeholder="Description du type de déduction..."
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Statut
+            </label>
+            <select
+              v-model="reductionForm.status"
+              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+            >
+              <option value="Active">Actif</option>
+              <option value="Inactive">Inactif</option>
+            </select>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3 bg-neutral-50">
+          <button
+            @click="closeReductionModal"
+            class="px-5 py-2.5 text-sm font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            @click="saveReduction"
+            class="px-5 py-2.5 text-sm font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+          >
+            {{ editingReduction ? "Modifier" : "Ajouter" }}
           </button>
         </div>
       </div>
@@ -1349,86 +1602,74 @@
         class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
         @click.stop
       >
-        <div class="px-6 py-4 border-b border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-yellow-50 to-yellow-100">
           <h2 class="text-lg font-bold text-neutral-900">
-            {{ editingBenefit ? "Edit Benefit" : "Add Benefit" }}
+            {{ editingBenefit ? "Modifier le type d'avantage" : "Ajouter un type d'avantage" }}
           </h2>
         </div>
-        <div class="px-6 py-4 space-y-4">
+        <div class="px-6 py-6 space-y-5">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Benefit Name <span class="text-error-600">*</span>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Nom du type <span class="text-error-600">*</span>
             </label>
             <input
               v-model="benefitForm.name"
               type="text"
-              placeholder="e.g., Company Car"
+              placeholder="Ex: Véhicule de fonction"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Category <span class="text-error-600">*</span>
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Catégorie <span class="text-error-600">*</span>
             </label>
             <select
               v-model="benefitForm.category"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             >
               <option value="Transport">Transport</option>
-              <option value="Meal">Meal</option>
-              <option value="Housing">Housing</option>
-              <option value="Health">Health</option>
-              <option value="Other">Other</option>
+              <option value="Repas">Repas</option>
+              <option value="Logement">Logement</option>
+              <option value="Santé">Santé</option>
+              <option value="Autre">Autre</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Taxable Value <span class="text-error-600">*</span>
-            </label>
-            <input
-              v-model.number="benefitForm.taxableValue"
-              type="number"
-              placeholder="0"
-              min="0"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
               Description
             </label>
             <textarea
               v-model="benefitForm.description"
               rows="3"
-              placeholder="Enter description..."
+              placeholder="Description du type d'avantage en nature..."
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             ></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
-              Status
+            <label class="block text-sm font-semibold text-neutral-700 mb-2">
+              Statut
             </label>
             <select
               v-model="benefitForm.status"
               class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Active">Actif</option>
+              <option value="Inactive">Inactif</option>
             </select>
           </div>
         </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
+        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3 bg-neutral-50">
           <button
             @click="closeBenefitModal"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            class="px-5 py-2.5 text-sm font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
           >
-            Cancel
+            Annuler
           </button>
           <button
             @click="saveBenefit"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            class="px-5 py-2.5 text-sm font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
           >
-            {{ editingBenefit ? "Update" : "Add" }} Benefit
+            {{ editingBenefit ? "Modifier" : "Ajouter" }}
           </button>
         </div>
       </div>
@@ -2020,18 +2261,137 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import SettingsBusinessPanel from "./settings/components/SettingsBusinessPanel.vue";
+import SettingsDepartmentsPanel from "./settings/components/SettingsDepartmentsPanel.vue";
+import SettingsHolidaysPanel from "./settings/components/SettingsHolidaysPanel.vue";
+import SettingsWhatsAppPanel from "./settings/components/SettingsWhatsAppPanel.vue";
+import { useI18n, setLocale } from "../i18n/index.js";
+import {
+  loadPreferences,
+  savePreferences as persistPreferencesToStorage,
+} from "../i18n/preferences.js";
+
+const { t, locale } = useI18n();
+const preferencesFeedback = ref("");
+
+function tabLabel(tab) {
+  void locale.value;
+  return t(tab.labelKey);
+}
 
 const activeTab = ref("general");
+const generalSectionTab = ref("company");
+
+function scrollToTypesSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// SVG Icon Components
+const BuildingOfficeIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  `
+};
+
+const GiftIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+    </svg>
+  `
+};
+
+const CalendarIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  `
+};
+
+const ChatBubbleIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+  `
+};
+
+const SparklesIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+    </svg>
+  `
+};
+
+const ClockIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  `
+};
+
+const DocumentTextIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  `
+};
+
+const ShieldCheckIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  `
+};
+
+const BellIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+  `
+};
+
+const GlobeAltIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+    </svg>
+  `
+};
+
+const BanknotesIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  `
+};
+
+const ReceiptPercentIcon = {
+  template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  `
+};
+
 const tabs = [
-  { id: "general", label: "General" },
-  { id: "prime", label: "Prime" },
-  { id: "absences-type", label: "Absences Type" },
-  { id: "avantage-nature", label: "Avantage en Nature" },
-  { id: "regime-horaire", label: "Régime Horaire" },
-  { id: "regime-absences", label: "Régime Absences" },
-  { id: "security", label: "Security" },
-  { id: "notifications", label: "Notifications" },
+  { id: "general", labelKey: "settings.tabs.general", icon: BuildingOfficeIcon },
+  { id: "business-central", labelKey: "settings.tabs.business", icon: DocumentTextIcon },
+  { id: "departments", labelKey: "settings.tabs.departments", icon: BuildingOfficeIcon },
+  { id: "holidays", labelKey: "settings.tabs.holidays", icon: CalendarIcon },
+  { id: "whatsapp", labelKey: "settings.tabs.whatsapp", icon: ChatBubbleIcon },
+  { id: "preferences", labelKey: "settings.tabs.preferences", icon: GlobeAltIcon },
+  { id: "notifications", labelKey: "settings.tabs.notifications", icon: BellIcon },
 ];
 
 // General Settings
@@ -2054,7 +2414,7 @@ const generalSettings = ref({
   vatNumber: "FR12 345678901",
   rcs: "Paris B 123 456 789",
   apeCode: "6201Z",
-  shareCapital: "€10,000",
+  shareCapital: "â‚¬10,000",
   contactName: "John Doe",
   contactPosition: "HR Manager",
   contactEmail: "contact@bravorh.com",
@@ -2073,30 +2433,30 @@ const generalSettings = ref({
 const primes = ref([
   {
     id: 1,
-    name: "Performance Bonus",
+    name: "Prime de performance",
     type: "Performance",
-    amount: 5000,
+    description: "Prime attribuée selon les performances",
     status: "Active",
   },
   {
     id: 2,
-    name: "Annual Bonus",
-    type: "Annual",
-    amount: 10000,
+    name: "Prime annuelle",
+    type: "Annuelle",
+    description: "Prime versée annuellement",
     status: "Active",
   },
   {
     id: 3,
-    name: "Project Completion",
-    type: "Project",
-    amount: 3000,
+    name: "Prime de projet",
+    type: "Projet",
+    description: "Prime liée à la réalisation d'un projet",
     status: "Active",
   },
   {
     id: 4,
-    name: "Retention Bonus",
-    type: "Retention",
-    amount: 7500,
+    name: "Prime de fidélité",
+    type: "Fidélité",
+    description: "Prime pour l'ancienneté",
     status: "Active",
   },
 ]);
@@ -2106,7 +2466,75 @@ const editingPrime = ref(null);
 const primeForm = ref({
   name: "",
   type: "Performance",
-  amount: 0,
+  description: "",
+  status: "Active",
+});
+
+// Indemnité Data
+const indemnites = ref([
+  {
+    id: 1,
+    name: "Indemnité de transport",
+    description: "Remboursement des frais de transport",
+    type: "Transport",
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Indemnité de repas",
+    description: "Tickets restaurant ou remboursement repas",
+    type: "Repas",
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Indemnité kilométrique",
+    description: "Remboursement kilométrique pour déplacements",
+    type: "Déplacement",
+    status: "Active",
+  },
+]);
+
+const isIndemniteModalOpen = ref(false);
+const editingIndemnite = ref(null);
+const indemniteForm = ref({
+  name: "",
+  description: "",
+  type: "Transport",
+  status: "Active",
+});
+
+// Déductions Data
+const reductions = ref([
+  {
+    id: 1,
+    label: "Cotisation mutuelle",
+    description: "Cotisation à la mutuelle d'entreprise",
+    category: "Santé",
+    status: "Active",
+  },
+  {
+    id: 2,
+    label: "Prévoyance",
+    description: "Assurance prévoyance collective",
+    category: "Assurance",
+    status: "Active",
+  },
+  {
+    id: 3,
+    label: "Retenue sur salaire",
+    description: "Retenue exceptionnelle",
+    category: "Autre",
+    status: "Active",
+  },
+]);
+
+const isReductionModalOpen = ref(false);
+const editingReduction = ref(null);
+const reductionForm = ref({
+  label: "",
+  description: "",
+  category: "Santé",
   status: "Active",
 });
 
@@ -2168,34 +2596,30 @@ const absenceTypeForm = ref({
 const benefits = ref([
   {
     id: 1,
-    name: "Company Car",
+    name: "Véhicule de fonction",
     category: "Transport",
-    taxableValue: 500,
-    description: "Company vehicle provided to employees",
+    description: "Véhicule fourni par l'entreprise",
     status: "Active",
   },
   {
     id: 2,
-    name: "Meal Vouchers",
-    category: "Meal",
-    taxableValue: 200,
-    description: "Monthly meal allowance vouchers",
+    name: "Tickets restaurant",
+    category: "Repas",
+    description: "Tickets restaurant mensuels",
     status: "Active",
   },
   {
     id: 3,
-    name: "Health Insurance",
-    category: "Health",
-    taxableValue: 300,
-    description: "Premium health insurance coverage",
+    name: "Assurance santé",
+    category: "Santé",
+    description: "Couverture d'assurance santé premium",
     status: "Active",
   },
   {
     id: 4,
-    name: "Housing Allowance",
-    category: "Housing",
-    taxableValue: 1000,
-    description: "Monthly housing accommodation allowance",
+    name: "Allocation logement",
+    category: "Logement",
+    description: "Allocation mensuelle pour le logement",
     status: "Active",
   },
 ]);
@@ -2205,7 +2629,6 @@ const editingBenefit = ref(null);
 const benefitForm = ref({
   name: "",
   category: "Transport",
-  taxableValue: 0,
   description: "",
   status: "Active",
 });
@@ -2396,6 +2819,16 @@ const absenceRegimeForm = ref({
   status: "Active",
 });
 
+const businessRulesSettings = ref({
+  defaultContractType: "CDI",
+  payrollCutoffDay: 25,
+  defaultWorkRegimeId: null,
+  defaultAbsenceRegimeId: null,
+  enforceUniqueTypeCode: true,
+  allowNegativeLeaveBalance: false,
+  requireValidationForCompensation: true,
+});
+
 // Get available absence types for selection
 const availableAbsenceTypes = computed(() => {
   return absenceTypes.value.filter((type) => type.status === "Active");
@@ -2423,23 +2856,76 @@ const notificationSettings = ref({
   attendance: false,
 });
 
+// Préférences (langue, fuseau, format date) — pilotent l'i18n global
+const preferenceSettings = ref({ ...loadPreferences() });
+
 // Format number
 const formatNumber = (num) => {
   return Number(num).toLocaleString("en-US");
+};
+
+// Format currency
+const formatCurrency = (num) => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(num);
 };
 
 // General Settings
 const saveGeneralSettings = () => {
   // Validate required fields
   if (!generalSettings.value.name || !generalSettings.value.email || !generalSettings.value.phone) {
-    alert("Please fill in all required fields");
+    alert(t("settings.general.requiredFields"));
     return;
   }
 
   // Save general settings logic
   console.log("Saving general settings:", generalSettings.value);
-  alert("Company information saved successfully!");
+  alert(t("settings.general.saveSuccess"));
 };
+
+const saveNotificationSettings = () => {
+  localStorage.setItem("settings-notifications", JSON.stringify(notificationSettings.value));
+  alert(t("settings.notifications.saved"));
+};
+
+const savePreferences = () => {
+  const next = persistPreferencesToStorage(preferenceSettings.value);
+  preferenceSettings.value = { ...next };
+  setLocale(next.language, { persist: false });
+  preferencesFeedback.value = t("settings.preferences.saved");
+};
+
+onMounted(() => {
+  try {
+    // Prefer the shared preferences loader (covers language immediately)
+    preferenceSettings.value = { ...loadPreferences() };
+    setLocale(preferenceSettings.value.language, { persist: false });
+
+    const storedNotifications = localStorage.getItem("settings-notifications");
+    if (storedNotifications) {
+      notificationSettings.value = { ...notificationSettings.value, ...JSON.parse(storedNotifications) };
+    }
+    const storedBusinessCentral = localStorage.getItem("settings-business-central");
+    if (storedBusinessCentral) {
+      const parsed = JSON.parse(storedBusinessCentral);
+      if (parsed?.businessRules) {
+        businessRulesSettings.value = {
+          ...businessRulesSettings.value,
+          ...parsed.businessRules,
+        };
+      }
+      if (Array.isArray(parsed?.catalogs?.primes)) primes.value = parsed.catalogs.primes;
+      if (Array.isArray(parsed?.catalogs?.indemnites)) indemnites.value = parsed.catalogs.indemnites;
+      if (Array.isArray(parsed?.catalogs?.reductions)) reductions.value = parsed.catalogs.reductions;
+      if (Array.isArray(parsed?.catalogs?.absenceTypes)) absenceTypes.value = parsed.catalogs.absenceTypes;
+      if (Array.isArray(parsed?.catalogs?.benefits)) benefits.value = parsed.catalogs.benefits;
+      if (Array.isArray(parsed?.catalogs?.regimes)) regimes.value = parsed.catalogs.regimes;
+      if (Array.isArray(parsed?.catalogs?.absenceRegimes)) absenceRegimes.value = parsed.catalogs.absenceRegimes;
+    }
+  } catch (_) {}
+});
 
 const resetGeneralSettings = () => {
   if (confirm("Are you sure you want to reset all changes? This cannot be undone.")) {
@@ -2462,7 +2948,7 @@ const resetGeneralSettings = () => {
       vatNumber: "FR12 345678901",
       rcs: "Paris B 123 456 789",
       apeCode: "6201Z",
-      shareCapital: "€10,000",
+      shareCapital: "â‚¬10,000",
       contactName: "John Doe",
       contactPosition: "HR Manager",
       contactEmail: "contact@bravorh.com",
@@ -2515,7 +3001,7 @@ const openAddPrimeModal = () => {
   primeForm.value = {
     name: "",
     type: "Performance",
-    amount: 0,
+    description: "",
     status: "Active",
   };
   isPrimeModalOpen.value = true;
@@ -2533,14 +3019,14 @@ const closePrimeModal = () => {
   primeForm.value = {
     name: "",
     type: "Performance",
-    amount: 0,
+    description: "",
     status: "Active",
   };
 };
 
 const savePrime = () => {
-  if (!primeForm.value.name || !primeForm.value.amount) {
-    alert("Please fill in all required fields");
+  if (!primeForm.value.name) {
+    alert("Veuillez remplir tous les champs obligatoires");
     return;
   }
 
@@ -2645,7 +3131,6 @@ const openAddBenefitModal = () => {
   benefitForm.value = {
     name: "",
     category: "Transport",
-    taxableValue: 0,
     description: "",
     status: "Active",
   };
@@ -2664,15 +3149,14 @@ const closeBenefitModal = () => {
   benefitForm.value = {
     name: "",
     category: "Transport",
-    taxableValue: 0,
     description: "",
     status: "Active",
   };
 };
 
 const saveBenefit = () => {
-  if (!benefitForm.value.name || !benefitForm.value.taxableValue) {
-    alert("Please fill in all required fields");
+  if (!benefitForm.value.name) {
+    alert("Veuillez remplir tous les champs obligatoires");
     return;
   }
 
@@ -2729,6 +3213,10 @@ const confirmDelete = () => {
     absenceRegimes.value = absenceRegimes.value.filter(
       (r) => r.id !== deleteItemId.value
     );
+  } else if (deleteItemType.value === "indemnite") {
+    indemnites.value = indemnites.value.filter((i) => i.id !== deleteItemId.value);
+  } else if (deleteItemType.value === "reduction") {
+    reductions.value = reductions.value.filter((r) => r.id !== deleteItemId.value);
   }
   closeDeleteModal();
 };
@@ -2993,8 +3481,181 @@ const confirmDeleteAbsenceRegime = (regime) => {
   deleteItemType.value = "absenceRegime";
   isDeleteModalOpen.value = true;
 };
+
+// Indemnité Functions
+const openAddIndemniteModal = () => {
+  editingIndemnite.value = null;
+  indemniteForm.value = {
+    name: "",
+    description: "",
+    type: "Transport",
+    status: "Active",
+  };
+  isIndemniteModalOpen.value = true;
+};
+
+const editIndemnite = (indemnite) => {
+  editingIndemnite.value = indemnite;
+  indemniteForm.value = {
+    name: indemnite.name,
+    description: indemnite.description,
+    type: indemnite.type,
+    status: indemnite.status,
+  };
+  isIndemniteModalOpen.value = true;
+};
+
+const closeIndemniteModal = () => {
+  isIndemniteModalOpen.value = false;
+  editingIndemnite.value = null;
+  indemniteForm.value = {
+    name: "",
+    description: "",
+    type: "Transport",
+    status: "Active",
+  };
+};
+
+const saveIndemnite = () => {
+  if (!indemniteForm.value.name) {
+    alert("Veuillez remplir tous les champs obligatoires");
+    return;
+  }
+
+  if (editingIndemnite.value) {
+    const index = indemnites.value.findIndex(
+      (i) => i.id === editingIndemnite.value.id
+    );
+    if (index !== -1) {
+      indemnites.value[index] = {
+        ...editingIndemnite.value,
+        ...indemniteForm.value,
+      };
+    }
+  } else {
+    const newId =
+      indemnites.value.length > 0
+        ? Math.max(...indemnites.value.map((i) => i.id)) + 1
+        : 1;
+    indemnites.value.push({
+      id: newId,
+      ...indemniteForm.value,
+    });
+  }
+  closeIndemniteModal();
+};
+
+const confirmDeleteIndemnite = (indemnite) => {
+  deleteItemName.value = indemnite.name;
+  deleteItemId.value = indemnite.id;
+  deleteItemType.value = "indemnite";
+  isDeleteModalOpen.value = true;
+};
+
+// Déduction Functions
+const openAddReductionModal = () => {
+  editingReduction.value = null;
+  reductionForm.value = {
+    label: "",
+    description: "",
+    category: "Santé",
+    status: "Active",
+  };
+  isReductionModalOpen.value = true;
+};
+
+const editReduction = (reduction) => {
+  editingReduction.value = reduction;
+  reductionForm.value = {
+    label: reduction.label,
+    description: reduction.description,
+    category: reduction.category,
+    status: reduction.status,
+  };
+  isReductionModalOpen.value = true;
+};
+
+const closeReductionModal = () => {
+  isReductionModalOpen.value = false;
+  editingReduction.value = null;
+  reductionForm.value = {
+    label: "",
+    description: "",
+    category: "Santé",
+    status: "Active",
+  };
+};
+
+const saveReduction = () => {
+  if (!reductionForm.value.label) {
+    alert("Veuillez remplir tous les champs obligatoires");
+    return;
+  }
+
+  if (editingReduction.value) {
+    const index = reductions.value.findIndex(
+      (r) => r.id === editingReduction.value.id
+    );
+    if (index !== -1) {
+      reductions.value[index] = {
+        ...editingReduction.value,
+        ...reductionForm.value,
+      };
+    }
+  } else {
+    const newId =
+      reductions.value.length > 0
+        ? Math.max(...reductions.value.map((r) => r.id)) + 1
+        : 1;
+    reductions.value.push({
+      id: newId,
+      ...reductionForm.value,
+    });
+  }
+  closeReductionModal();
+};
+
+const confirmDeleteReduction = (reduction) => {
+  deleteItemName.value = reduction.label;
+  deleteItemId.value = reduction.id;
+  deleteItemType.value = "reduction";
+  isDeleteModalOpen.value = true;
+};
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
+/* Hide scrollbar for tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Professional table styling */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Enhanced hover effects */
+.hover\:bg-neutral-50:hover {
+  background-color: rgb(250 250 250);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
 </style>
+
+

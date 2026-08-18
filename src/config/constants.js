@@ -2,7 +2,7 @@ export const APP_CONFIG = {
   name: "Bravo RH",
   version: "1.0.0",
   description: "HR Management Admin System",
-  baseUrl: process.env.VUE_APP_API_URL || "http://localhost:3000",
+  baseUrl: import.meta.env?.VITE_APP_API_URL || "http://localhost:3000",
   timeout: 30000,
 };
 
@@ -31,6 +31,7 @@ export const LEAVE_TYPES = [
   { value: "maternity", label: "Maternity Leave" },
   { value: "paternity", label: "Paternity Leave" },
   { value: "study", label: "Study Leave" },
+  { value: "recovery", label: "Récupération" },
 ];
 
 export const EMPLOYMENT_TYPES = [

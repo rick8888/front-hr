@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-6">
+  <div class="px-4 py-4 sm:px-8 sm:py-6">
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-4">
         <button
@@ -22,17 +22,17 @@
         </button>
         <div>
           <h1 class="text-3xl font-bold text-neutral-900 mb-2">
-            Edit Employee
+            {{ t("admin.employees.edit.title") }}
           </h1>
           <p class="text-neutral-600">
-            Update employee profile and information
+            {{ t("admin.employees.edit.subtitle") }}
           </p>
         </div>
       </div>
       <div class="flex items-center gap-2 text-sm text-neutral-600">
-        <span>All Employees</span>
+        <span>{{ t("admin.employees.edit.allEmployees") }}</span>
         <span>›</span>
-        <span>Edit Employee</span>
+        <span>{{ t("admin.employees.edit.title") }}</span>
       </div>
     </div>
 
@@ -58,7 +58,7 @@
         <!-- Personal Information Tab -->
         <div v-if="activeTab === 'personal'" class="space-y-6">
           <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Personal Information
+            {{ t("admin.employees.show.personal") }}
           </h2>
 
           <!-- Profile Photo Section -->
@@ -70,7 +70,7 @@
                 <img
                   v-if="profilePhotoPreview"
                   :src="profilePhotoPreview"
-                  alt="Profile"
+                  :alt="t('admin.employees.create.photoAlt')"
                   class="w-full h-full object-cover"
                 />
                 <svg
@@ -89,7 +89,7 @@
             </div>
             <div class="flex-1">
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Profile Photo</label
+                >{{ t("admin.employees.edit.profilePhoto") }}</label
               >
               <input
                 type="file"
@@ -103,10 +103,10 @@
                 @click="$refs.photoInput.click()"
                 class="btn-outline text-sm"
               >
-                Change Photo
+                {{ t("admin.employees.edit.changePhoto") }}
               </button>
               <p class="text-xs text-neutral-500 mt-1">
-                JPG, PNG or GIF. Max size 2MB.
+                {{ t("admin.employees.edit.photoTypes") }}
               </p>
             </div>
           </div>
@@ -115,51 +115,51 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >First Name *</label
+                >{{ t("admin.employees.create.firstName") }} *</label
               >
               <input
                 v-model="formData.firstName"
                 type="text"
                 class="input-base"
-                placeholder="John"
+                :placeholder="t('admin.employees.create.firstNamePlaceholder')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Last Name *</label
+                >{{ t("admin.employees.create.lastName") }} *</label
               >
               <input
                 v-model="formData.lastName"
                 type="text"
                 class="input-base"
-                placeholder="Doe"
+                :placeholder="t('admin.employees.create.lastNamePlaceholder')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Email Address *</label
+                >{{ t("admin.employees.show.email") }} *</label
               >
               <input
                 v-model="formData.email"
                 type="email"
                 class="input-base"
-                placeholder="john@company.com"
+                :placeholder="t('admin.employees.create.emailPlaceholder')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Phone Number</label
+                >{{ t("admin.employees.create.phone") }}</label
               >
               <input
                 v-model="formData.phone"
                 type="tel"
                 class="input-base"
-                placeholder="+1 (555) 123-4567"
+                :placeholder="t('admin.employees.create.phonePlaceholder')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Date of Birth</label
+                >{{ t("admin.employees.create.dob") }}</label
               >
               <input
                 v-model="formData.dateOfBirth"
@@ -169,18 +169,18 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Gender</label
+                >{{ t("admin.employees.create.gender") }}</label
               >
               <select v-model="formData.gender" class="input-base">
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="">{{ t("admin.employees.create.selectGender") }}</option>
+                <option value="male">{{ t("admin.employees.create.gender.male") }}</option>
+                <option value="female">{{ t("admin.employees.create.gender.female") }}</option>
+                <option value="other">{{ t("admin.employees.create.gender.other") }}</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Nationality</label
+                >{{ t("admin.employees.edit.nationality") }}</label
               >
               <input
                 v-model="formData.nationality"
@@ -191,14 +191,14 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Marital Status</label
+                >{{ t("admin.employees.edit.maritalStatus") }}</label
               >
               <select v-model="formData.maritalStatus" class="input-base">
-                <option value="">Select Status</option>
-                <option value="single">Single</option>
-                <option value="married">Married</option>
-                <option value="divorced">Divorced</option>
-                <option value="widowed">Widowed</option>
+                <option value="">{{ t("admin.employees.edit.selectStatus") }}</option>
+                <option value="single">{{ t("admin.employees.edit.marital.single") }}</option>
+                <option value="married">{{ t("admin.employees.edit.marital.married") }}</option>
+                <option value="divorced">{{ t("admin.employees.edit.marital.divorced") }}</option>
+                <option value="widowed">{{ t("admin.employees.edit.marital.widowed") }}</option>
               </select>
             </div>
           </div>
@@ -206,13 +206,13 @@
           <!-- Address Section -->
           <div>
             <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Address</label
+              >{{ t("admin.employees.create.address") }}</label
             >
             <textarea
               v-model="formData.address"
               rows="3"
               class="input-base"
-              placeholder="123 Main Street, City, State, ZIP"
+              :placeholder="t('admin.employees.create.addressPlaceholder')"
             ></textarea>
           </div>
         </div>
@@ -220,16 +220,16 @@
         <!-- Professional Information Tab -->
         <div v-if="activeTab === 'professional'" class="space-y-6">
           <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Professional Information
+            {{ t("admin.employees.show.professional") }}
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Department *</label
+                >{{ t("admin.employees.create.department") }} *</label
               >
               <select v-model="formData.department" class="input-base">
-                <option value="">Select Department</option>
+                <option value="">{{ t("admin.employees.edit.selectDepartment") }}</option>
                 <option value="Sales">Sales</option>
                 <option value="Engineering">Engineering</option>
                 <option value="HR">HR</option>
@@ -239,7 +239,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Job Title *</label
+                >{{ t("admin.employees.edit.jobTitle") }} *</label
               >
               <input
                 v-model="formData.jobTitle"
@@ -250,18 +250,18 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Employment Type</label
+                >{{ t("admin.employees.edit.employmentType") }}</label
               >
               <select v-model="formData.employmentType" class="input-base">
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Intern">Intern</option>
+                <option value="Full-time">{{ t("admin.employees.edit.type.fullTime") }}</option>
+                <option value="Part-time">{{ t("admin.employees.edit.type.partTime") }}</option>
+                <option value="Contract">{{ t("admin.employees.edit.type.contract") }}</option>
+                <option value="Intern">{{ t("admin.employees.edit.type.intern") }}</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Start Date</label
+                >{{ t("admin.employees.edit.startDate") }}</label
               >
               <input
                 v-model="formData.startDate"
@@ -271,10 +271,10 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Manager</label
+                >{{ t("admin.employees.edit.manager") }}</label
               >
               <select v-model="formData.manager" class="input-base">
-                <option value="">Select Manager</option>
+                <option value="">{{ t("admin.employees.edit.selectManager") }}</option>
                 <option value="Sarah Admin">Sarah Admin</option>
                 <option value="John Director">John Director</option>
                 <option value="Emma Lead">Emma Lead</option>
@@ -282,7 +282,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Salary</label
+                >{{ t("admin.employees.edit.salary") }}</label
               >
               <input
                 v-model="formData.salary"
@@ -296,7 +296,7 @@
           <!-- Employee Status -->
           <div>
             <label class="block text-sm font-medium text-neutral-700 mb-3"
-              >Employee Status</label
+              >{{ t("admin.employees.edit.employeeStatus") }}</label
             >
             <div class="flex gap-4">
               <label class="flex items-center">
@@ -306,7 +306,7 @@
                   value="active"
                   class="text-primary-600 focus:ring-primary-500"
                 />
-                <span class="ml-2 text-sm text-neutral-700">Active</span>
+                <span class="ml-2 text-sm text-neutral-700">{{ t("admin.employees.status.active") }}</span>
               </label>
               <label class="flex items-center">
                 <input
@@ -315,7 +315,7 @@
                   value="inactive"
                   class="text-primary-600 focus:ring-primary-500"
                 />
-                <span class="ml-2 text-sm text-neutral-700">Inactive</span>
+                <span class="ml-2 text-sm text-neutral-700">{{ t("admin.employees.status.inactive") }}</span>
               </label>
               <label class="flex items-center">
                 <input
@@ -324,7 +324,7 @@
                   value="on-leave"
                   class="text-primary-600 focus:ring-primary-500"
                 />
-                <span class="ml-2 text-sm text-neutral-700">On Leave</span>
+                <span class="ml-2 text-sm text-neutral-700">{{ t("admin.employees.status.onLeave") }}</span>
               </label>
             </div>
           </div>
@@ -333,18 +333,18 @@
         <!-- Remuneration Tab -->
         <div v-if="activeTab === 'remuneration'" class="space-y-6">
           <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Remuneration
+            {{ t("admin.employees.show.remuneration") }}
           </h2>
 
           <!-- Salary Information -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Salary Information
+              {{ t("admin.employees.edit.salaryInfo") }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Base Salary *</label
+                  >{{ t("admin.employees.edit.baseSalary") }} *</label
                 >
                 <div class="relative">
                   <span
@@ -361,7 +361,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Monthly Salary</label
+                  >{{ t("admin.employees.edit.monthlySalary") }}</label
                 >
                 <div class="relative">
                   <span
@@ -377,12 +377,12 @@
                   />
                 </div>
                 <p class="text-xs text-neutral-500 mt-1">
-                  Calculated automatically
+                  {{ t("admin.employees.create.autoCalculated") }}
                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Annual Salary</label
+                  >{{ t("admin.employees.edit.annualSalary") }}</label
                 >
                 <div class="relative">
                   <span
@@ -398,12 +398,12 @@
                   />
                 </div>
                 <p class="text-xs text-neutral-500 mt-1">
-                  Calculated automatically
+                  {{ t("admin.employees.create.autoCalculated") }}
                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Currency</label
+                  >{{ t("admin.employees.edit.currency") }}</label
                 >
                 <select v-model="formData.currency" class="input-base">
                   <option value="USD">USD ($)</option>
@@ -417,12 +417,12 @@
           <!-- Allowances & Bonuses -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Allowances & Bonuses
+              {{ t("admin.employees.edit.allowancesBonuses") }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Transportation Allowance</label
+                  >{{ t("admin.employees.edit.transportation") }}</label
                 >
                 <div class="relative">
                   <span
@@ -439,7 +439,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Meal Allowance</label
+                  >{{ t("admin.employees.edit.meal") }}</label
                 >
                 <div class="relative">
                   <span
@@ -456,7 +456,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Performance Bonus</label
+                  >{{ t("admin.employees.edit.bonus") }}</label
                 >
                 <div class="relative">
                   <span
@@ -473,7 +473,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Overtime Rate (per hour)</label
+                  >{{ t("admin.employees.edit.overtimeRate") }}</label
                 >
                 <div class="relative">
                   <span
@@ -494,7 +494,7 @@
           <!-- Benefits -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Benefits
+              {{ t("admin.employees.edit.benefits") }}
             </h3>
             <div class="space-y-4">
               <div class="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
@@ -506,10 +506,10 @@
                   />
                   <div>
                     <p class="text-sm font-medium text-neutral-900">
-                      Health Insurance
+                      {{ t("admin.employees.edit.healthInsurance") }}
                     </p>
                     <p class="text-xs text-neutral-500">
-                      Medical, Dental, Vision coverage
+                      {{ t("admin.employees.edit.healthInsuranceHint") }}
                     </p>
                   </div>
                 </div>
@@ -538,10 +538,10 @@
                   />
                   <div>
                     <p class="text-sm font-medium text-neutral-900">
-                      401(k) Retirement Plan
+                      {{ t("admin.employees.edit.retirementPlan") }}
                     </p>
                     <p class="text-xs text-neutral-500">
-                      Company match percentage
+                      {{ t("admin.employees.edit.retirementHint") }}
                     </p>
                   </div>
                 </div>
@@ -570,10 +570,10 @@
                   />
                   <div>
                     <p class="text-sm font-medium text-neutral-900">
-                      Life Insurance
+                      {{ t("admin.employees.edit.lifeInsurance") }}
                     </p>
                     <p class="text-xs text-neutral-500">
-                      Coverage amount
+                      {{ t("admin.employees.edit.lifeInsuranceHint") }}
                     </p>
                   </div>
                 </div>
@@ -599,12 +599,12 @@
           <!-- Tax Information -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Tax Information
+              {{ t("admin.employees.edit.taxInfo") }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Tax ID Number (SSN)</label
+                  >{{ t("admin.employees.edit.taxId") }}</label
                 >
                 <input
                   v-model="formData.taxId"
@@ -615,23 +615,23 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Tax Filing Status</label
+                  >{{ t("admin.employees.edit.taxFiling") }}</label
                 >
                 <select v-model="formData.taxStatus" class="input-base">
-                  <option value="">Select Status</option>
-                  <option value="single">Single</option>
-                  <option value="married-jointly">Married Filing Jointly</option>
+                  <option value="">{{ t("admin.employees.edit.selectStatus") }}</option>
+                  <option value="single">{{ t("admin.employees.edit.marital.single") }}</option>
+                  <option value="married-jointly">{{ t("admin.employees.edit.tax.jointly") }}</option>
                   <option value="married-separately"
-                    >Married Filing Separately</option
+                    >{{ t("admin.employees.edit.tax.separately") }}</option
                   >
                   <option value="head-of-household"
-                    >Head of Household</option
+                    >{{ t("admin.employees.edit.tax.head") }}</option
                   >
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Federal Tax Withholding</label
+                  >{{ t("admin.employees.edit.federalTax") }}</label
                 >
                 <div class="relative">
                   <span
@@ -648,7 +648,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >State Tax Withholding</label
+                  >{{ t("admin.employees.edit.stateTax") }}</label
                 >
                 <div class="relative">
                   <span
@@ -669,22 +669,22 @@
           <!-- Payment Information -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Payment Information
+              {{ t("admin.employees.edit.paymentInfo") }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Payment Method</label
+                  >{{ t("admin.employees.edit.paymentMethod") }}</label
                 >
                 <select v-model="formData.paymentMethod" class="input-base">
-                  <option value="direct-deposit">Direct Deposit</option>
-                  <option value="check">Check</option>
-                  <option value="wire-transfer">Wire Transfer</option>
+                  <option value="direct-deposit">{{ t("admin.employees.edit.payment.direct") }}</option>
+                  <option value="check">{{ t("admin.employees.edit.payment.check") }}</option>
+                  <option value="wire-transfer">{{ t("admin.employees.edit.payment.wire") }}</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Bank Name</label
+                  >{{ t("admin.employees.edit.bankName") }}</label
                 >
                 <input
                   v-model="formData.bankName"
@@ -695,7 +695,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Account Number</label
+                  >{{ t("admin.employees.edit.accountNumber") }}</label
                 >
                 <input
                   v-model="formData.accountNumber"
@@ -706,7 +706,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2"
-                  >Routing Number</label
+                  >{{ t("admin.employees.edit.routingNumber") }}</label
                 >
                 <input
                   v-model="formData.routingNumber"
@@ -722,7 +722,7 @@
         <!-- Documents Tab -->
         <div v-if="activeTab === 'documents'" class="space-y-6">
           <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Documents
+            {{ t("admin.employees.show.documents") }}
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -750,10 +750,10 @@
                     </svg>
                   </div>
                   <h3 class="text-sm font-medium text-neutral-900 mb-1">
-                    Upload Appointment Letter
+                    {{ t("admin.employees.edit.uploadAppointment") }}
                   </h3>
                   <p class="text-xs text-neutral-500 mb-3">
-                    Supported formats - .jpeg, .pdf
+                    {{ t("admin.employees.edit.supportedFormats") }}
                   </p>
                   <input
                     type="file"
@@ -767,7 +767,7 @@
                     @click="$refs.appointmentLetterInput.click()"
                     class="text-secondary-600 hover:text-secondary-700 text-sm font-medium"
                   >
-                    Choose File
+                    {{ t("common.chooseFile") }}
                   </button>
                   <div
                     v-if="documents.appointmentLetter"
@@ -784,7 +784,7 @@
                         clip-rule="evenodd"
                       ></path>
                     </svg>
-                    <span class="text-xs text-success-600">Uploaded</span>
+                    <span class="text-xs text-success-600">{{ t("admin.employees.edit.uploaded") }}</span>
                   </div>
                 </div>
               </div>
@@ -814,10 +814,10 @@
                     </svg>
                   </div>
                   <h3 class="text-sm font-medium text-neutral-900 mb-1">
-                    Upload Salary Slips
+                    {{ t("admin.employees.edit.uploadSalarySlips") }}
                   </h3>
                   <p class="text-xs text-neutral-500 mb-3">
-                    Supported formats - .jpeg, .pdf
+                    {{ t("admin.employees.edit.supportedFormats") }}
                   </p>
                   <input
                     type="file"
@@ -832,7 +832,7 @@
                     @click="$refs.salarySlipsInput.click()"
                     class="text-secondary-600 hover:text-secondary-700 text-sm font-medium"
                   >
-                    Choose File
+                    {{ t("common.chooseFile") }}
                   </button>
                   <div
                     v-if="
@@ -852,7 +852,7 @@
                       ></path>
                     </svg>
                     <span class="text-xs text-success-600"
-                      >{{ documents.salarySlips.length }} file(s) uploaded</span
+                      >{{ t("admin.employees.edit.filesUploaded", { n: documents.salarySlips.length }) }}</span
                     >
                   </div>
                 </div>
@@ -883,10 +883,10 @@
                     </svg>
                   </div>
                   <h3 class="text-sm font-medium text-neutral-900 mb-1">
-                    Upload Relieving Letter
+                    {{ t("admin.employees.edit.uploadRelieving") }}
                   </h3>
                   <p class="text-xs text-neutral-500 mb-3">
-                    Supported formats - .jpeg, .pdf
+                    {{ t("admin.employees.edit.supportedFormats") }}
                   </p>
                   <input
                     type="file"
@@ -900,7 +900,7 @@
                     @click="$refs.relievingLetterInput.click()"
                     class="text-secondary-600 hover:text-secondary-700 text-sm font-medium"
                   >
-                    Choose File
+                    {{ t("common.chooseFile") }}
                   </button>
                   <div
                     v-if="documents.relievingLetter"
@@ -917,7 +917,7 @@
                         clip-rule="evenodd"
                       ></path>
                     </svg>
-                    <span class="text-xs text-success-600">Uploaded</span>
+                    <span class="text-xs text-success-600">{{ t("admin.employees.edit.uploaded") }}</span>
                   </div>
                 </div>
               </div>
@@ -947,10 +947,10 @@
                     </svg>
                   </div>
                   <h3 class="text-sm font-medium text-neutral-900 mb-1">
-                    Upload Experience Letter
+                    {{ t("admin.employees.edit.uploadExperience") }}
                   </h3>
                   <p class="text-xs text-neutral-500 mb-3">
-                    Supported formats - .jpeg, .pdf
+                    {{ t("admin.employees.edit.supportedFormats") }}
                   </p>
                   <input
                     type="file"
@@ -964,7 +964,7 @@
                     @click="$refs.experienceLetterInput.click()"
                     class="text-secondary-600 hover:text-secondary-700 text-sm font-medium"
                   >
-                    Choose File
+                    {{ t("common.chooseFile") }}
                   </button>
                   <div
                     v-if="documents.experienceLetter"
@@ -981,7 +981,7 @@
                         clip-rule="evenodd"
                       ></path>
                     </svg>
-                    <span class="text-xs text-success-600">Uploaded</span>
+                    <span class="text-xs text-success-600">{{ t("admin.employees.edit.uploaded") }}</span>
                   </div>
                 </div>
               </div>
@@ -992,13 +992,13 @@
         <!-- Account Access Tab -->
         <div v-if="activeTab === 'account'" class="space-y-6">
           <h2 class="text-lg font-semibold text-neutral-900 pb-4 border-b">
-            Account Access
+            {{ t("admin.employees.edit.accountAccess") }}
           </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Username *</label
+                >{{ t("admin.employees.edit.username") }} *</label
               >
               <input
                 v-model="formData.username"
@@ -1009,49 +1009,49 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Login Email *</label
+                >{{ t("admin.employees.edit.loginEmail") }} *</label
               >
               <input
                 v-model="formData.loginEmail"
                 type="email"
                 class="input-base"
-                placeholder="john@company.com"
+                :placeholder="t('admin.employees.create.emailPlaceholder')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Password</label
+                >{{ t("admin.employees.edit.password") }}</label
               >
               <input
                 v-model="formData.password"
                 type="password"
                 class="input-base"
-                placeholder="Leave blank to keep current password"
+                :placeholder="t('admin.employees.edit.passwordKeep')"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2"
-                >Confirm Password</label
+                >{{ t("admin.employees.edit.confirmPassword") }}</label
               >
               <input
                 v-model="formData.confirmPassword"
                 type="password"
                 class="input-base"
-                placeholder="Confirm new password"
+                :placeholder="t('admin.employees.edit.confirmPasswordPlaceholder')"
               />
             </div>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-neutral-700 mb-2"
-              >Role *</label
+              >{{ t("admin.employees.create.role") }} *</label
             >
             <select v-model="formData.role" class="input-base">
-              <option value="">Select Role</option>
-              <option value="employee">Employee</option>
-              <option value="manager">Manager</option>
-              <option value="hr">HR</option>
-              <option value="admin">Admin</option>
+              <option value="">{{ t("admin.employees.create.selectRole") }}</option>
+              <option value="employee">{{ t("admin.employees.edit.role.employee") }}</option>
+              <option value="manager">{{ t("admin.employees.edit.role.manager") }}</option>
+              <option value="hr">{{ t("admin.employees.edit.role.hr") }}</option>
+              <option value="admin">{{ t("admin.employees.edit.role.admin") }}</option>
             </select>
           </div>
         </div>
@@ -1061,11 +1061,11 @@
           class="flex justify-end gap-4 pt-6 border-t border-neutral-200 mt-8"
         >
           <button type="button" @click="$router.go(-1)" class="btn-outline">
-            Cancel
+            {{ t("common.cancel") }}
           </button>
           <button type="submit" class="btn-primary" :disabled="isLoading">
-            <span v-if="isLoading">Updating...</span>
-            <span v-else>Update Employee</span>
+            <span v-if="isLoading">{{ t("common.updating") }}</span>
+            <span v-else>{{ t("admin.employees.edit.update") }}</span>
           </button>
         </div>
       </form>
@@ -1074,22 +1074,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "../i18n/index.js";
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const activeTab = ref("personal");
 const isLoading = ref(false);
 const profilePhotoPreview = ref("");
 
-const tabs = ref([
-  { id: "personal", label: "Personal" },
-  { id: "professional", label: "Professional" },
-  { id: "remuneration", label: "Remuneration" },
-  { id: "documents", label: "Documents" },
-  { id: "account", label: "Account" },
+const tabs = computed(() => [
+  { id: "personal", label: t("admin.employees.edit.tab.personal") },
+  { id: "professional", label: t("admin.employees.edit.tab.professional") },
+  { id: "remuneration", label: t("admin.employees.edit.tab.remuneration") },
+  { id: "documents", label: t("admin.employees.edit.tab.documents") },
+  { id: "account", label: t("admin.employees.edit.tab.account") },
 ]);
 
 const formData = ref({

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-6">
+  <div class="px-4 py-4 sm:px-8 sm:py-6">
     <!-- Employee Header Section -->
     <div
       class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm mb-6"
@@ -74,7 +74,7 @@
               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
             />
           </svg>
-          Edit Profile
+          {{ t("admin.employees.show.editProfile") }}
         </button>
         </div>
       </div>
@@ -105,7 +105,7 @@
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
           </svg>
-            Personal Information
+            {{ t("admin.employees.show.personal") }}
         </button>
         <button
             :class="[
@@ -129,7 +129,7 @@
                 d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4"
               />
           </svg>
-            Professional Information
+            {{ t("admin.employees.show.professional") }}
         </button>
         <button
             :class="[
@@ -153,7 +153,7 @@
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
           </svg>
-            Documents
+            {{ t("admin.employees.show.documents") }}
           </button>
           <button
             :class="[
@@ -177,7 +177,7 @@
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
-            Account Access
+            {{ t("admin.employees.show.accountAccess") }}
           </button>
           <button
             :class="[
@@ -201,16 +201,16 @@
                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Remuneration
+            {{ t("admin.employees.show.remuneration") }}
         </button>
       </div>
     </div>
     </div>
 
     <!-- Main Content Area -->
-    <div class="flex gap-6">
+    <div class="flex flex-col gap-6 lg:flex-row">
       <!-- Left Sidebar Navigation (only visible when Profile tab is active) -->
-      <div v-if="activeMainTab === 'profile'" class="w-64 flex-shrink-0">
+      <div v-if="activeMainTab === 'profile'" class="w-full min-w-0 shrink-0 lg:w-64">
         <div
           class="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden"
         >
@@ -229,7 +229,7 @@
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
               </svg>
-            <span class="text-white font-medium text-sm">Profile</span>
+            <span class="text-white font-medium text-sm">{{ t("admin.employees.show.profile") }}</span>
             </div>
 
           <!-- Separator -->
@@ -259,7 +259,7 @@
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
                 </svg>
-              Attendance
+              {{ t("admin.employees.show.attendance") }}
             </button>
             <button
               :class="[
@@ -283,7 +283,7 @@
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
                 </svg>
-              Projects
+              {{ t("admin.employees.show.projects") }}
             </button>
             <button
               :class="[
@@ -307,7 +307,7 @@
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
             </svg>
-              Leave
+              {{ t("admin.employees.show.leave") }}
             </button>
           </nav>
         </div>
@@ -321,12 +321,12 @@
           class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm"
         >
           <h2 class="text-lg font-bold text-neutral-900 mb-6">
-              Personal Information
+              {{ t("admin.employees.show.personal") }}
           </h2>
           <div class="grid grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                First Name
+                {{ t("admin.employees.create.firstName") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -336,7 +336,7 @@
           </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Last Name
+                {{ t("admin.employees.create.lastName") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -346,7 +346,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Mobile Number
+                {{ t("admin.employees.show.mobile") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -356,7 +356,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Email Address
+                {{ t("admin.employees.show.email") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -366,7 +366,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Date of Birth
+                {{ t("admin.employees.create.dob") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -376,7 +376,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Marital Status
+                {{ t("admin.employees.edit.maritalStatus") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -386,7 +386,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Gender
+                {{ t("admin.employees.create.gender") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -396,7 +396,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Nationality
+                {{ t("admin.employees.edit.nationality") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -406,7 +406,7 @@
             </div>
             <div class="col-span-2">
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Address
+                {{ t("admin.employees.create.address") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -416,7 +416,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                City
+                {{ t("common.city") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -426,7 +426,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                State
+                {{ t("admin.employees.show.state") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -436,7 +436,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Zip Code
+                {{ t("admin.employees.show.zipCode") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -454,7 +454,7 @@
         >
           <!-- Attendance Content -->
           <div v-if="activeSideNav === 'attendance'">
-            <h2 class="text-lg font-bold text-neutral-900 mb-6">Attendance</h2>
+            <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.attendance") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
                 <table class="w-full border-collapse">
@@ -463,32 +463,32 @@
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Date
+                        {{ t("admin.employees.view.col.date") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Check In
+                        {{ t("admin.employees.view.col.checkIn") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Check Out
+                        {{ t("admin.employees.view.col.checkOut") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Break
+                        {{ t("admin.employees.show.col.break") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Working Hours
+                        {{ t("admin.employees.show.col.workingHours") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Status
+                        {{ t("common.status") }}
                       </th>
                     </tr>
                   </thead>
@@ -534,7 +534,7 @@
 
           <!-- Projects Content -->
           <div v-else-if="activeSideNav === 'projects'">
-            <h2 class="text-lg font-bold text-neutral-900 mb-6">Projects</h2>
+            <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.projects") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
                 <table class="w-full border-collapse">
@@ -543,27 +543,27 @@
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Sr. No.
+                        {{ t("admin.employees.show.col.srNo") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Project Name
+                        {{ t("admin.employees.show.col.projectName") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Start Date
+                        {{ t("admin.employees.edit.startDate") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Finish Date
+                        {{ t("admin.employees.show.col.finishDate") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Status
+                        {{ t("common.status") }}
                       </th>
                     </tr>
                   </thead>
@@ -611,7 +611,7 @@
 
           <!-- Leave Content -->
           <div v-else-if="activeSideNav === 'leave'">
-            <h2 class="text-lg font-bold text-neutral-900 mb-6">Leave</h2>
+            <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.leave") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
                 <table class="w-full border-collapse">
@@ -620,32 +620,32 @@
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Sr. No.
+                        {{ t("admin.employees.show.col.srNo") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Leave Type
+                        {{ t("admin.employees.view.col.leaveType") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        From
+                        {{ t("admin.employees.show.col.from") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        To
+                        {{ t("admin.employees.show.col.to") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Days
+                        {{ t("admin.employees.view.col.days") }}
                       </th>
                       <th
                         class="text-left py-3 px-4 text-sm font-semibold text-neutral-700"
                       >
-                        Status
+                        {{ t("common.status") }}
                       </th>
                     </tr>
                   </thead>
@@ -698,12 +698,12 @@
           class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm"
         >
           <h2 class="text-lg font-bold text-neutral-900 mb-6">
-            Professional Information
+            {{ t("admin.employees.show.professional") }}
           </h2>
           <div class="grid grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Job Title
+                {{ t("admin.employees.edit.jobTitle") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -713,7 +713,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Department
+                {{ t("admin.employees.create.department") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -723,7 +723,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Employment Type
+                {{ t("admin.employees.edit.employmentType") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -733,7 +733,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Start Date
+                {{ t("admin.employees.edit.startDate") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -743,7 +743,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Manager
+                {{ t("admin.employees.edit.manager") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -753,7 +753,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Employee ID
+                {{ t("admin.employees.show.employeeId") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -769,7 +769,7 @@
           v-if="activeMainTab === 'documents'"
           class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm"
         >
-          <h2 class="text-lg font-bold text-neutral-900 mb-6">Documents</h2>
+          <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.documents") }}</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
               v-for="doc in documents"
@@ -822,12 +822,12 @@
           class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm"
         >
           <h2 class="text-lg font-bold text-neutral-900 mb-6">
-            Account Access
+            {{ t("admin.employees.show.accountAccess") }}
           </h2>
           <div class="grid grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Username
+                {{ t("admin.employees.edit.username") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -837,7 +837,7 @@
             </div>
                 <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Email
+                {{ t("admin.employees.create.email") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -847,7 +847,7 @@
                 </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Role
+                {{ t("admin.employees.create.role") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -857,7 +857,7 @@
               </div>
             <div>
               <label class="block text-sm font-medium text-neutral-700 mb-2">
-                Last Login
+                {{ t("admin.employees.show.lastLogin") }}
               </label>
               <p
                 class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -873,14 +873,14 @@
           v-if="activeMainTab === 'remuneration'"
           class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm"
         >
-          <h2 class="text-lg font-bold text-neutral-900 mb-6">Remuneration</h2>
+          <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.remuneration") }}</h2>
 
           <!-- Salary Overview -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div
               class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 border border-primary-200"
             >
-              <p class="text-sm text-neutral-600 mb-1">Monthly Salary</p>
+              <p class="text-sm text-neutral-600 mb-1">{{ t("admin.employees.edit.monthlySalary") }}</p>
               <p class="text-2xl font-bold text-primary-700">
                 ${{ remuneration.monthlySalary?.toLocaleString() || "6,500" }}
               </p>
@@ -888,7 +888,7 @@
             <div
               class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200"
             >
-              <p class="text-sm text-neutral-600 mb-1">Annual Salary</p>
+              <p class="text-sm text-neutral-600 mb-1">{{ t("admin.employees.edit.annualSalary") }}</p>
               <p class="text-2xl font-bold text-green-700">
                 ${{ remuneration.annualSalary?.toLocaleString() || "78,000" }}
               </p>
@@ -896,7 +896,7 @@
             <div
               class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200"
             >
-              <p class="text-sm text-neutral-600 mb-1">Total Benefits</p>
+              <p class="text-sm text-neutral-600 mb-1">{{ t("admin.employees.show.totalBenefits") }}</p>
               <p class="text-2xl font-bold text-amber-700">
                 ${{ remuneration.totalBenefits?.toLocaleString() || "12,500" }}
               </p>
@@ -906,12 +906,12 @@
           <!-- Salary Breakdown -->
           <div class="mb-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Salary Breakdown
+              {{ t("admin.employees.show.salaryBreakdown") }}
             </h3>
             <div class="grid grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Base Salary
+                  {{ t("admin.employees.edit.baseSalary") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -921,7 +921,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Allowances
+                  {{ t("admin.employees.show.allowances") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -931,7 +931,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Overtime Pay
+                  {{ t("admin.employees.show.overtimePay") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -941,7 +941,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Performance Bonus
+                  {{ t("admin.employees.edit.bonus") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -957,7 +957,7 @@
           <!-- Benefits -->
           <div class="mb-6">
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Benefits & Allowances
+              {{ t("admin.employees.show.benefitsAllowances") }}
             </h3>
             <div class="space-y-3">
               <div
@@ -979,17 +979,15 @@
                 </svg>
                 <div>
                   <p class="text-sm font-medium text-neutral-900">
-                      Health Insurance
+                      {{ t("admin.employees.edit.healthInsurance") }}
                   </p>
                     <p class="text-xs text-neutral-500">
-                      Medical, Dental, Vision coverage
+                      {{ t("admin.employees.show.healthInsuranceHint") }}
                     </p>
                 </div>
               </div>
                 <p class="text-sm font-semibold text-neutral-900">
-                  ${{
-                    remuneration.healthInsurance?.toLocaleString() || "350"
-                  }}/month
+                  ${{ remuneration.healthInsurance?.toLocaleString() || "350" }}{{ t("admin.employees.show.perMonth") }}
                 </p>
               </div>
               <div
@@ -1011,15 +1009,13 @@
                   </svg>
                   <div>
                     <p class="text-sm font-medium text-neutral-900">
-                      401(k) Retirement Plan
+                      {{ t("admin.employees.edit.retirementPlan") }}
                     </p>
-                    <p class="text-xs text-neutral-500">Company match 5%</p>
+                    <p class="text-xs text-neutral-500">{{ t("admin.employees.show.retirementHint") }}</p>
               </div>
             </div>
                 <p class="text-sm font-semibold text-neutral-900">
-                  ${{
-                    remuneration.retirementPlan?.toLocaleString() || "325"
-                  }}/month
+                  ${{ remuneration.retirementPlan?.toLocaleString() || "325" }}{{ t("admin.employees.show.perMonth") }}
                 </p>
               </div>
               <div
@@ -1040,18 +1036,16 @@
                     />
                 </svg>
                 <div>
-                  <p class="text-sm font-medium text-neutral-900">
-                      Transportation Allowance
-                  </p>
+                    <p class="text-sm font-medium text-neutral-900">
+                      {{ t("admin.employees.edit.transportation") }}
+                    </p>
                     <p class="text-xs text-neutral-500">
-                      Monthly travel expenses
+                      {{ t("admin.employees.show.travelHint") }}
                     </p>
                 </div>
               </div>
                 <p class="text-sm font-semibold text-neutral-900">
-                  ${{
-                    remuneration.transportation?.toLocaleString() || "200"
-                  }}/month
+                  ${{ remuneration.transportation?.toLocaleString() || "200" }}{{ t("admin.employees.show.perMonth") }}
                 </p>
               </div>
               <div
@@ -1073,15 +1067,13 @@
                   </svg>
                   <div>
                     <p class="text-sm font-medium text-neutral-900">
-                      Meal Allowance
+                      {{ t("admin.employees.edit.meal") }}
                     </p>
-                    <p class="text-xs text-neutral-500">Daily lunch voucher</p>
+                    <p class="text-xs text-neutral-500">{{ t("admin.employees.show.mealHint") }}</p>
               </div>
                 </div>
                 <p class="text-sm font-semibold text-neutral-900">
-                  ${{
-                    remuneration.mealAllowance?.toLocaleString() || "150"
-                  }}/month
+                  ${{ remuneration.mealAllowance?.toLocaleString() || "150" }}{{ t("admin.employees.show.perMonth") }}
                 </p>
             </div>
           </div>
@@ -1090,12 +1082,12 @@
           <!-- Tax Information -->
           <div>
             <h3 class="text-base font-semibold text-neutral-900 mb-4">
-              Tax & Deductions
+              {{ t("admin.employees.show.taxDeductions") }}
             </h3>
             <div class="grid grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Tax ID Number
+                  {{ t("admin.employees.show.taxId") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -1105,7 +1097,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Tax Filing Status
+                  {{ t("admin.employees.edit.taxFiling") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
@@ -1115,46 +1107,46 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Federal Tax
+                  {{ t("admin.employees.show.federalTax") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
                 >
                   ${{
                     remuneration.federalTax?.toLocaleString() || "1,200"
-                  }}/month
+                  }}{{ t("admin.employees.show.perMonth") }}
                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  State Tax
+                  {{ t("admin.employees.show.stateTax") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
                 >
-                  ${{ remuneration.stateTax?.toLocaleString() || "325" }}/month
+                  ${{ remuneration.stateTax?.toLocaleString() || "325" }}{{ t("admin.employees.show.perMonth") }}
               </p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Social Security
+                  {{ t("admin.employees.show.socialSecurity") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
                 >
                   ${{
                     remuneration.socialSecurity?.toLocaleString() || "403"
-                  }}/month
+                  }}{{ t("admin.employees.show.perMonth") }}
                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-2">
-                  Medicare
+                  {{ t("admin.employees.show.medicare") }}
                 </label>
                 <p
                   class="text-sm text-neutral-900 bg-neutral-50 px-4 py-2.5 rounded-lg"
                 >
-                  ${{ remuneration.medicare?.toLocaleString() || "94" }}/month
+                  ${{ remuneration.medicare?.toLocaleString() || "94" }}{{ t("admin.employees.show.perMonth") }}
                 </p>
         </div>
       </div>
@@ -1164,13 +1156,13 @@
           <div class="mt-6 pt-6 border-t border-neutral-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-neutral-600 mb-1">Net Monthly Pay</p>
+                <p class="text-sm text-neutral-600 mb-1">{{ t("admin.employees.show.netMonthly") }}</p>
                 <p class="text-2xl font-bold text-neutral-900">
                   ${{ remuneration.netPay?.toLocaleString() || "4,478" }}
                 </p>
               </div>
               <div class="text-right">
-                <p class="text-sm text-neutral-600 mb-1">Payment Method</p>
+                <p class="text-sm text-neutral-600 mb-1">{{ t("admin.employees.edit.paymentMethod") }}</p>
                 <p class="text-sm font-medium text-neutral-900">
                   {{ remuneration.paymentMethod || "Direct Deposit" }}
                 </p>
@@ -1186,9 +1178,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "../i18n/index.js";
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const employee = ref({});
 const activeMainTab = ref("profile");

@@ -1,0 +1,235 @@
+{
+  "country_code": "MA",
+  "status": "active",
+  "version": 3,
+  "last_updated": "2026-03-01T10:00:00.000Z",
+  "categories": [
+    { "id": "income_tax", "label": "Impôt sur le revenu (IR)", "is_active": true },
+    { "id": "social_security", "label": "CNSS", "is_active": true },
+    { "id": "health_insurance", "label": "AMO", "is_active": true },
+    { "id": "family_allowance", "label": "Allocations familiales", "is_active": true },
+    { "id": "training_tax", "label": "Taxe de formation professionnelle", "is_active": true },
+    { "id": "pension_fund", "label": "CIMR / Retraite complémentaire", "is_active": true }
+  ],
+  "calculation_bases": [
+    { "id": "gross_salary", "label": "Salaire brut", "description": "Total des éléments bruts du bulletin de paie", "source": "payroll", "is_active": true },
+    { "id": "taxable_income", "label": "Revenu imposable", "description": "Base après abattements et déductions fiscales", "source": "computed", "is_active": true }
+  ],
+  "rules": [
+    {
+      "id": "ma-cnss-ee",
+      "code": "CNSS_EE",
+      "name": "CNSS — Part salariale",
+      "category": "social_security",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 4.48,
+      "base": "gross_salary",
+      "ceiling": 6000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Cotisation CNSS à la charge du salarié (plafond mensuel 6 000 MAD)"
+    },
+    {
+      "id": "ma-cnss-er",
+      "code": "CNSS_ER",
+      "name": "CNSS — Part patronale",
+      "category": "social_security",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 8.98,
+      "base": "gross_salary",
+      "ceiling": 6000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Cotisation CNSS à la charge de l'employeur"
+    },
+    {
+      "id": "ma-amo-ee",
+      "code": "AMO_EE",
+      "name": "AMO — Part salariale",
+      "category": "health_insurance",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 2.26,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Assurance Maladie Obligatoire — salarié"
+    },
+    {
+      "id": "ma-amo-er",
+      "code": "AMO_ER",
+      "name": "AMO — Part patronale",
+      "category": "health_insurance",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 2.26,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Assurance Maladie Obligatoire — employeur"
+    },
+    {
+      "id": "ma-af-er",
+      "code": "AF_ER",
+      "name": "Allocations familiales",
+      "category": "family_allowance",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 6.4,
+      "base": "gross_salary",
+      "ceiling": 6000,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Prestations familiales CNSS"
+    },
+    {
+      "id": "ma-tfp-er",
+      "code": "TFP_ER",
+      "name": "Taxe formation professionnelle",
+      "category": "training_tax",
+      "applies_to": "employer",
+      "type": "percentage",
+      "value": 1.6,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Contribution à la formation professionnelle (OFPPT)"
+    },
+    {
+      "id": "ma-ir-ee",
+      "code": "IR_EE",
+      "name": "Impôt sur le revenu (retenue à la source)",
+      "category": "income_tax",
+      "applies_to": "employee",
+      "type": "scale",
+      "scale_id": "ma-ir-monthly",
+      "value": null,
+      "base": "taxable_income",
+      "ceiling": null,
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif IR — voir section Barèmes"
+    },
+    {
+      "id": "ma-cimr-ee",
+      "code": "CIMR_EE",
+      "name": "CIMR — Part salariale",
+      "category": "pension_fund",
+      "applies_to": "employee",
+      "type": "percentage",
+      "value": 3,
+      "base": "gross_salary",
+      "ceiling": null,
+      "is_mandatory": false,
+      "is_active": false,
+      "effective_from": "2024-01-01",
+      "description": "Caisse Interprofessionnelle Marocaine de Retraite (optionnelle)"
+    }
+  ],
+  "scales": [
+    {
+      "id": "ma-ir-monthly",
+      "code": "IR_BARAME_MENSUEL",
+      "name": "Barème IR — Tranches mensuelles",
+      "category": "income_tax",
+      "linked_rule_code": "IR_EE",
+      "period": "monthly",
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Barème progressif de l'impôt sur le revenu (retenue mensuelle à la source)",
+      "brackets": [
+        { "order": 1, "min": 0, "max": 3333, "rate": 0, "deduction": 0 },
+        { "order": 2, "min": 3333.01, "max": 5000, "rate": 10, "deduction": 333.33 },
+        { "order": 3, "min": 5000.01, "max": 6667, "rate": 20, "deduction": 833.33 },
+        { "order": 4, "min": 6667.01, "max": 8333, "rate": 30, "deduction": 1500 },
+        { "order": 5, "min": 8333.01, "max": 15000, "rate": 34, "deduction": 1833.33 },
+        { "order": 6, "min": 15000.01, "max": null, "rate": 37, "deduction": 2283.33 }
+      ]
+    }
+  ],
+  "declaration_periods": [
+    {
+      "id": "ma-cnss-monthly",
+      "code": "CNSS_DECL",
+      "name": "Déclaration CNSS mensuelle",
+      "type": "social",
+      "authority": "CNSS",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["social_security", "health_insurance", "family_allowance"],
+      "linked_rule_codes": ["CNSS_EE", "CNSS_ER", "AMO_EE", "AMO_ER", "AF_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Bordereau de déclaration des salaires — échéance le 15 du mois suivant"
+    },
+    {
+      "id": "ma-ir-monthly",
+      "code": "IR_DECL",
+      "name": "Déclaration IR (retenue à la source)",
+      "type": "fiscal",
+      "authority": "DGI",
+      "frequency": "monthly",
+      "reference_period": "previous_month",
+      "due_rule": { "type": "fixed_day_next_month", "day": 15 },
+      "grace_days": 0,
+      "filing_channel": "online",
+      "linked_categories": ["income_tax"],
+      "linked_rule_codes": ["IR_EE"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Versement de l'impôt retenu à la source sur les salaires"
+    },
+    {
+      "id": "ma-tfp-annual",
+      "code": "TFP_DECL",
+      "name": "Déclaration taxe formation professionnelle",
+      "type": "social",
+      "authority": "OFPPT",
+      "frequency": "annual",
+      "reference_period": "previous_year",
+      "due_rule": { "type": "fixed_day", "month": 3, "day": 31 },
+      "grace_days": 15,
+      "filing_channel": "online",
+      "linked_categories": ["training_tax"],
+      "linked_rule_codes": ["TFP_ER"],
+      "is_mandatory": true,
+      "is_active": true,
+      "effective_from": "2024-01-01",
+      "description": "Déclaration annuelle et versement TFP/OFPPT"
+    }
+  ],
+  "versions": [
+    {
+      "id": "ma-v1",
+      "timestamp": "2025-06-01T08:00:00.000Z",
+      "summary": "Configuration initiale Maroc (CNSS / AMO)"
+    },
+    {
+      "id": "ma-v2",
+      "timestamp": "2025-12-15T14:30:00.000Z",
+      "summary": "Ajout taxe formation professionnelle et allocations familiales"
+    },
+    {
+      "id": "ma-v3",
+      "timestamp": "2026-03-01T10:00:00.000Z",
+      "summary": "Mise à jour plafond CNSS et catégorie CIMR"
+    }
+  ]
+}
