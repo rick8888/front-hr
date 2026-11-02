@@ -11,6 +11,7 @@ import {
 import { mapEmployeeBase } from "../mappers/salary-structure.mapper.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { useAuthStore } from "../../../stores/authStore.js";
+import { payrollSettingsApiService } from "../services/payroll-settings.api.service.js";
 import {
   fallbackPayrollCycles,
   payrollCyclesApiService,
@@ -27,6 +28,11 @@ export function usePayrollRecords() {
   const cycleCatalog = ref(fallbackPayrollCycles());
   const loading = ref(false);
   const deleting = ref(false);
+  const generating = ref(false);
+  const generateError = ref(null);
+  const generateSuccess = ref(null);
+  const autoGenerationEnabled = ref(false);
+  const generateForm = ref(emptyGenerateForm());
   const error = ref(null);
 
   /** Filtres du panneau (édition locale) */
@@ -55,6 +61,18 @@ export function usePayrollRecords() {
       status: "",
       cycle: "all",
       period: "",
+    };
+  }
+
+  function currentPeriod() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  function emptyGenerateForm() {
+    return {
+      employeeId: "",
+      period: currentPeriod(),
     };
   }
 
@@ -125,9 +143,18 @@ export function usePayrollRecords() {
     }
   }
 
+  async function loadSettings() {
+    try {
+      const data = await payrollSettingsApiService.fetchSettings();
+      autoGenerationEnabled.value = !!data?.auto_generation_enabled;
+    } catch {
+      autoGenerationEnabled.value = false;
+    }
+  }
+
   async function bootstrap() {
     error.value = null;
-    await Promise.all([fetchRecords(), loadEmployees(), loadCycles()]);
+    await Promise.all([fetchRecords(), loadEmployees(), loadCycles(), loadSettings()]);
   }
 
   async function applyFilters() {
@@ -191,6 +218,63 @@ export function usePayrollRecords() {
     }
   }
 
+  function resetGenerateForm() {
+    generateForm.value = emptyGenerateForm();
+    generateError.value = null;
+    generateSuccess.value = null;
+  }
+
+  function lockedSlipForForm() {
+    const employeeId = Number(generateForm.value.employeeId);
+    const period = String(generateForm.value.period || "");
+    if (!employeeId || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) return null;
+    return (
+      records.value.find(
+        (r) =>
+          r.employeeId === employeeId &&
+          r.periodKey === period &&
+          (r.status === "approved" || r.status === "paid")
+      ) || null
+    );
+  }
+
+  async function generateOne() {
+    generateError.value = null;
+    generateSuccess.value = null;
+
+    const employeeId = Number(generateForm.value.employeeId);
+    const period = String(generateForm.value.period || "").trim();
+
+    if (!employeeId) {
+      generateError.value = t("admin.payroll.generate.errorEmployee");
+      return false;
+    }
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
+      generateError.value = t("admin.payroll.generate.errorPeriod");
+      return false;
+    }
+
+    generating.value = true;
+    try {
+      await payrollApiService.generate({
+        employee_id: employeeId,
+        period,
+      });
+      const emp = employeeOptions.value.find((e) => Number(e.id) === employeeId);
+      generateSuccess.value = t("admin.payroll.generate.success", {
+        name: emp?.name || `#${employeeId}`,
+        period,
+      });
+      await fetchRecords();
+      return true;
+    } catch (e) {
+      generateError.value = parseApiError(e) || t("admin.payroll.generate.error");
+      return false;
+    } finally {
+      generating.value = false;
+    }
+  }
+
   // Pagination pure UI sur le jeu déjà filtré par l’API
   const totalPages = computed(() =>
     Math.max(1, Math.ceil(records.value.length / itemsPerPage.value))
@@ -219,6 +303,8 @@ export function usePayrollRecords() {
     return PAYROLL_STATUS_UI[key]?.badge ?? "bg-neutral-100 text-neutral-700";
   }
 
+  const hasLockedSlip = computed(() => lockedSlipForForm() !== null);
+
   return {
     // data
     records,
@@ -227,6 +313,12 @@ export function usePayrollRecords() {
     kpi,
     loading,
     deleting,
+    generating,
+    generateError,
+    generateSuccess,
+    autoGenerationEnabled,
+    generateForm,
+    hasLockedSlip,
     error,
     // filters
     filters,
@@ -247,6 +339,8 @@ export function usePayrollRecords() {
     applyQuickFilter,
     setSearchAndReload,
     deleteRecord,
+    resetGenerateForm,
+    generateOne,
     statusLabel,
     statusBadgeClass,
   };

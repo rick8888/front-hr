@@ -1,6 +1,6 @@
 <template>
   <!-- Admin Dashboard -->
-  <div v-if="authStore.isAdmin" class="flex w-full min-w-0 flex-col xl:flex-row xl:gap-6">
+  <div v-if="authStore.isAdmin" class="flex w-full min-w-0 flex-col xl:flex-row xl:items-start xl:gap-6">
     <!-- Main Content -->
     <div class="flex-1 min-w-0">
       <div class="px-4 py-4 sm:px-6 sm:py-6">

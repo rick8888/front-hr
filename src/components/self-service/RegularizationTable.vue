@@ -72,28 +72,13 @@
         </div>
         <span v-else class="text-sm text-neutral-400">--</span>
       </td>
-      <td class="px-5 py-4 md:px-6 align-top relative">
-        <button
-          type="button"
-          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100"
+      <td class="px-5 py-4 md:px-6 align-top">
+        <TableRowMenu
+          :open="openMenuId === row.id"
           :aria-label="`Actions for ${row.date}`"
-          :aria-expanded="openMenuId === row.id"
-          @click.stop="toggleMenu(row.id)"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 5v.01M12 12v.01M12 19v.01"
-            />
-          </svg>
-        </button>
-        <div
-          v-if="openMenuId === row.id"
-          class="absolute right-2 top-12 z-20 w-36 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
-          role="menu"
-          @click.stop
+          width-class="w-36"
+          @toggle="toggleMenu(row.id)"
+          @close="closeMenu"
         >
           <button
             v-if="canEdit(row)"
@@ -118,7 +103,7 @@
             </svg>
             {{ t("common.delete") }}
           </button>
-        </div>
+        </TableRowMenu>
       </td>
     </tr>
     <tr v-if="!rows.length">
@@ -133,6 +118,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "../../i18n/index.js";
+import TableRowMenu from "../common/TableRowMenu.vue";
 
 const emit = defineEmits(["edit", "delete"]);
 const { t, locale } = useI18n();

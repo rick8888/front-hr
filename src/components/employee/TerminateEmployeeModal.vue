@@ -53,6 +53,12 @@
 
             <!-- Body -->
             <form class="px-6 py-4 space-y-4" @submit.prevent="onSubmit">
+              <div
+                v-if="saveError"
+                class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {{ saveError }}
+              </div>
               <!-- Termination Type + Eligible for Re-hire -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                 <div>
@@ -63,10 +69,22 @@
                     v-model="form.type"
                     class="input-base text-sm"
                     :class="{ 'border-error-500 ring-1 ring-error-500': errors.type }"
-                    :disabled="busy"
+                    :disabled="busy || typesLoading"
                   >
-                    <option value="">{{ t("admin.employees.view.terminate.selectType") }}</option>
-                    <option v-for="termType in types" :key="termType.value" :value="termType.value">{{ termType.label }}</option>
+                    <option value="">
+                      {{
+                        typesLoading
+                          ? t("common.loading")
+                          : t("admin.employees.view.terminate.selectType")
+                      }}
+                    </option>
+                    <option
+                      v-for="termType in types"
+                      :key="termType.value"
+                      :value="termType.value"
+                    >
+                      {{ termType.label }}
+                    </option>
                   </select>
                   <p v-if="errors.type" class="text-xs text-error-600 mt-1">
                     {{ errors.type }}
@@ -149,6 +167,30 @@
                   {{ errors.reason }}
                 </p>
               </div>
+
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  v-model="form.generateTerminationLetter"
+                  type="checkbox"
+                  class="w-4 h-4 rounded border-neutral-300 text-secondary-500 focus:ring-secondary-500"
+                  :disabled="busy"
+                />
+                <span class="text-sm text-neutral-800">{{
+                  t("admin.employees.view.terminate.generateLetter")
+                }}</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  v-model="form.notifyByEmail"
+                  type="checkbox"
+                  class="w-4 h-4 rounded border-neutral-300 text-secondary-500 focus:ring-secondary-500"
+                  :disabled="busy"
+                />
+                <span class="text-sm text-neutral-800">{{ t("admin.employees.view.terminate.notify") }}</span>
+              </label>
+              <p class="text-xs text-neutral-500 -mt-2">
+                {{ t("admin.employees.view.lifecycleEmailTemplateHint") }}
+              </p>
             </form>
 
             <!-- Footer -->
@@ -201,6 +243,10 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import { useI18n } from "../../i18n/index.js";
+import {
+  fallbackTerminationTypes,
+  terminationTypesApiService,
+} from "../../pages/employees/services/terminationTypes.api.service.js";
 
 const { t } = useI18n();
 
@@ -208,18 +254,32 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   employee: { type: Object, required: true },
   busy: { type: Boolean, default: false },
+  saveError: { type: String, default: "" },
 });
 
 const emit = defineEmits(["update:modelValue", "confirm"]);
 
-const types = computed(() => [
-  { value: "Resignation", label: t("admin.employees.view.terminate.type.resignation") },
-  { value: "Termination", label: t("admin.employees.view.terminate.type.termination") },
-  { value: "Contract End", label: t("admin.employees.view.terminate.type.contractEnd") },
-  { value: "Redundancy", label: t("admin.employees.view.terminate.type.redundancy") },
-  { value: "Retirement", label: t("admin.employees.view.terminate.type.retirement") },
-  { value: "Other", label: t("admin.employees.view.terminate.type.other") },
-]);
+const catalog = ref(fallbackTerminationTypes());
+const typesLoading = ref(false);
+
+const types = computed(() =>
+  catalog.value.map((item) => ({
+    value: item.code,
+    label: item.name || item.label,
+  }))
+);
+
+async function loadTypes() {
+  typesLoading.value = true;
+  try {
+    const list = await terminationTypesApiService.fetchAll({ activeOnly: true });
+    if (list.length) catalog.value = list;
+  } catch {
+    catalog.value = fallbackTerminationTypes();
+  } finally {
+    typesLoading.value = false;
+  }
+}
 
 function defaultForm() {
   return {
@@ -228,6 +288,8 @@ function defaultForm() {
     exitDate: "",
     lastWorkingDay: "",
     reason: "",
+    notifyByEmail: true,
+    generateTerminationLetter: true,
   };
 }
 
@@ -241,6 +303,7 @@ watch(
     if (open) {
       form.value = defaultForm();
       errors.value = {};
+      loadTypes();
     }
   }
 );
@@ -287,6 +350,8 @@ function onSubmit() {
     exitDate: form.value.exitDate,
     lastWorkingDay: form.value.lastWorkingDay,
     reason: form.value.reason.trim(),
+    notifyByEmail: !!form.value.notifyByEmail,
+    generateTerminationLetter: !!form.value.generateTerminationLetter,
   });
 }
 

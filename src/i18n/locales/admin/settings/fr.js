@@ -1,15 +1,30 @@
 /** Paramètres admin (français) */
 export default {
+  "settings.pageHint":
+    "Configurez votre société, les référentiels RH, les documents et les intégrations.",
+  "settings.sectionLabel": "Section",
+  "settings.navAria": "Menu des paramètres",
+  "settings.group.company": "Société",
+  "settings.group.documents": "Documents",
+  "settings.group.integrations": "Intégrations",
+  "settings.group.personal": "Préférences",
+
   "settings.tabs.general": "Général",
   "settings.tabs.business": "Paramétrage métier",
   "settings.tabs.departments": "Départements",
   "settings.tabs.holidays": "Jours fériés",
   "settings.tabs.whatsapp": "WhatsApp",
   "settings.tabs.notifications": "Notifications",
+  "settings.tabs.documentTemplates": "Modèles documentaires",
+  "settings.tabs.preferences": "Préférences",
 
   "settings.general.title": "Informations générales",
-  "settings.general.subtitle": "Configurez les informations de base de votre entreprise",
-  "settings.general.save": "Enregistrer les modifications",
+  "settings.general.subtitle": "Identité, adresse et contacts de votre entreprise",
+  "settings.general.save": "Enregistrer",
+  "settings.general.requiredFields": "Nom, e-mail et téléphone sont obligatoires.",
+  "settings.general.saveSuccess": "Informations enregistrées.",
+  "settings.general.resetConfirm": "Réinitialiser les champs ? Les données locales seront effacées.",
+  "settings.general.logoTooLarge": "Le logo doit faire moins de 2 Mo.",
   "settings.general.section.company": "Entreprise",
   "settings.general.section.legal": "Juridique & Banque",
   "settings.general.section.contact": "Contact & Réseaux",
@@ -185,8 +200,6 @@ export default {
   "settings.whatsapp.attendance": "Autoriser le pointage via WhatsApp",
   "settings.whatsapp.attendanceHint": "Les employés identifiés par leur n° de téléphone peuvent envoyer ENTREE / SORTIE.",
   "settings.whatsapp.credentials": "Identifiants Meta Cloud API",
-  "settings.general.saveSuccess": "Informations de l'entreprise enregistrées avec succès.",
-  "settings.general.requiredFields": "Veuillez remplir tous les champs obligatoires.",
   "settings.notifications.saved": "Paramètres de notifications enregistrés.",
 
   "admin.trainingCategories.title": "Catégorie Formation",

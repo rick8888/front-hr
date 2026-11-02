@@ -8,6 +8,7 @@
       </div>
       <div class="flex items-center gap-3">
         <button
+          v-if="canViewEmployees"
           type="button"
           @click="exportEmployees"
           class="flex items-center gap-2 btn-outline"
@@ -30,6 +31,7 @@
           {{ exporting ? t("admin.employees.exporting") : t("admin.employees.export") }}
         </button>
         <button
+          v-if="canManageEmployees"
           type="button"
           @click="importEmployees"
           class="flex items-center gap-2 btn-outline"
@@ -52,6 +54,7 @@
           {{ importing ? t("admin.employees.importing") : t("admin.employees.import") }}
         </button>
         <router-link
+          v-if="canManageEmployees"
           to="/employees/new"
           class="flex items-center gap-2 btn-primary"
         >
@@ -80,10 +83,10 @@
       {{ displayError }}
     </div>
     <div
-      v-else-if="ioSuccess"
+      v-else-if="statusSuccess || ioSuccess"
       class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
     >
-      {{ ioSuccess }}
+      {{ statusSuccess || ioSuccess }}
     </div>
 
     <!-- KPI Cards -->
@@ -121,13 +124,24 @@
         </button>
       </div>
       <div class="flex items-center gap-2">
-        <button @click="bulkSendEmail" class="text-sm btn-outline">
+        <button
+          v-if="canManageEmployees"
+          @click="bulkSendEmail"
+          class="text-sm btn-outline"
+        >
           {{ t("admin.employees.sendEmail") }}
         </button>
-        <button @click="bulkChangeStatus" class="text-sm btn-outline">
+        <button
+          v-if="canManageEmployees"
+          type="button"
+          @click="bulkChangeStatus"
+          class="text-sm btn-outline"
+          :disabled="statusUpdating"
+        >
           {{ t("admin.employees.changeStatus") }}
         </button>
         <button
+          v-if="canViewEmployees"
           type="button"
           @click="bulkExport"
           class="text-sm btn-outline"
@@ -135,7 +149,12 @@
         >
           {{ exporting ? t("admin.employees.exporting") : t("admin.employees.exportSelected") }}
         </button>
-        <button @click="bulkDelete" class="text-sm btn-error" :disabled="deleting">
+        <button
+          v-if="canManageEmployees"
+          @click="bulkDelete"
+          class="text-sm btn-error"
+          :disabled="deleting"
+        >
           {{ t("admin.employees.deleteSelected") }}
         </button>
       </div>
@@ -183,8 +202,12 @@
         </select>
         <select v-model="selectedRole" class="input-base">
           <option value="">{{ t("admin.employees.allRoles") }}</option>
-          <option v-for="role in roleOptions" :key="role" :value="role">
-            {{ role }}
+          <option
+            v-for="role in roleFilterOptions"
+            :key="role.value"
+            :value="role.value"
+          >
+            {{ role.label }}
           </option>
         </select>
         <button @click="clearFilters" class="btn-outline">{{ t("admin.employees.clearFilters") }}</button>
@@ -299,7 +322,7 @@
                 {{ employee.department }}
               </td>
               <td class="px-6 py-4 text-sm text-neutral-600">
-                {{ employee.role }}
+                {{ employeeRoleLabel(employee) }}
               </td>
               <td class="px-6 py-4">
                 <span :class="['badge', getStatusBadgeClass(employee.status)]">
@@ -405,6 +428,14 @@
       @confirm="confirmBulkDelete"
       @cancel="cancelBulkDelete"
     />
+
+    <EmployeeBulkStatusModal
+      v-model="statusModalOpen"
+      :selected-count="selectedEmployees.length"
+      :busy="statusUpdating"
+      :initial-status="bulkStatusTarget"
+      @confirm="confirmBulkStatus"
+    />
   </div>
 </template>
 
@@ -412,14 +443,22 @@
 import { computed, h, onMounted } from "vue";
 import ConfirmDialog from "../components/common/ConfirmDialog.vue";
 import KpiCard from "../components/common/KpiCard.vue";
+import EmployeeBulkStatusModal from "./employees/components/EmployeeBulkStatusModal.vue";
 import { useEmployees } from "./employees/composables/useEmployees.js";
 import { useI18n } from "../i18n/index.js";
+import { useAuthStore } from "../stores/authStore.js";
 
 const { t, locale } = useI18n();
+const authStore = useAuthStore();
+const canViewEmployees = computed(() =>
+  authStore.can("employees.view", "employees.manage")
+);
+const canManageEmployees = computed(() => authStore.can("employees.manage"));
 
 const {
   departmentOptions,
-  roleOptions,
+  roleFilterOptions,
+  employeeRoleLabel,
   loading,
   deleting,
   exporting,
@@ -427,6 +466,7 @@ const {
   error,
   ioError,
   ioSuccess,
+  statusSuccess,
   searchQuery,
   selectedDepartment,
   selectedStatus,
@@ -436,6 +476,9 @@ const {
   itemsPerPage,
   deleteOpen,
   deleteMessage,
+  statusModalOpen,
+  statusUpdating,
+  bulkStatusTarget,
   employeeStats,
   filteredEmployees,
   totalPages,
@@ -452,6 +495,7 @@ const {
   viewEmployee,
   bulkSendEmail,
   bulkChangeStatus,
+  confirmBulkStatus,
   bulkExport,
   exportEmployees,
   importEmployees,

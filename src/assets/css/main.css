@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --surface-canvas: #f5f7fc;
+  --surface-card: #ffffff;
+  --ink-primary: #17213c;
+  --ink-muted: #68748e;
+  --brand-primary: #3157d5;
+  --brand-accent: #7657e8;
+  --line-subtle: #e6eaf2;
+  --shadow-card: 0 10px 30px rgba(24, 39, 75, 0.06), 0 2px 6px rgba(24, 39, 75, 0.03);
+}
+
 * {
   @apply box-border;
 }
@@ -13,37 +25,76 @@ html {
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900 font-sans overflow-x-hidden;
+  @apply bg-neutral-50 text-neutral-900 font-sans;
+  overflow-x: clip;
+  background-color: var(--surface-canvas);
+  color: var(--ink-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+[class~="rounded-sm"] {
+  border-radius: 3px;
+}
+
+[class~="rounded-md"] {
+  border-radius: 4px;
+}
+
+[class~="rounded-lg"] {
+  border-radius: 5px;
+}
+
+[class~="rounded-xl"],
+[class~="rounded-2xl"],
+[class~="rounded-3xl"] {
+  border-radius: 6px;
 }
 
 #app {
-  @apply max-w-full overflow-x-hidden;
+  @apply max-w-full;
+  overflow-x: clip;
 }
 
 /* Component utilities */
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-primary-500 text-white rounded-lg font-medium transition-all duration-200 hover:bg-primary-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 text-white rounded-lg font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #3157d5 0%, #6046d8 100%);
+    box-shadow: 0 6px 14px rgba(65, 78, 201, 0.2);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #294bc2 0%, #5037c7 100%);
+    box-shadow: 0 8px 18px rgba(65, 78, 201, 0.27);
+    transform: translateY(-1px);
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-secondary-500 text-white rounded-lg font-medium transition-all duration-200 hover:bg-secondary-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 bg-secondary-600 text-white rounded-lg font-semibold transition-all duration-200 hover:bg-secondary-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-outline {
-    @apply px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg font-medium transition-all duration-200 hover:bg-neutral-50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 border border-neutral-200 bg-white text-neutral-700 rounded-lg font-semibold transition-all duration-200 hover:bg-neutral-50 hover:border-neutral-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply px-4 py-2 text-neutral-700 rounded-lg font-medium transition-all duration-200 hover:bg-neutral-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 text-neutral-700 rounded-lg font-semibold transition-all duration-200 hover:bg-neutral-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .card {
-    @apply bg-white border border-neutral-200 rounded-xl p-6 shadow-sm transition-shadow duration-200 hover:shadow-md;
+    @apply bg-white border border-neutral-200 rounded-2xl p-6 transition-all duration-200;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card:hover {
+    box-shadow: 0 16px 38px rgba(24, 39, 75, 0.1), 0 4px 10px rgba(24, 39, 75, 0.04);
   }
 
   .input-base {
-    @apply w-full px-3 py-2.5 border border-neutral-300 rounded-lg text-base text-neutral-900 placeholder-neutral-400 transition-colors duration-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 sm:text-sm sm:py-2;
+    @apply w-full px-3.5 py-2.5 border border-neutral-200 rounded-lg text-base text-neutral-900 placeholder-neutral-400 transition-all duration-200 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 sm:text-sm sm:py-2;
+    background-color: #fff;
+    box-shadow: inset 0 1px 2px rgba(24, 39, 75, 0.025);
   }
 
   .badge {
@@ -65,6 +116,123 @@ body {
   .badge-error {
     @apply badge bg-error-50 text-error-700;
   }
+}
+
+/* Shared application shell */
+.premium-shell {
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse at 82% 0%, rgba(116, 87, 232, 0.055), transparent 34rem),
+    var(--surface-canvas);
+}
+
+.premium-shell > aside {
+  height: calc(100vh - 4rem);
+  min-height: calc(100vh - 4rem);
+  color: #e9edfb;
+  background: linear-gradient(180deg, #17213c 0%, #111a31 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 10px 0 30px rgba(17, 26, 49, 0.08);
+}
+
+@supports (height: 100dvh) {
+  .premium-shell > aside {
+    height: calc(100dvh - 4rem);
+    min-height: calc(100dvh - 4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .premium-shell > aside {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    align-self: flex-start;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+.premium-shell > aside > div:first-child {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+.premium-shell > aside nav a,
+.premium-shell > aside nav button {
+  color: #aeb8d0;
+  border-radius: 0.7rem;
+  transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.premium-shell > aside nav a:hover,
+.premium-shell > aside nav button:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.075);
+}
+
+.premium-shell > aside nav a.bg-primary-50,
+.premium-shell > aside nav button.bg-primary-50 {
+  color: #fff;
+  background: linear-gradient(110deg, rgba(91, 115, 239, 0.32), rgba(122, 91, 230, 0.2));
+  box-shadow: inset 3px 0 0 #9c8bff;
+}
+
+.premium-shell > aside nav .nav-sub {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.premium-shell > aside nav .nav-group {
+  color: #7e8aa7;
+}
+
+.premium-shell > div > header {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 18px rgba(24, 39, 75, 0.035);
+  backdrop-filter: blur(16px);
+}
+
+.premium-shell > header {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 18px rgba(24, 39, 75, 0.035);
+  backdrop-filter: blur(16px);
+}
+
+.premium-shell main {
+  scrollbar-color: #cbd3e2 transparent;
+}
+
+.premium-shell main [class~="rounded-xl"][class~="border"],
+.premium-shell main [class~="rounded-2xl"][class~="border"] {
+  border-color: var(--line-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.premium-shell main [class~="rounded-xl"][class~="border"]:hover,
+.premium-shell main [class~="rounded-2xl"][class~="border"]:hover {
+  box-shadow: 0 14px 34px rgba(24, 39, 75, 0.09), 0 3px 9px rgba(24, 39, 75, 0.035);
+}
+
+.premium-shell main h1,
+.premium-shell main h2,
+.premium-shell main h3 {
+  letter-spacing: -0.025em;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 4px rgba(49, 87, 213, 0.12);
+}
+
+::selection {
+  color: #fff;
+  background: #4c54c8;
 }
 
 /* Animations */
@@ -92,4 +260,15 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -12,7 +12,16 @@ export const tenantSubscriptionApiService = {
   },
 
   async changePlan(payload) {
-    const { data } = await apiClient.post("/tenant/subscription/change", payload);
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+
+    const { data } = await apiClient.post("/tenant/subscription/change", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return data?.data ?? data;
   },
 };

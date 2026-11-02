@@ -43,6 +43,59 @@ export const employeesApiService = {
     return unwrap(data);
   },
 
+  /**
+   * @param {number[]} ids
+   * @param {'active'|'inactive'} status
+   * @returns {Promise<{ updated: object[], skipped: { id: number, reason: string }[] }>}
+   */
+  async bulkStatus(ids, status) {
+    const { data } = await apiClient.post("/employees/bulk-status", {
+      ids,
+      status,
+    });
+    const payload = unwrap(data) ?? {};
+    return {
+      updated: Array.isArray(payload.updated) ? payload.updated : [],
+      skipped: Array.isArray(payload.skipped) ? payload.skipped : [],
+    };
+  },
+
+  /**
+   * @param {number|string} id
+   * @param {{ suspensionDate: string, duration?: number|null, reason: string, notifyByEmail?: boolean }} payload
+   */
+  async suspend(id, payload) {
+    const { data } = await apiClient.post(`/employees/${id}/suspend`, {
+      suspension_date: payload.suspensionDate,
+      duration: payload.duration || null,
+      reason: payload.reason,
+      notify_by_email: !!payload.notifyByEmail,
+    });
+    return unwrap(data);
+  },
+
+  /**
+   * @param {number|string} id
+   * @param {{ type: string, rehireEligible?: boolean, exitDate: string, lastWorkingDay: string, reason: string, notifyByEmail?: boolean, generateTerminationLetter?: boolean }} payload
+   */
+  async terminate(id, payload) {
+    const { data } = await apiClient.post(`/employees/${id}/terminate`, {
+      type: payload.type,
+      rehire_eligible: !!payload.rehireEligible,
+      exit_date: payload.exitDate,
+      last_working_day: payload.lastWorkingDay,
+      reason: payload.reason,
+      notify_by_email: !!payload.notifyByEmail,
+      generate_termination_letter: !!payload.generateTerminationLetter,
+    });
+    return unwrap(data);
+  },
+
+  async retire(id) {
+    const { data } = await apiClient.post(`/employees/${id}/retire`);
+    return unwrap(data);
+  },
+
   async fetchActivities(id, params = {}) {
     const { data } = await apiClient.get(`/employees/${id}/activities`, {
       params,

@@ -51,14 +51,15 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   modifiers: { type: Array, default: () => [] },
+  currency: { type: String, default: "EUR" },
 });
 
 function formatMoney(n) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "USD",
+    currency: props.currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
 }

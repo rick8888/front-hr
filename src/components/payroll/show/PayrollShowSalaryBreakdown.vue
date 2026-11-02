@@ -41,12 +41,14 @@ const props = defineProps({
   deductions: { type: Array, default: () => [] },
   gross: { type: Number, required: true },
   net: { type: Number, required: true },
+  currency: { type: String, default: "EUR" },
+  attendance: { type: Object, default: () => ({}) },
 });
 
 function formatMoney(n) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "USD",
+    currency: props.currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
 }
@@ -58,11 +60,29 @@ function labelWithPercent(item) {
 
 const lines = computed(() => {
   const out = [];
-  props.earnings.forEach((e, i) => {
-    const isBase = i === 0 || e.isBase || e.name === "Basic Salary";
+  const contractual = Number(props.attendance?.contractualSalary ?? 0);
+  if (contractual > 0) {
     out.push({
-      key: `e-${e.name}`,
-      label: isBase ? e.name : `+ ${labelWithPercent(e)}`,
+      key: "contractual",
+      label: "Salaire contractuel",
+      amount: formatMoney(contractual),
+      rowClass: "text-neutral-500",
+      amountClass: "text-neutral-500",
+    });
+  }
+  props.earnings.forEach((e, i) => {
+    const isBase = e.isBase || e.code === "BASE_SALARY" || e.name === "Salaire de base" || e.name === "Basic Salary";
+    let label = isBase ? e.name : `+ ${labelWithPercent(e)}`;
+    if (isBase) {
+      const worked = Number(props.attendance?.payableDays ?? e.meta?.payable_days ?? 0);
+      const expected = Number(props.attendance?.workingDays ?? e.meta?.working_days ?? 0);
+      if (expected > 0) {
+        label = `${e.name} (${worked.toFixed(1)} / ${expected.toFixed(1)} j)`;
+      }
+    }
+    out.push({
+      key: `e-${e.code || e.name}-${i}`,
+      label,
       amount: formatMoney(e.amount),
       rowClass: isBase ? "text-neutral-800 font-medium" : "text-green-700",
       amountClass: isBase ? "text-neutral-900" : "text-green-700",

@@ -236,26 +236,13 @@
                 {{ row.usageStatus }}
               </span>
             </td>
-            <td class="relative whitespace-nowrap px-5 py-4 text-right md:px-6">
-              <button
-                type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
-                :aria-expanded="actionMenuOpen === row.id"
-                aria-haspopup="true"
+            <td class="whitespace-nowrap px-5 py-4 text-right md:px-6">
+              <TableRowMenu
+                :open="actionMenuOpen === row.id"
                 :aria-label="t('admin.leave.actionsFor', { name: row.employee })"
-                @click.stop="toggleMenu(row.id)"
-              >
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="actionMenuOpen === row.id"
-                class="absolute right-4 top-full z-10 mt-0.5 w-36 rounded-lg border border-neutral-200 bg-white py-1 shadow-md md:right-6"
-                role="menu"
-                @click.stop
+                width-class="w-36"
+                @toggle="toggleMenu(row.id)"
+                @close="closeMenu"
               >
                 <button
                   v-if="row.statusValue === 'pending'"
@@ -285,7 +272,7 @@
                 >
                   {{ t("common.view") }}
                 </button>
-              </div>
+              </TableRowMenu>
             </td>
           </tr>
         </template>
@@ -300,6 +287,7 @@ import { format } from "date-fns";
 import { enGB } from "date-fns/locale";
 import LeaveRequestsPageHero from "../../components/leave/LeaveRequestsPageHero.vue";
 import ListingTableShell from "../../components/leave-management/ListingTableShell.vue";
+import TableRowMenu from "../../components/common/TableRowMenu.vue";
 import KpiCard from "../../components/common/KpiCard.vue";
 import MonthlyBarChart from "../../components/common/MonthlyBarChart.vue";
 import CompensatoryOffsFiltersPanel from "../../components/leave-management/CompensatoryOffsFiltersPanel.vue";

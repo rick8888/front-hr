@@ -1048,7 +1048,7 @@
             >
             <select v-model="formData.role" class="input-base">
               <option value="">{{ t("admin.employees.create.selectRole") }}</option>
-              <option value="employee">{{ t("admin.employees.edit.role.employee") }}</option>
+              <option value="employe">{{ t("admin.employees.edit.role.employee") }}</option>
               <option value="manager">{{ t("admin.employees.edit.role.manager") }}</option>
               <option value="hr">{{ t("admin.employees.edit.role.hr") }}</option>
               <option value="admin">{{ t("admin.employees.edit.role.admin") }}</option>
@@ -1224,7 +1224,7 @@ const loadEmployeeData = (employeeId) => {
     status: "active",
     username: "johndoe",
     loginEmail: "john@example.com",
-    role: "employee",
+    role: "employe",
   };
 
   formData.value = { ...mockEmployee };

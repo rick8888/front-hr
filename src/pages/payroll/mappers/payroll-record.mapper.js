@@ -22,7 +22,7 @@ export const PAYROLL_STATUS_UI = {
   },
   cancelled: {
     label: "Cancelled",
-    badge: "bg-neutral-100 text-neutral-700",
+    badge: "bg-red-100 text-red-800",
   },
 };
 

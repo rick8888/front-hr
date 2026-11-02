@@ -7,14 +7,18 @@
       class="bg-gradient-to-r from-secondary-600 to-primary-600 text-white px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
     >
       <div>
-        <p class="text-xs uppercase tracking-wider text-white/70">Bulletin de paie</p>
+        <p class="text-xs uppercase tracking-wider text-white/70">
+          {{ t("admin.payroll.preview.title") }}
+        </p>
         <h2 class="text-xl font-bold mt-0.5">{{ employee?.name || "—" }}</h2>
         <p class="text-xs text-white/80 mt-0.5">
           {{ employeeCountryLabel }} · ID #{{ employee?.id ?? "—" }}
         </p>
       </div>
       <div class="text-left sm:text-right">
-        <p class="text-xs uppercase tracking-wider text-white/70">Période</p>
+        <p class="text-xs uppercase tracking-wider text-white/70">
+          {{ t("admin.payroll.preview.period") }}
+        </p>
         <p class="text-lg font-semibold">{{ monthLabel }}</p>
       </div>
     </header>
@@ -25,13 +29,13 @@
       <section>
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-            Gains
+            {{ t("admin.payroll.preview.earnings") }}
           </h3>
           <span
             class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-            {{ gains.length }} ligne(s)
+            {{ t("admin.payroll.preview.lines", { count: gains.length }) }}
           </span>
         </div>
         <ul class="divide-y divide-neutral-100 border border-neutral-100 rounded-xl overflow-hidden">
@@ -56,13 +60,15 @@
             </span>
           </li>
           <li v-if="!gains.length" class="px-4 py-6 text-sm text-neutral-500 text-center">
-            Aucun gain configuré.
+            {{ t("admin.payroll.preview.emptyEarnings") }}
           </li>
         </ul>
         <div
           class="mt-3 flex items-center justify-between px-4 py-2 rounded-lg bg-green-50 border border-green-100"
         >
-          <span class="text-sm font-semibold text-green-800">Salaire brut (GROSS)</span>
+          <span class="text-sm font-semibold text-green-800">
+            {{ t("admin.payroll.preview.gross") }}
+          </span>
           <span class="text-lg font-bold text-green-800 tabular-nums">
             {{ formatMoney(gross) }}
           </span>
@@ -73,13 +79,13 @@
       <section>
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-            Déductions
+            {{ t("admin.payroll.preview.deductions") }}
           </h3>
           <span
             class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-800"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-            {{ deductions.length }} ligne(s)
+            {{ t("admin.payroll.preview.lines", { count: deductions.length }) }}
           </span>
         </div>
         <ul class="divide-y divide-neutral-100 border border-neutral-100 rounded-xl overflow-hidden">
@@ -101,7 +107,7 @@
                     v-if="d.auto"
                     class="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600"
                   >
-                    Auto
+                    {{ t("admin.payroll.preview.automatic") }}
                   </span>
                 </div>
                 <p class="text-xs text-neutral-500 font-mono">{{ d.code }}</p>
@@ -112,13 +118,15 @@
             </span>
           </li>
           <li v-if="!deductions.length" class="px-4 py-6 text-sm text-neutral-500 text-center">
-            Aucune déduction configurée.
+            {{ t("admin.payroll.preview.emptyDeductions") }}
           </li>
         </ul>
         <div
           class="mt-3 flex items-center justify-between px-4 py-2 rounded-lg bg-red-50 border border-red-100"
         >
-          <span class="text-sm font-semibold text-red-800">Total déductions</span>
+          <span class="text-sm font-semibold text-red-800">
+            {{ t("admin.payroll.preview.totalDeductions") }}
+          </span>
           <span class="text-lg font-bold text-red-800 tabular-nums">
             − {{ formatMoney(totalDeductions) }}
           </span>
@@ -130,19 +138,25 @@
         class="rounded-xl bg-neutral-50 border border-neutral-200 p-4 grid gap-3 sm:grid-cols-3 text-sm"
       >
         <div>
-          <p class="text-xs uppercase tracking-wide text-neutral-500">Salaire brut</p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500">
+            {{ t("admin.payroll.preview.gross") }}
+          </p>
           <p class="font-bold text-neutral-900 tabular-nums mt-0.5">
             {{ formatMoney(gross) }}
           </p>
         </div>
         <div>
-          <p class="text-xs uppercase tracking-wide text-neutral-500">Total déductions</p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500">
+            {{ t("admin.payroll.preview.totalDeductions") }}
+          </p>
           <p class="font-bold text-red-700 tabular-nums mt-0.5">
             − {{ formatMoney(totalDeductions) }}
           </p>
         </div>
         <div>
-          <p class="text-xs uppercase tracking-wide text-neutral-500">Assiette IR</p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500">
+            {{ t("admin.payroll.preview.taxableBase") }}
+          </p>
           <p class="font-bold text-neutral-900 tabular-nums mt-0.5">
             {{ formatMoney(taxable) }}
           </p>
@@ -154,9 +168,11 @@
         class="rounded-xl bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
       >
         <div>
-          <p class="text-xs uppercase tracking-wider text-white/80">Net à payer</p>
+          <p class="text-xs uppercase tracking-wider text-white/80">
+            {{ t("admin.payroll.preview.net") }}
+          </p>
           <p class="text-[11px] text-white/70">
-            GROSS − CNSS − AMO − IR
+            {{ t("admin.payroll.preview.netFormula") }}
           </p>
         </div>
         <p class="text-3xl font-bold tabular-nums">{{ formatMoney(net) }}</p>
@@ -167,6 +183,9 @@
 
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
 
 const props = defineProps({
   employee: {
@@ -212,14 +231,21 @@ const props = defineProps({
 });
 
 const COUNTRY_LABELS = {
-  MAR: "Maroc",
-  FR: "France",
-  US: "États-Unis",
+  MAR: { fr: "Maroc", en: "Morocco" },
+  MA: { fr: "Maroc", en: "Morocco" },
+  CI: { fr: "Côte d’Ivoire", en: "Côte d’Ivoire" },
+  CIV: { fr: "Côte d’Ivoire", en: "Côte d’Ivoire" },
+  SN: { fr: "Sénégal", en: "Senegal" },
+  CD: { fr: "République démocratique du Congo", en: "Democratic Republic of the Congo" },
+  CG: { fr: "République du Congo", en: "Republic of the Congo" },
+  FR: { fr: "France", en: "France" },
+  US: { fr: "États-Unis", en: "United States" },
 };
 
 const employeeCountryLabel = computed(() => {
   const code = props.employee?.country;
-  return COUNTRY_LABELS[code] || code || "—";
+  const language = props.locale.startsWith("en") ? "en" : "fr";
+  return COUNTRY_LABELS[code]?.[language] || code || "—";
 });
 
 const monthLabel = computed(() => {

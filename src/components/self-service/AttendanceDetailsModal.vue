@@ -29,10 +29,14 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <div>
           <p class="mb-1 text-xs font-medium text-neutral-500">{{ t("common.totalHours") }}</p>
           <p class="text-sm font-semibold text-neutral-900">{{ totalHoursLabel }}</p>
+        </div>
+        <div>
+          <p class="mb-1 text-xs font-medium text-neutral-500">{{ t("ss.attendance.modal.breakDuration") }}</p>
+          <p class="text-sm font-semibold text-neutral-900">{{ formatDuration(record.breakMinutes) }}</p>
         </div>
         <div>
           <p class="mb-1 text-xs font-medium text-neutral-500">{{ t("common.overtime") }}</p>
@@ -96,6 +100,7 @@ const { t } = useI18n();
 
 const STATUS_CLASSES = {
   "Checked in": "bg-secondary-50 text-secondary-700",
+  "On Break": "bg-amber-50 text-amber-700",
   Present: "bg-emerald-50 text-emerald-700",
   Absent: "bg-rose-50 text-rose-700",
   Late: "bg-amber-50 text-amber-700",
@@ -105,6 +110,8 @@ const STATUS_CLASSES = {
 const LOG_TYPE_CLASSES = {
   "Check In": "bg-emerald-50 text-emerald-700",
   "Check Out": "bg-rose-50 text-rose-700",
+  "Break Start": "bg-amber-50 text-amber-700",
+  "Break End": "bg-sky-50 text-sky-700",
 };
 
 function tAttendanceStatus(status) {
@@ -117,6 +124,13 @@ function tLogType(type) {
   const key = `ss.attendance.log.${String(type || "").replace(/\s+/g, "_")}`;
   const translated = t(key);
   return translated === key ? type : translated;
+}
+
+function formatDuration(minutes) {
+  const total = Number(minutes) || 0;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  return hours ? `${hours}h ${String(rest).padStart(2, "0")}m` : `${rest}m`;
 }
 
 const statusClass = computed(

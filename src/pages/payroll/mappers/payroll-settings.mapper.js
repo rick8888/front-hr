@@ -19,6 +19,7 @@ export function emptyPayrollSettingsForm() {
     lop_round_mode: "",
     expense_reimbursement_enabled: false,
     loan_deductions_enabled: false,
+    auto_generation_enabled: false,
   };
 }
 
@@ -71,6 +72,7 @@ export function mapSettingsFromApi(raw) {
     lop_round_mode: roundOk ? raw.lop_round_mode : "",
     expense_reimbursement_enabled: toBool(raw.expense_reimbursement_enabled),
     loan_deductions_enabled: toBool(raw.loan_deductions_enabled),
+    auto_generation_enabled: toBool(raw.auto_generation_enabled),
   };
 }
 
@@ -118,6 +120,7 @@ export function mapSettingsToApi(form) {
   out.lop_include_holidays = !!form.lop_include_holidays;
   out.expense_reimbursement_enabled = !!form.expense_reimbursement_enabled;
   out.loan_deductions_enabled = !!form.loan_deductions_enabled;
+  out.auto_generation_enabled = !!form.auto_generation_enabled;
 
   return out;
 }

@@ -266,6 +266,13 @@
                 placeholder="ex. 5"
               />
             </div>
+            <div class="md:col-span-2">
+              <PayrollSettingsToggle
+                v-model="form.auto_generation_enabled"
+                :label="t('admin.payroll.settings.autoGeneration')"
+                :description="t('admin.payroll.settings.autoGenerationDesc')"
+              />
+            </div>
           </div>
         </PayrollSettingsSection>
 

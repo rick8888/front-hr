@@ -13,9 +13,11 @@
     <div v-if="isBankTransfer" class="mt-4">
       <TenantPaymentBankTransferForm
         :file="receiptFile"
+        :model-reference="bankReference"
         :error="errors.receipt_file"
         @select="setReceiptFile"
         @remove="removeReceiptFile"
+        @update:model-reference="bankReference = $event"
       />
     </div>
 
@@ -100,6 +102,7 @@ const methodsRef = toRef(props, "methods");
 const {
   selectedMethodCode,
   receiptFile,
+  bankReference,
   mobileOperator,
   phoneNumber,
   cashReference,

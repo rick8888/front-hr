@@ -1,6 +1,6 @@
 <template>
   <!-- items-start : la colonne droite n’est pas étirée à h-screen → pas de zone vide scrollable dans <main> -->
-  <div class="flex min-h-screen items-start overflow-x-hidden bg-neutral-50">
+  <div class="premium-shell flex min-h-screen items-start overflow-x-hidden bg-neutral-50">
     <div
       v-if="sidebarOpen"
       class="fixed inset-0 top-16 z-30 bg-neutral-900/40 lg:hidden"

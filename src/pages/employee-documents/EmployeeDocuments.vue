@@ -201,15 +201,10 @@
       @cancel="cancelConfirm"
     />
 
-    <ConfirmDialog
+    <EmployeeDocumentDetailsModal
       v-model="viewOpen"
+      :record="viewRow"
       :title="t('admin.leave.documents.details')"
-      :message="viewMessage"
-      variant="info"
-      :confirm-text="t('common.close')"
-      :cancel-text="t('common.back')"
-      @confirm="viewOpen = false"
-      @cancel="viewOpen = false"
     />
   </div>
 </template>
@@ -220,6 +215,7 @@ import LeaveRequestsPageHero from "../../components/leave/LeaveRequestsPageHero.
 import ListingTableShell from "../../components/leave-management/ListingTableShell.vue";
 import KpiCard from "../../components/common/KpiCard.vue";
 import ConfirmDialog from "../../components/common/ConfirmDialog.vue";
+import EmployeeDocumentDetailsModal from "../../components/employee-documents/EmployeeDocumentDetailsModal.vue";
 import EmployeeDocumentsFiltersPanel from "../../components/employee-documents/EmployeeDocumentsFiltersPanel.vue";
 import { useEmployeeDocumentsAdmin } from "./composables/useEmployeeDocumentsAdmin.js";
 import { useI18n } from "../../i18n/index.js";
@@ -279,25 +275,6 @@ const columns = computed(() => {
     { key: "file", label: t("common.file") },
     { key: "actions", label: t("common.actions"), thClass: "text-right" },
   ];
-});
-
-const viewMessage = computed(() => {
-  const r = viewRow.value;
-  if (!r) return "";
-  const parts = [
-    r.employee,
-    r.name,
-    r.category,
-    r.reference && r.reference !== "—" ? t("admin.leave.documents.ref", { ref: r.reference }) : null,
-    r.status,
-    r.issueDate ? t("admin.leave.documents.issued", { date: formatDate(r.issueDate) }) : null,
-    r.expiryDate
-      ? t("admin.leave.documents.expires", { date: formatDate(r.expiryDate) })
-      : t("admin.leave.documents.noExpiry"),
-    r.verifiedBy ? t("admin.leave.documents.by", { name: r.verifiedBy }) : null,
-    r.rejectReason ? t("admin.leave.documents.rejectReason", { reason: r.rejectReason }) : null,
-  ];
-  return parts.filter(Boolean).join(" · ");
 });
 
 function initials(name) {

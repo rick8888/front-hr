@@ -134,7 +134,7 @@ watch(
     errors.value = {};
     form.amount = balance.value;
     form.paid_at = today();
-    form.method = "bank_transfer";
+    form.method = props.invoice?.payment_method || "bank_transfer";
     form.reference = "";
     form.notes = "";
   }
@@ -163,4 +163,3 @@ function submit() {
   emit("update:open", false);
 }
 </script>
-

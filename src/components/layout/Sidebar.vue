@@ -1,7 +1,7 @@
 <template>
   <aside
     :class="[
-      'flex h-[calc(100vh-4rem)] w-60 shrink-0 flex-col border-r border-neutral-200 bg-white lg:h-screen',
+      'flex w-60 shrink-0 flex-col border-r border-neutral-200 bg-white',
       'fixed bottom-0 left-0 top-16 z-40 transform transition-transform duration-200 ease-out',
       'lg:static lg:top-auto lg:z-0 lg:translate-x-0',
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -11,11 +11,11 @@
     <div class="flex h-14 items-center justify-between gap-2.5 border-b border-neutral-100 px-5">
       <div class="flex items-center gap-2.5">
         <div
-          class="flex h-8 w-8 items-center justify-center rounded-md bg-primary-600 text-xs font-bold text-white"
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-600 text-xs font-bold text-white"
         >
           HR
         </div>
-        <span class="text-[15px] font-semibold tracking-tight text-neutral-900">HRMS</span>
+        <span class="truncate text-[15px] font-semibold tracking-tight text-white">{{ t("app.name") }}</span>
       </div>
       <button
         type="button"
@@ -61,7 +61,7 @@
       <!-- Admin -->
       <ul v-else class="space-y-0.5">
         <!-- Dashboard -->
-        <li>
+        <li v-if="authStore.can('dashboard.view')">
           <RouterLink to="/dashboard" :class="linkClass(isActive('/dashboard'))">
             <NavIcon name="dashboard" />
             <span>{{ t('nav.dashboard') }}</span>
@@ -69,7 +69,7 @@
         </li>
 
         <!-- Employés -->
-        <li>
+        <li v-if="authStore.can('employees.view', 'employees.manage')">
           <button
             type="button"
             :class="parentClass(isEmployeeManagementSectionActive)"
@@ -96,7 +96,7 @@
         </li>
 
         <!-- Organisation -->
-        <li>
+        <li v-if="authStore.can('organization.manage')">
           <button
             type="button"
             :class="parentClass(isOrganizationSectionActive)"
@@ -120,7 +120,7 @@
         </li>
 
         <!-- Présence -->
-        <li>
+        <li v-if="authStore.can('attendance.manage')">
           <button
             type="button"
             :class="parentClass(isAttendanceSectionActive)"
@@ -144,7 +144,7 @@
         </li>
 
         <!-- Congés -->
-        <li>
+        <li v-if="authStore.can('leave.manage')">
           <button
             type="button"
             :class="parentClass(isLeaveManagementSectionActive)"
@@ -171,7 +171,7 @@
         </li>
 
         <!-- Paie -->
-        <li>
+        <li v-if="authStore.can('payroll.view', 'payroll.manage')">
           <button
             type="button"
             :class="parentClass(isPayrollSectionActive)"
@@ -195,33 +195,34 @@
         </li>
 
         <!-- Self Service -->
-        <li>
+        <li v-if="authStore.can('self_service.access')">
           <SelfServiceNavSection
             :open="isSectionOpen('self-service')"
             @toggle="toggleSection('self-service')"
           />
         </li>
-
         <!-- Liens plats -->
-        <li class="pt-2 mt-2 border-t border-neutral-100">
-          <p class="nav-group px-3">{{ t('nav.other') }}</p>
-        </li>
-        <li v-for="item in adminNavSecondary" :key="item.id">
-          <RouterLink :to="item.path" :class="linkClass(isActive(item.path))">
-            <NavIcon :name="item.icon" />
-            <span>{{ item.label }}</span>
-          </RouterLink>
-        </li>
+        <template v-if="adminNavSecondary.length">
+          <li class="pt-2 mt-2 border-t border-neutral-100">
+            <p class="nav-group px-3">{{ t('nav.other') }}</p>
+          </li>
+          <li v-for="item in adminNavSecondary" :key="item.id">
+            <RouterLink :to="item.path" :class="linkClass(isActive(item.path))">
+              <NavIcon :name="item.icon" />
+              <span>{{ item.label }}</span>
+            </RouterLink>
+          </li>
+        </template>
       </ul>
     </nav>
 
     <!-- Thème -->
     <div class="border-t border-neutral-100 px-3 py-3">
-      <div class="flex rounded-md bg-neutral-100 p-0.5 text-xs font-medium">
+      <div class="flex rounded-md bg-white/10 p-0.5 text-xs font-medium">
         <button
           type="button"
           class="flex-1 rounded py-1.5 transition-colors"
-          :class="theme === 'light' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'"
+          :class="theme === 'light' ? 'bg-white/15 text-white shadow-sm' : 'text-neutral-400 hover:text-white'"
           @click="theme = 'light'"
         >
           {{ t('theme.light') }}
@@ -229,7 +230,7 @@
         <button
           type="button"
           class="flex-1 rounded py-1.5 transition-colors"
-          :class="theme === 'dark' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'"
+          :class="theme === 'dark' ? 'bg-white/15 text-white shadow-sm' : 'text-neutral-400 hover:text-white'"
           @click="theme = 'dark'"
         >
           {{ t('theme.dark') }}
@@ -397,9 +398,12 @@ const organizationSubItems = computed(() => {
 
 const employeeManagementSubItems = computed(() => {
   void locale.value;
-  return withLabels([
+  const canManage = authStore.can("employees.manage");
+  const items = [
     { id: "e-all", labelKey: "nav.employees.all", path: "/employees" },
-    { id: "e-new", labelKey: "nav.employees.add", path: "/employees/new" },
+    canManage
+      ? { id: "e-new", labelKey: "nav.employees.add", path: "/employees/new" }
+      : null,
     { type: "group", labelKey: "nav.employees.categories", id: "e-cat" },
     { id: "e-onb", labelKey: "nav.employees.onboarding", path: "/employees/categories/onboarding" },
     {
@@ -413,16 +417,27 @@ const employeeManagementSubItems = computed(() => {
       labelKey: "nav.employees.terminated",
       path: "/employees/categories/terminated",
     },
-  ]);
+  ].filter(Boolean);
+
+  return withLabels(items);
 });
 
 const attendanceSubItems = computed(() => {
   void locale.value;
-  return withLabels([
+  const canOrg = authStore.can("organization.manage");
+  const canSettings = authStore.can("settings.manage");
+  const canConfigureShifts = canOrg || canSettings;
+  const items = [
     { id: "a-all", labelKey: "nav.attendance.records", path: "/attendance" },
-    { id: "a-shift", labelKey: "nav.attendance.shifts", path: "/attendance/shifts" },
-    { id: "a-type", labelKey: "nav.attendance.types", path: "/attendance/types" },
-    { id: "a-hol", labelKey: "nav.attendance.holidays", path: "/holidays" },
+    canConfigureShifts
+      ? { id: "a-shift", labelKey: "nav.attendance.shifts", path: "/attendance/shifts" }
+      : null,
+    canSettings
+      ? { id: "a-type", labelKey: "nav.attendance.types", path: "/attendance/types" }
+      : null,
+    canOrg
+      ? { id: "a-hol", labelKey: "nav.attendance.holidays", path: "/holidays" }
+      : null,
     {
       id: "a-reg",
       labelKey: "nav.attendance.regularizations",
@@ -450,12 +465,15 @@ const attendanceSubItems = computed(() => {
       labelKey: "nav.attendance.byDept",
       path: "/attendance/reports/department-comparison",
     },
-  ]);
+  ].filter(Boolean);
+
+  return withLabels(items);
 });
 
 const leaveManagementSubItems = computed(() => {
   void locale.value;
-  return withLabels([
+  const canReports = authStore.can("reports.view", "leave.manage");
+  const items = [
     { id: "l-req", labelKey: "nav.leave.requests", path: "/leave-requests" },
     {
       id: "l-comp",
@@ -471,33 +489,47 @@ const leaveManagementSubItems = computed(() => {
     },
     { id: "l-types", labelKey: "nav.leave.types", path: "/leave-management/types" },
     { id: "l-bal", labelKey: "nav.leave.balances", path: "/leave-management/balance" },
-    { type: "group", labelKey: "nav.leave.reports", id: "l-rep" },
-    {
-      id: "l-dash",
-      labelKey: "nav.leave.overview",
-      path: "/leave-management/reports/dashboard",
-    },
-    {
-      id: "l-lbal",
-      labelKey: "nav.leave.balanceReport",
-      path: "/leave-management/reports/leave-balance",
-    },
-    {
-      id: "l-hist",
-      labelKey: "nav.leave.history",
-      path: "/leave-management/reports/leave-history",
-    },
-    {
-      id: "l-stat",
-      labelKey: "nav.leave.byDept",
-      path: "/leave-management/reports/department-statistics",
-    },
-    {
-      id: "l-comp2",
-      labelKey: "nav.leave.compliance",
-      path: "/leave-management/reports/compliance",
-    },
-  ]);
+    canReports
+      ? { type: "group", labelKey: "nav.leave.reports", id: "l-rep" }
+      : null,
+    canReports
+      ? {
+          id: "l-dash",
+          labelKey: "nav.leave.overview",
+          path: "/leave-management/reports/dashboard",
+        }
+      : null,
+    canReports
+      ? {
+          id: "l-lbal",
+          labelKey: "nav.leave.balanceReport",
+          path: "/leave-management/reports/leave-balance",
+        }
+      : null,
+    canReports
+      ? {
+          id: "l-hist",
+          labelKey: "nav.leave.history",
+          path: "/leave-management/reports/leave-history",
+        }
+      : null,
+    canReports
+      ? {
+          id: "l-stat",
+          labelKey: "nav.leave.byDept",
+          path: "/leave-management/reports/department-statistics",
+        }
+      : null,
+    canReports
+      ? {
+          id: "l-comp2",
+          labelKey: "nav.leave.compliance",
+          path: "/leave-management/reports/compliance",
+        }
+      : null,
+  ].filter(Boolean);
+
+  return withLabels(items);
 });
 
 const payrollSubItems = computed(() => {
@@ -538,38 +570,50 @@ const payrollSubItems = computed(() => {
 
 const adminNavSecondary = computed(() => {
   void locale.value;
-  return withLabels([
-    {
-      id: 6,
-      labelKey: "nav.secondary.training",
-      path: "/admin-trainings",
-      icon: "training",
-    },
-    {
-      id: 13,
-      labelKey: "nav.secondary.equipment",
-      path: "/admin-equipments",
-      icon: "laptop",
-    },
-    {
-      id: 7,
-      labelKey: "nav.secondary.recruitment",
-      path: "/recruitment",
-      icon: "briefcase",
-    },
-    {
-      id: 8,
-      labelKey: "nav.secondary.candidates",
-      path: "/candidates",
-      icon: "user",
-    },
-    {
-      id: 12,
-      labelKey: "nav.secondary.settings",
-      path: "/settings",
-      icon: "settings",
-    },
-  ]);
+  const items = [
+    authStore.can("organization.manage", "employees.manage")
+      ? {
+          id: 6,
+          labelKey: "nav.secondary.training",
+          path: "/admin-trainings",
+          icon: "training",
+        }
+      : null,
+    authStore.can("organization.manage", "employees.manage")
+      ? {
+          id: 13,
+          labelKey: "nav.secondary.equipment",
+          path: "/admin-equipments",
+          icon: "laptop",
+        }
+      : null,
+    authStore.can("organization.manage", "employees.manage")
+      ? {
+          id: 7,
+          labelKey: "nav.secondary.recruitment",
+          path: "/recruitment",
+          icon: "briefcase",
+        }
+      : null,
+    authStore.can("organization.manage", "employees.manage")
+      ? {
+          id: 8,
+          labelKey: "nav.secondary.candidates",
+          path: "/candidates",
+          icon: "user",
+        }
+      : null,
+    authStore.can("settings.manage")
+      ? {
+          id: 12,
+          labelKey: "nav.secondary.settings",
+          path: "/settings",
+          icon: "settings",
+        }
+      : null,
+  ].filter(Boolean);
+
+  return withLabels(items);
 });
 
 const employeeNavigationExtras = computed(() => {

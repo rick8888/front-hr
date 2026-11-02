@@ -2,7 +2,7 @@
   <div class="rounded-lg border border-neutral-200 bg-neutral-50/60 p-4">
     <h3 class="text-sm font-semibold text-neutral-900">Paiement en espèces</h3>
     <p class="mt-1 text-xs text-neutral-500">
-      Votre paiement sera enregistré manuellement par notre équipe après réception des fonds.
+      Remettez les espèces à notre équipe. Le forfait sera activé après confirmation de la réception des fonds.
     </p>
 
     <div class="mt-4">

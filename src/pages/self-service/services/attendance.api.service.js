@@ -20,4 +20,14 @@ export const attendanceApiService = {
     const { data } = await apiClient.post("/attendance/check-out");
     return unwrap(data) ?? {};
   },
+
+  async startBreak() {
+    const { data } = await apiClient.post("/attendance/break/start");
+    return unwrap(data) ?? {};
+  },
+
+  async endBreak() {
+    const { data } = await apiClient.post("/attendance/break/end");
+    return unwrap(data) ?? {};
+  },
 };

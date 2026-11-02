@@ -16,6 +16,12 @@
     >
       {{ billingStore.error }}
     </div>
+    <div
+      v-if="proofError"
+      class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ proofError }}
+    </div>
 
     <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard
@@ -108,13 +114,14 @@
           <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Payé</th>
           <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Reste</th>
           <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Échéance</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Paiement demandé</th>
           <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Statut</th>
           <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-neutral-500">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-neutral-100">
         <tr v-if="billingStore.loading">
-          <td colspan="9" class="px-6 py-16 text-center text-sm text-neutral-600">
+          <td colspan="10" class="px-6 py-16 text-center text-sm text-neutral-600">
             <span class="inline-flex items-center gap-2">
               <span
                 class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600"
@@ -125,7 +132,7 @@
           </td>
         </tr>
         <tr v-else-if="!paginatedRows.length">
-          <td colspan="9" class="px-6 py-12 text-center text-sm text-neutral-500">
+          <td colspan="10" class="px-6 py-12 text-center text-sm text-neutral-500">
             Aucune facture trouvée.
           </td>
         </tr>
@@ -149,10 +156,22 @@
               {{ formatInvoiceAmount(invoiceBalance(inv), inv.currency) }}
             </td>
             <td class="px-4 py-3 text-sm text-neutral-600">{{ formatInvoiceDate(inv.due_date) }}</td>
+            <td class="px-4 py-3 text-sm text-neutral-600">
+              {{ paymentMethodLabel(inv.payment_method) }}
+            </td>
             <td class="px-4 py-3">
               <InvoiceStatusBadge :status="inv.status" />
             </td>
             <td class="whitespace-nowrap px-4 py-3 text-right">
+              <button
+                v-if="inv.payment_proof_url"
+                type="button"
+                class="mr-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                :disabled="billingStore.saving"
+                @click="downloadProof(inv)"
+              >
+                Justificatif
+              </button>
               <button
                 v-if="isInvoicePayable(inv)"
                 type="button"
@@ -260,11 +279,13 @@ import {
   formatInvoiceDate,
   invoiceBalance,
   isInvoicePayable,
+  paymentMethodLabel,
 } from "../../../data/billing/index.js";
 import { useBillingStore } from "./store/billing.store.js";
 import { useCompaniesStore } from "../entreprises/store/companies.store.js";
 import { usePlansStore } from "../plans/store/plans.store.js";
 import { usePaginatedSearch } from "../../../composables/usePaginatedSearch.js";
+import { billingApiService } from "./services/billing.api.service.js";
 
 const billingStore = useBillingStore();
 const companiesStore = useCompaniesStore();
@@ -287,6 +308,7 @@ const deletePaymentMessage = ref("");
 const pendingDeleteId = ref(null);
 const pendingDeletePaymentId = ref(null);
 const paymentInvoiceFilter = ref("");
+const proofError = ref("");
 
 const filteredPayments = computed(() => {
   if (!paymentInvoiceFilter.value) return payments.value;
@@ -328,6 +350,27 @@ function openEdit(invoice) {
 function openPayment(invoice) {
   payingInvoice.value = invoice;
   paymentModalOpen.value = true;
+}
+
+async function downloadProof(invoice) {
+  proofError.value = "";
+  try {
+    const { data } = await billingApiService.downloadPaymentProof(invoice.id);
+    const extension = {
+      "application/pdf": "pdf",
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+    }[data.type] ?? "file";
+    const url = URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${invoice.invoice_number}-justificatif.${extension}`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    proofError.value = "Impossible de télécharger le justificatif de paiement.";
+  }
 }
 
 async function onSave(payload) {

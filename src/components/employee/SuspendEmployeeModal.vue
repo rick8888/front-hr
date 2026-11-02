@@ -68,6 +68,12 @@
 
             <!-- Body -->
             <form class="px-6 py-5 space-y-4" @submit.prevent="onSubmit">
+              <div
+                v-if="saveError"
+                class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {{ saveError }}
+              </div>
               <!-- Info banner -->
               <div
                 class="flex items-start gap-3 rounded-lg bg-warning-50 border border-warning-500/30 px-4 py-3 text-sm text-warning-700"
@@ -159,6 +165,9 @@
                 />
                 <span class="text-sm text-neutral-800">{{ t("admin.employees.view.suspend.notify") }}</span>
               </label>
+              <p class="text-xs text-neutral-500 -mt-2">
+                {{ t("admin.employees.view.lifecycleEmailTemplateHint") }}
+              </p>
             </form>
 
             <!-- Footer -->
@@ -240,6 +249,7 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   employee: { type: Object, required: true },
   busy: { type: Boolean, default: false },
+  saveError: { type: String, default: "" },
 });
 
 const emit = defineEmits(["update:modelValue", "confirm"]);

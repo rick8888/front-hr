@@ -1,14 +1,19 @@
 <template>
   <Modal
     :model-value="open"
-    title="Ajouter un administrateur"
+    :title="isEdit ? 'Modifier l\'administrateur' : 'Ajouter un administrateur'"
     size="md"
     hide-footer
     @update:model-value="$emit('update:open', $event)"
   >
     <form class="space-y-4" @submit.prevent="submit">
       <p class="text-sm text-neutral-600">
-        Créez un compte administrateur RH pour votre entreprise. Il pourra accéder à l'application de gestion des employés.
+        <template v-if="isEdit">
+          Mettez à jour le compte administrateur RH. Laissez le mot de passe vide pour le conserver.
+        </template>
+        <template v-else>
+          Créez un compte administrateur RH pour votre entreprise. Il pourra accéder à l'application de gestion des employés.
+        </template>
       </p>
 
       <div>
@@ -29,21 +34,24 @@
 
       <div>
         <label class="mb-1 block text-sm font-medium text-neutral-800">
-          Mot de passe <span class="text-red-500">*</span>
+          Mot de passe
+          <span v-if="!isEdit" class="text-red-500">*</span>
+          <span v-else class="font-normal text-neutral-500">(optionnel)</span>
         </label>
         <input
           v-model="form.password"
           type="password"
           class="input-base w-full"
           autocomplete="new-password"
-          placeholder="Minimum 8 caractères"
+          :placeholder="isEdit ? 'Laisser vide pour ne pas changer' : 'Minimum 8 caractères'"
         />
         <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
       </div>
 
       <div>
         <label class="mb-1 block text-sm font-medium text-neutral-800">
-          Confirmation <span class="text-red-500">*</span>
+          Confirmation
+          <span v-if="!isEdit || form.password" class="text-red-500">*</span>
         </label>
         <input
           v-model="form.password_confirmation"
@@ -67,7 +75,12 @@
       <div class="flex justify-end gap-3 border-t border-neutral-100 pt-4">
         <button type="button" class="btn-outline" @click="close">Annuler</button>
         <button type="submit" class="btn-primary" :disabled="saving">
-          {{ saving ? "Création…" : "Créer l'administrateur" }}
+          <template v-if="isEdit">
+            {{ saving ? "Enregistrement…" : "Enregistrer" }}
+          </template>
+          <template v-else>
+            {{ saving ? "Création…" : "Créer l'administrateur" }}
+          </template>
         </button>
       </div>
     </form>
@@ -75,17 +88,20 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import Modal from "../common/Modal.vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
+  user: { type: Object, default: null },
   serverErrors: { type: Object, default: () => ({}) },
   serverMessage: { type: String, default: "" },
 });
 
 const emit = defineEmits(["update:open", "submit"]);
+
+const isEdit = computed(() => !!props.user?.id);
 
 const emptyForm = () => ({
   name: "",
@@ -102,9 +118,19 @@ watch(
   () => props.open,
   (isOpen) => {
     if (!isOpen) return;
-    Object.assign(form, emptyForm());
     Object.keys(errors).forEach((k) => delete errors[k]);
     apiError.value = "";
+
+    if (props.user) {
+      Object.assign(form, {
+        name: props.user.name ?? "",
+        email: props.user.email ?? "",
+        password: "",
+        password_confirmation: "",
+      });
+    } else {
+      Object.assign(form, emptyForm());
+    }
   }
 );
 
@@ -113,7 +139,11 @@ watch(
   () => {
     apiError.value = props.serverMessage || "";
     Object.keys(errors).forEach((k) => delete errors[k]);
-    Object.assign(errors, props.serverErrors);
+    const mapped = {};
+    for (const [key, value] of Object.entries(props.serverErrors || {})) {
+      mapped[key] = Array.isArray(value) ? value[0] : value;
+    }
+    Object.assign(errors, mapped);
   },
   { deep: true }
 );
@@ -131,19 +161,34 @@ function validate() {
     errors.email = "L'email est obligatoire.";
     valid = false;
   }
-  if (!form.password) {
-    errors.password = "Le mot de passe est obligatoire.";
-    valid = false;
-  } else if (form.password.length < 8) {
-    errors.password = "Minimum 8 caractères.";
-    valid = false;
-  }
-  if (!form.password_confirmation) {
-    errors.password_confirmation = "La confirmation est obligatoire.";
-    valid = false;
-  } else if (form.password !== form.password_confirmation) {
-    errors.password_confirmation = "Les mots de passe ne correspondent pas.";
-    valid = false;
+
+  if (!isEdit.value) {
+    if (!form.password) {
+      errors.password = "Le mot de passe est obligatoire.";
+      valid = false;
+    } else if (form.password.length < 8) {
+      errors.password = "Minimum 8 caractères.";
+      valid = false;
+    }
+    if (!form.password_confirmation) {
+      errors.password_confirmation = "La confirmation est obligatoire.";
+      valid = false;
+    } else if (form.password !== form.password_confirmation) {
+      errors.password_confirmation = "Les mots de passe ne correspondent pas.";
+      valid = false;
+    }
+  } else if (form.password || form.password_confirmation) {
+    if (form.password.length < 8) {
+      errors.password = "Minimum 8 caractères.";
+      valid = false;
+    }
+    if (!form.password_confirmation) {
+      errors.password_confirmation = "La confirmation est obligatoire.";
+      valid = false;
+    } else if (form.password !== form.password_confirmation) {
+      errors.password_confirmation = "Les mots de passe ne correspondent pas.";
+      valid = false;
+    }
   }
 
   return valid;
@@ -155,11 +200,17 @@ function close() {
 
 function submit() {
   if (!validate()) return;
-  emit("submit", {
+
+  const payload = {
     name: form.name.trim(),
     email: form.email.trim().toLowerCase(),
-    password: form.password,
-    password_confirmation: form.password_confirmation,
-  });
+  };
+
+  if (form.password) {
+    payload.password = form.password;
+    payload.password_confirmation = form.password_confirmation;
+  }
+
+  emit("submit", payload);
 }
 </script>

@@ -27,7 +27,7 @@ function formatDayName(iso) {
 function formatTime12(value) {
   if (!value) return null;
   const raw = String(value).trim();
-  const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  const match = raw.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
   if (!match) return raw;
   let hours = Number(match[1]);
   const minutes = match[2];
@@ -76,6 +76,20 @@ function buildLogs(raw) {
       location,
     });
   }
+  for (const pause of raw.breaks ?? []) {
+    logs.push({
+      type: "Break Start",
+      time: formatTime12(pause.started_at),
+      location,
+    });
+    if (pause.ended_at) {
+      logs.push({
+        type: "Break End",
+        time: formatTime12(pause.ended_at),
+        location,
+      });
+    }
+  }
   return logs;
 }
 
@@ -87,6 +101,7 @@ function toSelfServiceRow(raw) {
   const statusValue = raw.status ?? "on_time";
   const totalMinutes = Number(raw.working_minutes ?? raw.workingMinutes ?? 0);
   const overtimeMinutes = Number(raw.overtime_minutes ?? raw.overtimeMinutes ?? 0);
+  const breakMinutes = Number(raw.break_minutes ?? raw.breakMinutes ?? 0);
 
   return {
     id: raw.id,
@@ -96,8 +111,11 @@ function toSelfServiceRow(raw) {
     checkIn: formatTime12(checkInRaw),
     checkOut: formatTime12(checkOutRaw),
     totalMinutes,
+    breakMinutes,
     overtime: formatOvertime(overtimeMinutes),
-    status: statusLabel(statusValue, checkInRaw, checkOutRaw),
+    status: raw.is_on_break
+      ? "On Break"
+      : statusLabel(statusValue, checkInRaw, checkOutRaw),
     statusValue,
     location: raw.location || "N/A",
     logs: buildLogs(raw),

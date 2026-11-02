@@ -92,7 +92,11 @@
             :colspan="4 + leaveCodes.length + 1"
             class="px-6 py-16 text-center text-sm text-neutral-600"
           >
-            {{ t("admin.leave.balances.empty") }}
+            {{
+              rows.length === 0
+                ? t("admin.leave.balances.emptyNone")
+                : t("admin.leave.balances.empty")
+            }}
           </td>
         </tr>
         <tr
@@ -174,6 +178,7 @@ const breadcrumbs = computed(() => {
 
 const {
   leaveCodes,
+  rows,
   loading,
   error,
   filters,

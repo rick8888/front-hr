@@ -1,367 +1,312 @@
 <template>
-  <div class="min-h-screen max-w-full overflow-x-hidden bg-[#f7f4ef] text-neutral-800">
-    <header class="sticky top-0 z-20 border-b border-neutral-200/80 bg-[#f7f4ef]/95 backdrop-blur">
-      <div class="mx-auto flex h-16 max-w-6xl min-w-0 items-center justify-between gap-2 px-4 sm:px-8">
-        <a href="#top" class="flex min-w-0 items-center gap-2.5" @click="closeMenu">
-          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-sm font-bold text-white">BR</span>
-          <span class="truncate text-base font-semibold tracking-tight text-neutral-900">Bravo RH</span>
+  <div class="min-h-screen overflow-hidden bg-[#f7f8fc] text-neutral-800">
+    <header class="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl">
+      <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
+        <a href="#top" class="flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-secondary-600 text-xs font-bold tracking-wide text-white">BR</span>
+          <span class="text-base font-bold tracking-tight text-neutral-900">Bravo RH</span>
         </a>
-        <nav class="hidden items-center gap-6 text-sm font-medium text-neutral-600 md:flex">
-          <a href="#services" class="hover:text-neutral-900">{{ t("landing.nav.services") }}</a>
-          <a href="#whatsapp" class="hover:text-neutral-900">{{ t("landing.nav.whatsapp") }}</a>
-          <a href="#tarifs" class="hover:text-neutral-900">{{ t("landing.nav.plans") }}</a>
-          <a href="#inscription" class="hover:text-neutral-900">{{ t("landing.nav.signup") }}</a>
+
+        <nav class="hidden items-center gap-7 text-sm font-medium text-neutral-600 lg:flex" :aria-label="t('landing.nav.label')">
+          <a href="#features" class="transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.nav.features") }}</a>
+          <a href="#benefits" class="transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.nav.benefits") }}</a>
+          <a href="#faq" class="transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.nav.faq") }}</a>
         </nav>
-        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <div class="hidden items-center rounded-lg bg-white/70 p-0.5 text-xs font-semibold text-neutral-500 sm:flex">
-            <button
-              type="button"
-              class="rounded-md px-2 py-1"
-              :class="locale === 'fr' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'"
-              @click="switchLocale('fr')"
-            >
-              FR
-            </button>
-            <button
-              type="button"
-              class="rounded-md px-2 py-1"
-              :class="locale === 'en' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'"
-              @click="switchLocale('en')"
-            >
-              EN
-            </button>
+
+        <div class="flex items-center gap-2">
+          <div class="hidden items-center rounded-lg border border-neutral-200 bg-neutral-50 p-0.5 text-xs font-semibold text-neutral-500 sm:flex">
+            <button type="button" class="rounded-md px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="locale === 'fr' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'" :aria-pressed="locale === 'fr'" @click="switchLocale('fr')">FR</button>
+            <button type="button" class="rounded-md px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="locale === 'en' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'" :aria-pressed="locale === 'en'" @click="switchLocale('en')">EN</button>
           </div>
-          <RouterLink to="/login" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-white sm:inline-flex">
+          <RouterLink to="/login" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:inline-flex">
             {{ t("landing.nav.login") }}
           </RouterLink>
-          <button type="button" class="btn-primary hidden text-sm md:inline-flex" @click="scrollToSignup">
-            {{ t("landing.nav.signup") }}
-          </button>
+          <a :href="contactHref" class="btn-primary hidden items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 md:inline-flex">
+            {{ t("landing.nav.contact") }}
+            <span aria-hidden="true">↗</span>
+          </a>
           <button
             type="button"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-neutral-800 hover:bg-white md:hidden"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-neutral-800 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 lg:hidden"
             :aria-label="menuOpen ? t('landing.nav.close') : t('landing.nav.menu')"
             :aria-expanded="menuOpen"
+            aria-controls="mobile-menu"
             @click="toggleMenu"
           >
-            <svg v-if="!menuOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <svg v-if="!menuOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m6 6 12 12M18 6 6 18" />
             </svg>
           </button>
         </div>
       </div>
 
-      <div v-if="menuOpen" class="border-t border-neutral-200 bg-[#f7f4ef] px-4 py-4 md:hidden">
-        <nav class="flex flex-col gap-1 text-sm font-medium text-neutral-700">
-          <button type="button" class="rounded-lg px-3 py-2.5 text-left hover:bg-white" @click="goToSection('services')">
-            {{ t("landing.nav.services") }}
-          </button>
-          <button type="button" class="rounded-lg px-3 py-2.5 text-left hover:bg-white" @click="goToSection('whatsapp')">
-            {{ t("landing.nav.whatsapp") }}
-          </button>
-          <button type="button" class="rounded-lg px-3 py-2.5 text-left hover:bg-white" @click="goToSection('tarifs')">
-            {{ t("landing.nav.plans") }}
-          </button>
-          <button type="button" class="rounded-lg px-3 py-2.5 text-left hover:bg-white" @click="goToSection('inscription')">
-            {{ t("landing.nav.signup") }}
-          </button>
+      <div v-if="menuOpen" id="mobile-menu" class="border-t border-neutral-200 bg-white px-4 py-4 shadow-lg lg:hidden">
+        <nav class="flex flex-col gap-1 text-sm font-medium text-neutral-700" :aria-label="t('landing.nav.label')">
+          <a href="#features" class="rounded-lg px-3 py-2.5 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">{{ t("landing.nav.features") }}</a>
+          <a href="#benefits" class="rounded-lg px-3 py-2.5 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">{{ t("landing.nav.benefits") }}</a>
+          <a href="#faq" class="rounded-lg px-3 py-2.5 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">{{ t("landing.nav.faq") }}</a>
         </nav>
         <div class="mt-3 flex items-center justify-between gap-3 border-t border-neutral-200 pt-3">
-          <div class="flex items-center rounded-lg bg-white/70 p-0.5 text-xs font-semibold text-neutral-500">
-            <button
-              type="button"
-              class="rounded-md px-2 py-1"
-              :class="locale === 'fr' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'"
-              @click="switchLocale('fr')"
-            >
-              FR
-            </button>
-            <button
-              type="button"
-              class="rounded-md px-2 py-1"
-              :class="locale === 'en' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'"
-              @click="switchLocale('en')"
-            >
-              EN
-            </button>
+          <div class="flex items-center rounded-lg bg-neutral-50 p-0.5 text-xs font-semibold text-neutral-500">
+            <button type="button" class="rounded-md px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="locale === 'fr' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'" :aria-pressed="locale === 'fr'" @click="switchLocale('fr')">FR</button>
+            <button type="button" class="rounded-md px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" :class="locale === 'en' ? 'bg-white text-neutral-900 shadow-sm' : 'hover:text-neutral-800'" :aria-pressed="locale === 'en'" @click="switchLocale('en')">EN</button>
           </div>
-          <RouterLink to="/login" class="text-sm font-medium text-primary-700" @click="closeMenu">
-            {{ t("landing.nav.login") }}
-          </RouterLink>
+          <RouterLink to="/login" class="rounded-lg px-3 py-2 text-sm font-semibold text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">{{ t("landing.nav.login") }}</RouterLink>
         </div>
-        <button type="button" class="btn-primary mt-3 w-full py-2.5 text-sm" @click="scrollToSignup">
-          {{ t("landing.nav.signup") }}
-        </button>
+        <a :href="contactHref" class="btn-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
+          {{ t("landing.nav.contact") }}
+          <span aria-hidden="true">↗</span>
+        </a>
       </div>
     </header>
 
     <main id="top">
-      <section class="mx-auto grid min-h-[calc(100svh-4rem)] max-w-6xl content-center items-center gap-8 px-4 py-10 sm:gap-10 sm:px-8 sm:py-14 lg:min-h-0 lg:grid-cols-2 lg:content-center lg:py-20">
-        <div class="min-w-0">
-          <p class="text-sm font-medium text-primary-700">{{ t("landing.hero.kicker") }}</p>
-          <h1 class="mt-3 text-3xl font-semibold leading-tight tracking-tight break-words text-neutral-900 sm:text-4xl lg:text-5xl">
-            {{ t("landing.hero.title") }}
-          </h1>
-          <p class="mt-4 max-w-xl text-base leading-relaxed text-neutral-600 sm:mt-5 sm:text-lg">
-            {{ t("landing.hero.subtitle") }}
-          </p>
-          <div class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center">
-            <button type="button" class="btn-primary w-full px-5 py-2.5 sm:w-auto" @click="scrollToSignup">
-              {{ t("landing.hero.cta") }}
-            </button>
-            <a href="#tarifs" class="btn-outline w-full px-5 py-2.5 text-center text-sm sm:w-auto">
-              {{ t("landing.hero.secondary") }}
-            </a>
+      <section class="relative isolate">
+        <div class="pointer-events-none absolute -right-32 top-12 -z-10 h-96 w-96 rounded-full bg-primary-100/70 blur-3xl" aria-hidden="true" />
+        <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 py-14 sm:px-8 sm:py-20 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16 lg:py-24">
+          <div class="min-w-0">
+            <p class="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white px-3 py-1.5 text-xs font-semibold tracking-wide text-primary-800 shadow-sm">
+              <span class="h-2 w-2 rounded-full bg-secondary-500" aria-hidden="true" />
+              {{ t("landing.hero.kicker") }}
+            </p>
+            <h1 class="mt-6 max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-neutral-900 sm:text-5xl lg:text-[3.6rem]">
+              {{ t("landing.hero.title") }}
+            </h1>
+            <p class="mt-5 max-w-xl text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8">
+              {{ t("landing.hero.subtitle") }}
+            </p>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a :href="contactHref" class="btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
+                {{ t("landing.hero.cta") }}
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a href="#features" class="inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-5 py-3 text-sm font-semibold text-neutral-700 transition-colors hover:border-primary-200 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                {{ t("landing.hero.secondary") }}
+                <span class="ml-2" aria-hidden="true">↓</span>
+              </a>
+            </div>
+            <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-neutral-500 sm:text-sm">
+              <span>{{ t("landing.hero.proof1") }}</span>
+              <span class="hidden h-1 w-1 rounded-full bg-neutral-300 sm:block" aria-hidden="true" />
+              <span>{{ t("landing.hero.proof2") }}</span>
+              <span class="hidden h-1 w-1 rounded-full bg-neutral-300 sm:block" aria-hidden="true" />
+              <span>{{ t("landing.hero.proof3") }}</span>
+            </div>
           </div>
-          <p class="mt-4 text-sm text-neutral-500">{{ t("landing.hero.note") }}</p>
-          <p class="mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-full bg-[#25d366]/15 px-3 py-1.5 text-sm font-medium text-[#128c47]">
-            <span class="h-2 w-2 shrink-0 rounded-full bg-[#25d366]" />
-            <span>{{ t("landing.whatsapp.badge") }}</span>
-          </p>
-        </div>
-        <div class="min-w-0 rounded-2xl border border-white bg-white/80 p-4 shadow-sm sm:rounded-3xl sm:p-6">
-          <p class="text-sm font-medium text-neutral-500">{{ t("landing.hero.dayTitle") }}</p>
-          <ul class="mt-4 space-y-3 text-sm">
-            <li
-              v-for="(story, index) in dayStories"
-              :key="index"
-              class="rounded-2xl bg-[#f7f4ef] px-4 py-3 leading-relaxed"
-            >
-              {{ story }}
-            </li>
-          </ul>
+
+          <div class="relative mx-auto w-full max-w-[620px] min-w-0">
+            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-primary-100 via-white to-secondary-100 blur-xl" aria-hidden="true" />
+            <div class="overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-xl shadow-primary-900/10 sm:rounded-3xl">
+              <div class="flex items-center justify-between border-b border-neutral-100 px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-xs font-bold text-primary-700" aria-hidden="true">BR</span>
+                  <div>
+                    <p class="text-xs font-semibold text-neutral-900 sm:text-sm">{{ t("landing.preview.product") }}</p>
+                    <p class="text-[11px] text-neutral-500">{{ t("landing.preview.workspace") }}</p>
+                  </div>
+                </div>
+                <span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-800 sm:text-xs">{{ t("landing.preview.sample") }}</span>
+              </div>
+
+              <div class="p-4 sm:p-6">
+                <div class="flex flex-wrap items-end justify-between gap-2">
+                  <div>
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-neutral-400">{{ t("landing.preview.dashboard") }}</p>
+                    <h2 class="mt-1 text-lg font-semibold tracking-tight text-neutral-900 sm:text-xl">{{ t("landing.preview.greeting") }}</h2>
+                  </div>
+                  <span class="rounded-lg border border-neutral-200 px-2.5 py-1.5 text-[10px] font-medium text-neutral-500 sm:text-xs">{{ t("landing.preview.period") }}</span>
+                </div>
+
+                <div class="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3">
+                  <div class="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3 sm:p-4">
+                    <p class="text-[10px] leading-4 text-neutral-500 sm:text-xs">{{ t("landing.preview.metric1") }}</p>
+                    <p class="mt-2 text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">128</p>
+                    <p class="mt-1 text-[10px] text-neutral-400 sm:text-xs">{{ t("landing.preview.fictional") }}</p>
+                  </div>
+                  <div class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 sm:p-4">
+                    <p class="text-[10px] leading-4 text-neutral-500 sm:text-xs">{{ t("landing.preview.metric2") }}</p>
+                    <p class="mt-2 text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">112</p>
+                    <p class="mt-1 text-[10px] text-neutral-400 sm:text-xs">{{ t("landing.preview.fictional") }}</p>
+                  </div>
+                  <div class="rounded-xl border border-violet-100 bg-violet-50/50 p-3 sm:p-4">
+                    <p class="text-[10px] leading-4 text-neutral-500 sm:text-xs">{{ t("landing.preview.metric3") }}</p>
+                    <p class="mt-2 text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">06</p>
+                    <p class="mt-1 text-[10px] text-neutral-400 sm:text-xs">{{ t("landing.preview.fictional") }}</p>
+                  </div>
+                </div>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
+                  <div class="rounded-xl border border-neutral-100 p-3.5 sm:p-4">
+                    <div class="flex items-center justify-between gap-2">
+                      <p class="text-xs font-semibold text-neutral-800">{{ t("landing.preview.activity") }}</p>
+                      <span class="text-[10px] text-neutral-400">{{ t("landing.preview.illustration") }}</span>
+                    </div>
+                    <div class="mt-4 flex h-20 items-end gap-2 border-b border-neutral-100 px-1 sm:h-24">
+                      <span v-for="(height, index) in [36, 52, 43, 68, 55, 82, 61, 74, 48, 64, 88, 70]" :key="index" class="flex-1 rounded-t-sm bg-gradient-to-t from-primary-500 to-secondary-300" :style="{ height: `${height}%` }" aria-hidden="true" />
+                    </div>
+                    <div class="mt-2 flex justify-between text-[9px] text-neutral-400 sm:text-[10px]">
+                      <span>{{ t("landing.preview.chartStart") }}</span>
+                      <span>{{ t("landing.preview.chartEnd") }}</span>
+                    </div>
+                  </div>
+                  <div class="rounded-xl border border-neutral-100 p-3.5 sm:p-4">
+                    <p class="text-xs font-semibold text-neutral-800">{{ t("landing.preview.requests") }}</p>
+                    <div class="mt-3 space-y-3">
+                      <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-50 text-[9px] font-semibold text-primary-700" aria-hidden="true">AM</span>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-[10px] font-medium text-neutral-700">{{ t("landing.preview.request1") }}</p>
+                          <p class="text-[9px] text-neutral-400">{{ t("landing.preview.requestType1") }}</p>
+                        </div>
+                        <span class="h-2 w-2 rounded-full bg-amber-400" aria-hidden="true" />
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-secondary-50 text-[9px] font-semibold text-secondary-700" aria-hidden="true">JK</span>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-[10px] font-medium text-neutral-700">{{ t("landing.preview.request2") }}</p>
+                          <p class="text-[9px] text-neutral-400">{{ t("landing.preview.requestType2") }}</p>
+                        </div>
+                        <span class="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p class="mt-4 text-center text-[10px] leading-relaxed text-neutral-400">{{ t("landing.preview.disclaimer") }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section id="services" class="scroll-mt-24 border-t border-neutral-200/80 bg-white">
-        <div class="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-16">
-          <p class="text-sm font-medium text-primary-700">{{ t("landing.services.kicker") }}</p>
-          <h2 class="mt-2 max-w-2xl text-2xl font-semibold tracking-tight break-words text-neutral-900 sm:text-3xl">
-            {{ t("landing.services.title") }}
-          </h2>
-          <p class="mt-3 max-w-2xl text-neutral-600">{{ t("landing.services.subtitle") }}</p>
-
-          <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
-            <article
-              v-for="service in featuredServices"
-              :key="service.code"
-              class="min-w-0 rounded-2xl border border-neutral-200 bg-[#fbfaf7] p-5"
-            >
-              <h3 class="text-base font-semibold text-neutral-900">{{ serviceName(service.code) }}</h3>
-              <p class="mt-2 text-sm leading-relaxed text-neutral-600">{{ serviceBlurb(service) }}</p>
+      <section id="benefits" class="scroll-mt-24 bg-neutral-900 text-white">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-8 sm:py-18 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-16 lg:py-20">
+          <div>
+            <p class="text-sm font-semibold text-secondary-300">{{ t("landing.benefits.kicker") }}</p>
+            <h2 class="mt-3 max-w-lg text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{{ t("landing.benefits.title") }}</h2>
+            <p class="mt-4 max-w-lg text-sm leading-7 text-neutral-300 sm:text-base">{{ t("landing.benefits.subtitle") }}</p>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <article v-for="(item, index) in [1, 2, 3]" :key="item" class="rounded-2xl border border-white/10 bg-white/[0.05] p-5">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-xs font-semibold text-secondary-200" aria-hidden="true">0{{ index + 1 }}</span>
+              <h3 class="mt-5 text-sm font-semibold text-white">{{ t(`landing.benefits.item${item}.title`) }}</h3>
+              <p class="mt-2 text-xs leading-6 text-neutral-300">{{ t(`landing.benefits.item${item}.text`) }}</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="whatsapp" class="scroll-mt-24 bg-[#f7f4ef]">
-        <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:gap-10 sm:px-8 sm:py-16 lg:grid-cols-2">
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-primary-700">{{ t("landing.whatsapp.kicker") }}</p>
-            <h2 class="mt-2 max-w-xl text-2xl font-semibold tracking-tight break-words text-neutral-900 sm:text-3xl">
-              {{ t("landing.whatsapp.title") }}
-            </h2>
-            <p class="mt-3 max-w-xl text-neutral-600">{{ t("landing.whatsapp.subtitle") }}</p>
+      <section id="features" class="scroll-mt-24 bg-white">
+        <div class="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20">
+          <div class="max-w-2xl">
+            <p class="text-sm font-semibold text-primary-700">{{ t("landing.features.kicker") }}</p>
+            <h2 class="mt-3 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{{ t("landing.features.title") }}</h2>
+            <p class="mt-4 text-sm leading-7 text-neutral-600 sm:text-base">{{ t("landing.features.subtitle") }}</p>
           </div>
-          <ul class="space-y-3">
-            <li
-              v-for="(point, index) in whatsappPoints"
-              :key="index"
-              class="rounded-2xl border border-white bg-white/80 px-4 py-4 text-sm leading-relaxed text-neutral-700 shadow-sm sm:px-5"
-            >
-              {{ point }}
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <section id="tarifs" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-16">
-        <p class="text-sm font-medium text-primary-700">{{ t("landing.plans.kicker") }}</p>
-        <h2 class="mt-2 max-w-2xl text-2xl font-semibold tracking-tight break-words text-neutral-900 sm:text-3xl">
-          {{ t("landing.plans.title") }}
-        </h2>
-        <p class="mt-3 max-w-2xl text-neutral-600">{{ t("landing.plans.subtitle") }}</p>
-
-        <div v-if="loading" class="mt-10 flex min-h-[180px] flex-col items-center justify-center gap-3 text-sm text-neutral-500">
-          <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600" />
-          {{ t("common.loading") }}
-        </div>
-
-        <div v-else class="mt-8 grid gap-4 sm:mt-10 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <article
-            v-for="plan in visiblePlans"
-            :key="plan.code"
-            :class="[
-              'flex min-w-0 flex-col rounded-2xl border bg-white p-5 shadow-sm',
-              plan.isHighlighted ? 'border-primary-400 ring-2 ring-primary-100' : 'border-neutral-200',
-            ]"
-          >
-            <div class="flex flex-wrap items-start justify-between gap-2">
-              <div class="min-w-0">
-                <h3 class="text-lg font-semibold text-neutral-900">{{ plan.name }}</h3>
-                <p class="mt-1 text-sm text-neutral-500">{{ plan.tagline }}</p>
-              </div>
-              <span
-                v-if="plan.isHighlighted"
-                class="shrink-0 rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700"
-              >
-                {{ t("landing.plans.highlighted") }}
+          <div class="mt-9 grid gap-4 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3">
+            <article v-for="feature in featureKeys" :key="feature" class="group rounded-2xl border border-neutral-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lg hover:shadow-primary-900/5 sm:p-6">
+              <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-700 transition-colors group-hover:bg-primary-100" aria-hidden="true">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <template v-if="feature === 'employees'">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm2 5h4m-2-2v4" />
+                  </template>
+                  <template v-else-if="feature === 'attendance'">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 8v4l2.5 1.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </template>
+                  <template v-else-if="feature === 'leave'">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Zm3 8h3m-3 3h6" />
+                  </template>
+                  <template v-else-if="feature === 'payroll'">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5v-9ZM16 12h2m-11 0h5" />
+                  </template>
+                  <template v-else-if="feature === 'documents'">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5m-9 5h5m-5 4h5" />
+                  </template>
+                  <template v-else>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M4 19V5m0 14h17M8 15v-3m5 3V8m5 7v-5" />
+                  </template>
+                </svg>
               </span>
-            </div>
-            <p class="mt-4 text-2xl font-semibold text-neutral-900">{{ formatPrice(plan) }}</p>
-            <p class="mt-1 text-sm text-neutral-500">
-              {{
-                plan.maxEmployees == null
-                  ? t("landing.plans.employeesUnlimited")
-                  : t("landing.plans.employees", { n: plan.maxEmployees })
-              }}
-            </p>
-            <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              {{ t("landing.plans.included") }}
-            </p>
-            <ul class="mt-2 flex-1 space-y-1.5 text-sm text-neutral-600">
-              <li v-for="code in plan.includedServices.slice(0, 6)" :key="code">
-                {{ serviceName(code) }}
-              </li>
-            </ul>
-            <button
-              type="button"
-              class="mt-5 w-full rounded-lg px-4 py-2.5 text-sm font-semibold"
-              :class="plan.isHighlighted ? 'btn-primary' : 'btn-outline'"
-              @click="choosePlan(plan.code)"
-            >
-              {{ t("landing.plans.cta") }}
-            </button>
-          </article>
+              <h3 class="mt-5 text-base font-semibold text-neutral-900">{{ t(`landing.feature.${feature}.title`) }}</h3>
+              <p class="mt-2 text-sm leading-6 text-neutral-600">{{ t(`landing.feature.${feature}.text`) }}</p>
+            </article>
+          </div>
+          <p class="mt-6 text-sm leading-6 text-neutral-500">{{ t("landing.features.more") }}</p>
         </div>
       </section>
 
-      <section id="inscription" class="scroll-mt-24 border-t border-neutral-200/80 bg-white">
-        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:gap-10 sm:px-8 sm:py-16 lg:grid-cols-[1fr_1.15fr]">
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-primary-700">{{ t("landing.form.kicker") }}</p>
-            <h2 class="mt-2 text-2xl font-semibold tracking-tight break-words text-neutral-900 sm:text-3xl">
-              {{ t("landing.form.title") }}
-            </h2>
-            <p class="mt-3 text-neutral-600">{{ t("landing.form.subtitle") }}</p>
-            <p v-if="selectedPlan" class="mt-6 rounded-2xl bg-[#f7f4ef] px-4 py-3 text-sm leading-relaxed text-neutral-700">
-              {{ chosenPlanLabel }}
-            </p>
+      <section class="border-y border-neutral-200 bg-[#f7f8fc]">
+        <div class="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-18">
+          <div class="max-w-2xl">
+            <p class="text-sm font-semibold text-primary-700">{{ t("landing.workflow.kicker") }}</p>
+            <h2 class="mt-3 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{{ t("landing.workflow.title") }}</h2>
+            <p class="mt-4 text-sm leading-7 text-neutral-600 sm:text-base">{{ t("landing.workflow.subtitle") }}</p>
           </div>
-
-          <form class="min-w-0 rounded-2xl border border-neutral-200 bg-[#fbfaf7] p-4 sm:rounded-3xl sm:p-7" @submit.prevent="submit">
-            <div
-              v-if="error"
-              class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-            >
-              {{ error }}
-            </div>
-            <div
-              v-if="successMessage"
-              class="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800"
-            >
-              {{ successMessage }}
-              <RouterLink to="/login" class="ml-1 font-semibold underline">
-                {{ t("landing.form.loginLink") }}
-              </RouterLink>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="block text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.firstName") }}</span>
-                <input v-model="form.firstName" type="text" required class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.lastName") }}</span>
-                <input v-model="form.lastName" type="text" required class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm sm:col-span-2">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.email") }}</span>
-                <input v-model="form.email" type="email" required class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm sm:col-span-2">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.phone") }}</span>
-                <input v-model="form.phone" type="tel" class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.password") }}</span>
-                <input v-model="form.password" type="password" required minlength="8" class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.confirmPassword") }}</span>
-                <input v-model="form.confirmPassword" type="password" required class="input-base w-full text-base" />
-              </label>
-              <label class="block text-sm sm:col-span-2">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.companyName") }}</span>
-                <input
-                  :value="form.companyName"
-                  type="text"
-                  required
-                  class="input-base w-full text-base"
-                  @input="onCompanyNameInput"
-                />
-              </label>
-              <label class="block min-w-0 text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.country") }}</span>
-                <select v-model="form.countryId" required class="input-base w-full max-w-full text-base">
-                  <option value="">{{ t("landing.form.countryPlaceholder") }}</option>
-                  <option v-for="country in countries" :key="country.id" :value="country.id">
-                    {{ country.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="block min-w-0 text-sm">
-                <span class="mb-1 block font-medium text-neutral-800">{{ t("landing.form.plan") }}</span>
-                <select v-model="form.plan" class="input-base w-full max-w-full text-base">
-                  <option v-for="plan in visiblePlans" :key="plan.code" :value="plan.code">
-                    {{ plan.name }} — {{ formatPrice(plan) }}
-                  </option>
-                </select>
-              </label>
-              <div class="min-w-0 sm:col-span-2">
-                <span class="mb-1 block text-sm font-medium text-neutral-800">{{ t("landing.form.subdomain") }}</span>
-                <div class="flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-300 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-500/25 sm:flex-row">
-                  <input
-                    v-model="form.subdomain"
-                    type="text"
-                    class="min-w-0 w-full px-3 py-2.5 text-base focus:outline-none"
-                    placeholder="mon-entreprise"
-                  />
-                  <span class="flex shrink-0 items-center border-t border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-500 sm:border-l sm:border-t-0">
-                    {{ t("landing.form.subdomainSuffix") }}
-                  </span>
-                </div>
-                <p class="mt-1 text-xs text-neutral-500">{{ t("landing.form.subdomainHint") }}</p>
+          <div class="mt-8 grid gap-4 md:grid-cols-3">
+            <article v-for="(step, index) in workflowKeys" :key="step" class="flex gap-4 rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-sm font-bold text-primary-700" aria-hidden="true">0{{ index + 1 }}</span>
+              <div>
+                <h3 class="text-sm font-semibold text-neutral-900">{{ t(`landing.workflow.${step}.title`) }}</h3>
+                <p class="mt-2 text-sm leading-6 text-neutral-600">{{ t(`landing.workflow.${step}.text`) }}</p>
               </div>
-            </div>
+            </article>
+          </div>
+        </div>
+      </section>
 
-            <label class="mt-4 flex items-start gap-2 text-sm text-neutral-700">
-              <input v-model="form.agreeToTerms" type="checkbox" class="mt-0.5 shrink-0 rounded border-neutral-300" />
-              <span>{{ t("landing.form.terms") }}</span>
-            </label>
+      <section id="faq" class="scroll-mt-24 bg-white">
+        <div class="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-8 sm:py-18 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+          <div>
+            <p class="text-sm font-semibold text-primary-700">{{ t("landing.faq.kicker") }}</p>
+            <h2 class="mt-3 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">{{ t("landing.faq.title") }}</h2>
+          </div>
+          <div class="divide-y divide-neutral-200 border-y border-neutral-200">
+            <details v-for="item in faqKeys" :key="item" class="group py-5">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md text-sm font-semibold text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:text-base">
+                {{ t(`landing.faq.q${item}`) }}
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p class="mt-3 max-w-3xl pr-10 text-sm leading-7 text-neutral-600">{{ t(`landing.faq.a${item}`) }}</p>
+            </details>
+          </div>
+        </div>
+      </section>
 
-            <button type="submit" class="btn-primary mt-5 w-full py-2.5" :disabled="submitting">
-              {{ submitting ? t("landing.form.submitting") : t("landing.form.submit") }}
-            </button>
-            <p class="mt-4 text-center text-sm text-neutral-500">
-              {{ t("landing.form.loginHint") }}
-              <RouterLink to="/login" class="font-semibold text-primary-700 hover:underline">
-                {{ t("landing.form.loginLink") }}
-              </RouterLink>
-            </p>
-          </form>
+      <section id="inscription" class="scroll-mt-24 bg-gradient-to-br from-primary-800 via-primary-700 to-secondary-700 text-white">
+        <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 px-4 py-12 sm:px-8 sm:py-16 md:flex-row md:items-center">
+          <div class="max-w-2xl">
+            <p class="text-sm font-semibold text-primary-100">{{ t("landing.contact.kicker") }}</p>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{{ t("landing.contact.title") }}</h2>
+            <p class="mt-3 text-sm leading-6 text-primary-50 sm:text-base">{{ t("landing.contact.subtitle") }}</p>
+          </div>
+          <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <a :href="contactHref" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-primary-800 transition-colors hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-700">
+              {{ t("landing.contact.cta") }}
+              <span aria-hidden="true">↗</span>
+            </a>
+            <RouterLink to="/login" class="inline-flex items-center justify-center rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              {{ t("landing.nav.login") }}
+            </RouterLink>
+          </div>
         </div>
       </section>
     </main>
 
-    <footer class="border-t border-neutral-200 bg-[#f7f4ef] px-4 py-8 text-center text-sm text-neutral-500 sm:px-5">
-      <p>{{ t("landing.footer.tagline") }}</p>
-      <RouterLink to="/login" class="mt-2 inline-block font-medium text-primary-700 hover:underline">
-        {{ t("landing.footer.login") }}
-      </RouterLink>
+    <footer class="bg-white">
+      <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-7 text-sm text-neutral-500 sm:px-8 md:flex-row md:items-center md:justify-between">
+        <a href="#top" class="flex items-center gap-2 font-semibold text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-600 text-[9px] font-bold text-white" aria-hidden="true">BR</span>
+          Bravo RH
+        </a>
+        <p>{{ t("landing.footer.tagline") }}</p>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <a :href="contactHref" class="hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.footer.contact") }}</a>
+          <RouterLink to="/login" class="hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.footer.login") }}</RouterLink>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -371,32 +316,32 @@ import { useLanding } from "./composables/useLanding.js";
 import { useI18n } from "../../i18n/index.js";
 
 const { t } = useI18n();
-
 const {
-  loading,
-  submitting,
-  error,
-  successMessage,
-  form,
   menuOpen,
-  countries,
-  featuredServices,
-  visiblePlans,
-  selectedPlan,
-  dayStories,
-  whatsappPoints,
-  chosenPlanLabel,
   locale,
   switchLocale,
-  serviceName,
-  serviceBlurb,
-  formatPrice,
-  choosePlan,
-  onCompanyNameInput,
   closeMenu,
   toggleMenu,
-  goToSection,
-  scrollToSignup,
-  submit,
 } = useLanding();
+
+const contactHref = "mailto:support@bravorh.com?subject=Bravo%20RH";
+const featureKeys = ["employees", "attendance", "leave", "payroll", "documents", "reporting"];
+const workflowKeys = ["organize", "process", "review"];
+const faqKeys = [1, 2, 3];
 </script>
+
+<style scoped>
+@media (prefers-reduced-motion: reduce) {
+  :global(html) {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>

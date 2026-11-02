@@ -45,6 +45,12 @@ export const billingApiService = {
     return data.data ?? data;
   },
 
+  async downloadPaymentProof(invoiceId) {
+    return apiClient.get(`/invoices/${invoiceId}/payment-proof`, {
+      responseType: "blob",
+    });
+  },
+
   async deletePayment(paymentId) {
     await apiClient.delete(`/invoice-payments/${paymentId}`);
     return true;

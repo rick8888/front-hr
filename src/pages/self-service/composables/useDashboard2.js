@@ -5,6 +5,7 @@ import { leaveRequestsApiService } from "../../leave/services/leaveRequests.api.
 import { expensesApiService } from "../services/expenses.api.service.js";
 import { trainingEnrollmentsApiService } from "../../training/services/trainings.api.service.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
+import { minutesSinceCheckIn } from "../../../utils/attendanceDuration.js";
 import { formatHoursLabel } from "../../../data/dashboardEmployeeDemo.js";
 import { useI18n } from "../../../i18n/index.js";
 
@@ -81,17 +82,6 @@ function formatLeaveRange(start, end, locale = "en-US") {
   });
   const right = b.toLocaleDateString(locale, opts);
   return `${left} - ${right}`;
-}
-
-function minutesSinceCheckIn(checkIn, dayIso) {
-  if (!checkIn) return 0;
-  const match = String(checkIn).match(/^(\d{1,2}):(\d{2})/);
-  if (!match) return 0;
-  const now = new Date();
-  const base = dayIso ? new Date(`${toIsoDate(dayIso)}T00:00:00`) : new Date();
-  if (Number.isNaN(base.getTime())) return 0;
-  base.setHours(Number(match[1]), Number(match[2]), 0, 0);
-  return Math.max(0, Math.floor((now.getTime() - base.getTime()) / 60000));
 }
 
 function sumWorkingMinutes(history, predicate, liveExtra = 0) {

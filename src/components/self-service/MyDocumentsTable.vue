@@ -45,26 +45,20 @@
           <p v-if="row.verifiedBy" class="mt-1.5 text-xs text-neutral-500">{{ row.verifiedBy }}</p>
           <p v-if="row.verifiedOn" class="text-xs text-neutral-500">{{ formatDate(row.verifiedOn) }}</p>
         </td>
-        <td class="px-5 py-4 md:px-6 align-middle relative">
-          <button
-            type="button"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+        <td class="px-5 py-4 md:px-6 align-middle">
+          <TableRowMenu
+            :open="openMenuId === row.id"
             :aria-label="`${t('common.actions')} — ${row.name}`"
-            :aria-expanded="openMenuId === row.id"
-            @click.stop="toggleMenu(row.id)"
+            @toggle="toggleMenu(row.id)"
+            @close="closeMenu"
           >
-            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
-            </svg>
-          </button>
-          <div v-if="openMenuId === row.id" class="absolute right-2 top-12 z-20 w-40 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg" role="menu" @click.stop>
             <button type="button" role="menuitem" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50" @click="onView(row)">
               {{ t("common.view") }}
             </button>
             <button type="button" role="menuitem" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50" @click="onDownload(row)">
               {{ t("common.download") }}
             </button>
-          </div>
+          </TableRowMenu>
         </td>
       </tr>
       <tr v-if="!rows.length">
@@ -79,6 +73,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "../../i18n/index.js";
+import TableRowMenu from "../common/TableRowMenu.vue";
 import {
   catalogStatusClass,
   catalogStatusLabel,

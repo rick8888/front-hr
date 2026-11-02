@@ -16,13 +16,7 @@
     <!-- Header (titre + breadcrumb) -->
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-xl font-semibold tracking-wide text-neutral-900">
-        <span v-if="profileLoading" class="inline-flex items-center gap-2 text-neutral-400">
-          <span
-            class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("common.loading") }}
-        </span>
+        <Skeleton v-if="profileLoading" box-class="h-6 w-48" />
         <span v-else>{{ employee.name }}</span>
       </h1>
       <nav
@@ -43,9 +37,8 @@
         <span>/</span>
         <RouterLink to="/employees" class="hover:text-secondary-600">{{ t("admin.employees.title") }}</RouterLink>
         <span>/</span>
-        <span class="text-neutral-800 font-medium">{{
-          profileLoading ? "…" : employee.name
-        }}</span>
+        <Skeleton v-if="profileLoading" box-class="h-4 w-32" />
+        <span v-else class="text-neutral-800 font-medium">{{ employee.name }}</span>
       </nav>
     </div>
 
@@ -53,24 +46,21 @@
     <div
       class="relative rounded-xl border border-neutral-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5"
     >
-      <div
-        v-if="profileLoading"
-        class="absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-xl bg-white/80 text-sm text-neutral-500"
-      >
-        <span
-          class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-          aria-hidden="true"
-        />
-        {{ t("admin.employees.view.loadingProfile") }}
-      </div>
       <!-- Avatar -->
       <div class="relative flex-shrink-0">
+        <Skeleton
+          v-if="profileLoading"
+          rounded="rounded-full"
+          box-class="h-24 w-24"
+        />
         <div
+          v-else
           class="w-24 h-24 rounded-full bg-secondary-100 text-secondary-600 font-semibold text-2xl flex items-center justify-center"
         >
-          {{ profileLoading ? "…" : initials }}
+          {{ initials }}
         </div>
         <span
+          v-if="!profileLoading"
           class="absolute bottom-0 right-0 w-7 h-7 rounded-full border border-secondary-200 bg-white text-secondary-500 flex items-center justify-center"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,52 +82,73 @@
 
       <!-- Identité -->
       <div class="flex-1 min-w-0 w-full">
+        <template v-if="profileLoading">
+          <Skeleton box-class="h-6 w-52" />
+          <div class="mt-2 flex items-center gap-2">
+            <Skeleton box-class="h-5 w-20" />
+            <Skeleton box-class="h-5 w-16" />
+          </div>
+          <div class="mt-3 flex flex-wrap gap-3">
+            <Skeleton box-class="h-4 w-36" />
+            <Skeleton box-class="h-4 w-28" />
+            <Skeleton box-class="h-4 w-32" />
+          </div>
+          <div class="mt-2 flex flex-wrap gap-3">
+            <Skeleton box-class="h-4 w-44" />
+            <Skeleton box-class="h-4 w-32" />
+          </div>
+        </template>
+        <template v-else>
         <div class="flex items-center gap-2 flex-wrap">
           <h2 class="text-xl font-bold text-neutral-900">
-            {{ profileLoading ? "—" : employee.name }}
+            {{ employee.name }}
           </h2>
         </div>
         <div class="flex items-center gap-2 mt-1.5 flex-wrap">
           <span
             class="px-2 py-0.5 rounded bg-neutral-100 text-neutral-600 text-xs font-medium"
           >
-            {{ profileLoading ? "—" : employee.code }}
+            {{ employee.code }}
           </span>
           <span
             class="px-2 py-0.5 rounded text-xs font-medium"
             :class="statusBadgeClass"
           >
-            {{ profileLoading ? "…" : statusLabel }}
+            {{ statusLabel }}
           </span>
         </div>
         <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-neutral-600">
           <span class="inline-flex items-center gap-1.5">
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            {{ profileLoading ? "—" : employee.designation }}
+            {{ employee.designation }}
           </span>
           <span class="inline-flex items-center gap-1.5">
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4 0a4 4 0 100-8 4 4 0 000 8z"/></svg>
-            {{ profileLoading ? "—" : employee.team }}
+            {{ employee.team }}
           </span>
           <span class="inline-flex items-center gap-1.5">
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            {{ profileLoading ? "—" : tenureLabel }}
+            {{ tenureLabel }}
           </span>
         </div>
         <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-neutral-600">
           <span class="inline-flex items-center gap-1.5">
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6m-18 0v8a2 2 0 002 2h14a2 2 0 002-2V8M3 8l2-2h14l2 2"/></svg>
-            {{ profileLoading ? "—" : employee.email || "—" }}
+            {{ employee.email || "—" }}
           </span>
           <span class="inline-flex items-center gap-1.5">
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"/></svg>
-            {{ profileLoading ? "—" : employee.phone || "—" }}
+            {{ employee.phone || "—" }}
           </span>
         </div>
+        </template>
       </div>
 
       <!-- Actions -->
-      <div class="flex flex-col gap-2 w-full sm:w-48 flex-shrink-0">
+      <div
+        v-if="canShowEmployeeActions"
+        class="flex flex-col gap-2 w-full sm:w-48 flex-shrink-0"
+      >
         <!-- Edit dropdown -->
         <div ref="editRoot" class="relative">
           <button
@@ -185,8 +196,8 @@
           </transition>
         </div>
 
-        <!-- Actions dropdown -->
-        <div ref="actionsRoot" class="relative">
+        <!-- Actions dropdown (RH admin uniquement) -->
+        <div v-if="canManageEmployees" ref="actionsRoot" class="relative">
           <button
             type="button"
             class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50"
@@ -312,13 +323,13 @@
         <Card :title="t('admin.employees.view.employmentStatus')" class="lg:col-span-1 relative">
           <div
             v-if="profileLoading"
-            class="flex min-h-[160px] items-center justify-center gap-2 text-sm text-neutral-500"
+            class="space-y-4"
+            aria-busy="true"
           >
-            <span
-              class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-              aria-hidden="true"
-            />
-            {{ t("common.loading") }}
+            <div v-for="i in 6" :key="i" class="flex items-center justify-between gap-4">
+              <Skeleton box-class="h-3.5 w-24" />
+              <Skeleton box-class="h-3.5 w-32" />
+            </div>
           </div>
           <div v-else class="space-y-3 text-sm">
             <InfoLine icon="status">
@@ -357,13 +368,20 @@
         <Card :title="t('admin.employees.view.recentActivity')" class="lg:col-span-2">
           <div
             v-if="activitiesLoading"
-            class="flex min-h-[160px] items-center justify-center gap-2 text-sm text-neutral-500"
+            class="space-y-1"
+            aria-busy="true"
           >
-            <span
-              class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-              aria-hidden="true"
-            />
-            {{ t("admin.employees.view.loadingActivities") }}
+            <div
+              v-for="i in 4"
+              :key="i"
+              class="flex items-start gap-3 py-3"
+            >
+              <Skeleton rounded="rounded-lg" box-class="h-9 w-9 shrink-0" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <Skeleton box-class="h-3.5 w-3/5" />
+                <Skeleton box-class="h-3 w-2/5" />
+              </div>
+            </div>
           </div>
           <EmptyState
             v-else-if="!recentActivityTotal"
@@ -475,13 +493,36 @@
 
         <div
           v-if="profileLoading"
-          class="flex min-h-[200px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="space-y-6"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingPersonal") }}
+          <div>
+            <Skeleton box-class="h-4 w-36 mb-4" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="i in 4" :key="'p1-' + i" class="space-y-2">
+                <Skeleton box-class="h-3 w-24" />
+                <Skeleton box-class="h-4 w-40" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Skeleton box-class="h-4 w-40 mb-4" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="i in 3" :key="'p2-' + i" class="space-y-2">
+                <Skeleton box-class="h-3 w-24" />
+                <Skeleton box-class="h-4 w-44" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Skeleton box-class="h-4 w-48 mb-4" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="i in 4" :key="'p3-' + i" class="space-y-2">
+                <Skeleton box-class="h-3 w-24" />
+                <Skeleton box-class="h-4 w-36" />
+              </div>
+            </div>
+          </div>
         </div>
         <template v-else>
           <SubTitle>{{ t("admin.employees.view.basicInfo") }}</SubTitle>
@@ -526,13 +567,27 @@
 
         <div
           v-if="profileLoading"
-          class="flex min-h-[200px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="space-y-6"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingWork") }}
+          <div>
+            <Skeleton box-class="h-4 w-32 mb-4" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="i in 7" :key="'w1-' + i" class="space-y-2">
+                <Skeleton box-class="h-3 w-24" />
+                <Skeleton box-class="h-4 w-40" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Skeleton box-class="h-4 w-40 mb-4" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="i in 4" :key="'w2-' + i" class="space-y-2">
+                <Skeleton box-class="h-3 w-28" />
+                <Skeleton box-class="h-4 w-36" />
+              </div>
+            </div>
+          </div>
         </div>
         <template v-else>
           <SubTitle>{{ t("admin.employees.view.workInfo") }}</SubTitle>
@@ -623,13 +678,30 @@
       <Card :title="t('admin.employees.view.attendanceLog')">
         <div
           v-if="extrasLoading"
-          class="flex min-h-[160px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="overflow-x-auto -mx-6 -mb-6"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingAttendance") }}
+          <table class="min-w-full text-sm">
+            <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
+              <tr>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.date") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.day") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.shift") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.checkIn") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.checkOut") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.workHours") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("common.status") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.remarks") }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-100">
+              <tr v-for="i in 6" :key="'att-sk-' + i">
+                <td v-for="c in 8" :key="c" class="px-6 py-3">
+                  <Skeleton box-class="h-3.5 w-16" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div v-else class="overflow-x-auto -mx-6 -mb-6">
           <table class="min-w-full text-sm">
@@ -679,13 +751,22 @@
       <Card :title="t('admin.employees.view.leaveBalance')">
         <div
           v-if="extrasLoading"
-          class="flex min-h-[140px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingBalances") }}
+          <div
+            v-for="i in 4"
+            :key="'lb-sk-' + i"
+            class="rounded-xl border border-neutral-200 p-4"
+          >
+            <div class="flex items-start justify-between">
+              <Skeleton rounded="rounded-lg" box-class="h-9 w-9" />
+              <Skeleton box-class="h-5 w-10" />
+            </div>
+            <Skeleton box-class="h-4 w-28 mt-3" />
+            <Skeleton box-class="h-3 w-36 mt-2" />
+            <Skeleton box-class="h-1.5 w-full mt-2" rounded="rounded-full" />
+          </div>
         </div>
         <EmptyState
           v-else-if="leaveBalances.length === 0"
@@ -732,13 +813,29 @@
       <Card :title="t('admin.employees.view.leaveHistory')">
         <div
           v-if="extrasLoading"
-          class="flex min-h-[140px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="overflow-x-auto -mx-6 -mb-6"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingLeaveHistory") }}
+          <table class="min-w-full text-sm">
+            <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
+              <tr>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.leaveType") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.fromDate") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.toDate") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.days") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("common.status") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.reason") }}</th>
+                <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.appliedOn") }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-100">
+              <tr v-for="i in 5" :key="'lh-sk-' + i">
+                <td v-for="c in 7" :key="c" class="px-6 py-3">
+                  <Skeleton box-class="h-3.5 w-16" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div v-else class="overflow-x-auto -mx-6 -mb-6">
           <table class="min-w-full text-sm">
@@ -781,6 +878,16 @@
       </Card>
     </div>
 
+    <!-- ============== DOCUMENTS ============== -->
+    <div v-else-if="tab === 'documents'">
+      <EmployeeProfileDocumentsPanel
+        :employee-id="employee.id"
+        :can-generate="canManageEmployees"
+        :reload-key="documentsReloadKey"
+        @generate="generateDocModalOpen = true"
+      />
+    </div>
+
     <!-- ============== TIMELINE ============== -->
     <div v-else-if="tab === 'timeline'">
       <Card :title="t('admin.employees.view.timelineTitle')">
@@ -805,13 +912,14 @@
 
         <div
           v-if="extrasLoading"
-          class="flex min-h-[180px] items-center justify-center gap-2 text-sm text-neutral-500"
+          class="relative border-l border-neutral-200 ml-3 space-y-5"
+          aria-busy="true"
         >
-          <span
-            class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-secondary-600"
-            aria-hidden="true"
-          />
-          {{ t("admin.employees.view.loadingTimeline") }}
+          <div v-for="i in 4" :key="'tl-sk-' + i" class="ml-6 space-y-2">
+            <Skeleton box-class="h-4 w-48" />
+            <Skeleton box-class="h-3 w-24" />
+            <Skeleton box-class="h-3 w-64" />
+          </div>
         </div>
         <EmptyState
           v-else-if="filteredTimelineTotal === 0"
@@ -925,6 +1033,7 @@
       v-model="suspendModalOpen"
       :employee="employee"
       :busy="suspendBusy"
+      :save-error="suspendError"
       @confirm="onSuspendConfirm"
     />
 
@@ -933,7 +1042,14 @@
       v-model="terminateModalOpen"
       :employee="employee"
       :busy="terminateBusy"
+      :save-error="terminateError"
       @confirm="onTerminateConfirm"
+    />
+
+    <GenerateEmployeeDocumentModal
+      v-model="generateDocModalOpen"
+      :employee="employee"
+      @generated="onDocumentGenerated"
     />
 
     <!-- Confirm Dialog (SweetAlert-style) -->
@@ -944,6 +1060,7 @@
       :variant="confirmState.variant"
       :confirm-text="confirmState.confirmText"
       :loading-text="confirmState.loadingText"
+      :cancel-text="t('common.cancel')"
       :busy="confirmBusy"
       @confirm="handleConfirmOk"
       @cancel="handleConfirmCancel"
@@ -959,7 +1076,10 @@ import EditBasicInfoModal from "../components/employee/EditBasicInfoModal.vue";
 import EditWorkInfoModal from "../components/employee/EditWorkInfoModal.vue";
 import SuspendEmployeeModal from "../components/employee/SuspendEmployeeModal.vue";
 import TerminateEmployeeModal from "../components/employee/TerminateEmployeeModal.vue";
+import GenerateEmployeeDocumentModal from "../components/employee/GenerateEmployeeDocumentModal.vue";
+import EmployeeProfileDocumentsPanel from "../components/employee/EmployeeProfileDocumentsPanel.vue";
 import ConfirmDialog from "../components/common/ConfirmDialog.vue";
+import Skeleton from "../components/common/Skeleton.vue";
 import { employeesApiService } from "./employees/services/employees.api.service.js";
 import { normalizeEmployeeDetail } from "./employees/composables/useEmployees.js";
 import { useEditWorkInfo } from "./employees/composables/useEditWorkInfo.js";
@@ -972,8 +1092,19 @@ import {
 import { getVisiblePages } from "../composables/useLeaveRequestsTable.js";
 import { parseApiError } from "../utils/apiErrors.js";
 import { useI18n } from "../i18n/index.js";
+import { useAuthStore } from "../stores/authStore.js";
 
 const { t, locale, bcp47 } = useI18n();
+const authStore = useAuthStore();
+const canManageEmployees = computed(() => authStore.can("employees.manage"));
+const canEditTeamWorkInfo = computed(
+  () =>
+    authStore.user?.role === "team_manager" &&
+    authStore.can("attendance.manage"),
+);
+const canShowEmployeeActions = computed(
+  () => canManageEmployees.value || canEditTeamWorkInfo.value,
+);
 
 const route = useRoute();
 const router = useRouter();
@@ -1084,7 +1215,7 @@ const actionsRoot = ref(null);
 
 const editActions = computed(() => {
   void locale.value;
-  return [
+  const items = [
     {
       id: "basic",
       label: t("admin.employees.view.basicInfo"),
@@ -1098,6 +1229,10 @@ const editActions = computed(() => {
       icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
     },
   ];
+  if (canEditTeamWorkInfo.value && !canManageEmployees.value) {
+    return items.filter((item) => item.id === "work");
+  }
+  return items;
 });
 
 // État des modales Basic / Work Information
@@ -1177,7 +1312,15 @@ const roleLabel = computed(() => {
 
 const employeeActions = computed(() => {
   void locale.value;
+  const status = String(employee.value?.status || "").toLowerCase();
+  const blocked = new Set(["suspended", "terminated", "retired"]);
   return [
+    {
+      id: "generate-document",
+      label: t("admin.employees.view.action.generateDocument"),
+      variant: "default",
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+    },
     {
       id: "inactive",
       label: t("admin.employees.view.action.inactive"),
@@ -1202,7 +1345,14 @@ const employeeActions = computed(() => {
       variant: "default",
       icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5L12 4l9 6.5M5 10v9a1 1 0 001 1h3m10-10v9a1 1 0 01-1 1h-3m-6 0h6m-6 0v-5a1 1 0 011-1h4a1 1 0 011 1v5"/></svg>`,
     },
-  ];
+  ].filter((action) => {
+    if (action.id === "generate-document") return canManageEmployees.value;
+    if (action.id === "suspend") return !blocked.has(status);
+    if (action.id === "terminate") return status !== "terminated";
+    if (action.id === "inactive") return !["inactive", "terminated", "suspended"].includes(status);
+    if (action.id === "retired") return !["retired", "terminated"].includes(status);
+    return true;
+  });
 });
 
 // === Dialogue de confirmation (SweetAlert-style) ============================
@@ -1232,11 +1382,14 @@ function askConfirm(opts) {
 async function handleConfirmOk() {
   if (confirmBusy.value) return;
   confirmBusy.value = true;
+  pageError.value = "";
   try {
     await confirmState.value.onConfirm?.();
+    confirmState.value.open = false;
+  } catch (e) {
+    pageError.value = parseApiError(e) || t("common.error");
   } finally {
     confirmBusy.value = false;
-    confirmState.value.open = false;
   }
 }
 
@@ -1245,40 +1398,66 @@ function handleConfirmCancel() {
   confirmState.value.open = false;
 }
 
-// Délai artificiel pour rendre le loader perceptible sur un mock instantané.
-function simulateDelay(ms = 900) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
 // === Modale Suspend Employee (formulaire dédié) =============================
 const suspendModalOpen = ref(false);
 const suspendBusy = ref(false);
+const suspendError = ref("");
+
+watch(suspendModalOpen, (open) => {
+  if (open) suspendError.value = "";
+});
 
 async function onSuspendConfirm(payload) {
-  if (suspendBusy.value) return;
+  if (suspendBusy.value || !employee.value?.id) return;
   suspendBusy.value = true;
+  suspendError.value = "";
   try {
-    await simulateDelay();
-    employee.value.status = "suspended";
+    const updated = await employeesApiService.suspend(employee.value.id, payload);
+    applyUpdatedEmployee(normalizeEmployeeDetail(updated));
+    applyExtras(employee.value);
+    suspendModalOpen.value = false;
+  } catch (e) {
+    suspendError.value =
+      parseApiError(e) || t("admin.employees.view.suspend.error.submit");
   } finally {
     suspendBusy.value = false;
-    suspendModalOpen.value = false;
   }
 }
 
 // === Modale Initiate Termination (formulaire dédié) =========================
 const terminateModalOpen = ref(false);
 const terminateBusy = ref(false);
+const terminateError = ref("");
+
+const generateDocModalOpen = ref(false);
+const documentsReloadKey = ref(0);
+
+function onDocumentGenerated() {
+  pageError.value = "";
+  extrasError.value = t("admin.employees.view.generateDocument.success");
+  documentsReloadKey.value += 1;
+  tab.value = "documents";
+  loadActivities(employee.value.id);
+}
+
+watch(terminateModalOpen, (open) => {
+  if (open) terminateError.value = "";
+});
 
 async function onTerminateConfirm(payload) {
-  if (terminateBusy.value) return;
+  if (terminateBusy.value || !employee.value?.id) return;
   terminateBusy.value = true;
+  terminateError.value = "";
   try {
-    await simulateDelay();
-    employee.value.status = "terminated";
+    const updated = await employeesApiService.terminate(employee.value.id, payload);
+    applyUpdatedEmployee(normalizeEmployeeDetail(updated));
+    applyExtras(employee.value);
+    terminateModalOpen.value = false;
+  } catch (e) {
+    terminateError.value =
+      parseApiError(e) || t("admin.employees.view.terminate.error.submit");
   } finally {
     terminateBusy.value = false;
-    terminateModalOpen.value = false;
   }
 }
 
@@ -1292,6 +1471,10 @@ function runEmployeeAction(action) {
   }
   if (action.id === "terminate") {
     terminateModalOpen.value = true;
+    return;
+  }
+  if (action.id === "generate-document") {
+    generateDocModalOpen.value = true;
     return;
   }
 
@@ -1335,9 +1518,11 @@ function runEmployeeAction(action) {
         return;
       }
 
-      // Pas encore couvert par l'API : mutation locale uniquement.
-      await simulateDelay();
-      employee.value.status = config.status;
+      if (config.status === "retired") {
+        const updated = await employeesApiService.retire(employee.value.id);
+        applyUpdatedEmployee(normalizeEmployeeDetail(updated));
+        applyExtras(employee.value);
+      }
     },
   });
 }
@@ -1393,6 +1578,11 @@ const tabs = computed(() => {
       id: "leave",
       label: t("admin.employees.view.tab.leave"),
       icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+    },
+    {
+      id: "documents",
+      label: t("admin.employees.view.tab.documents"),
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
     },
     {
       id: "timeline",
@@ -1735,26 +1925,11 @@ const KpiCard = {
                 props.label
               ),
               props.loading
-                ? h(
-                    "div",
-                    {
-                      class: "mt-2 flex items-center gap-2",
-                      "aria-busy": "true",
-                      "aria-label": t("common.loading"),
-                    },
-                    [
-                      h("span", {
-                        class:
-                          "inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-secondary-600",
-                        "aria-hidden": "true",
-                      }),
-                      h(
-                        "span",
-                        { class: "text-sm text-neutral-400" },
-                        "…"
-                      ),
-                    ]
-                  )
+                ? h("div", {
+                    class: "mt-2 h-8 w-20 animate-pulse rounded-md bg-neutral-200",
+                    "aria-busy": "true",
+                    "aria-label": t("common.loading"),
+                  })
                 : h(
                     "div",
                     { class: "text-3xl font-bold text-neutral-900 mt-1" },

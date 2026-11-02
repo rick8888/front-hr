@@ -22,7 +22,7 @@
         <button
           type="button"
           class="btn-secondary inline-flex items-center justify-center gap-2 w-full sm:w-auto"
-          @click="scrollToPayrollRecords"
+          @click="openGenerateModal"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -37,6 +37,13 @@
     </div>
 
     <!-- KPI -->
+    <div
+      v-if="autoGenerationEnabled"
+      class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800"
+    >
+      {{ t("admin.payroll.generate.autoBanner") }}
+    </div>
+
     <div
       v-if="error"
       class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700"
@@ -369,24 +376,16 @@
                   {{ statusLabel(row.status) }}
                 </span>
               </td>
-              <td class="pr-5 pl-3 py-3 text-right relative" @click.stop>
-                <button
-                  type="button"
-                  class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100"
+              <td class="pr-5 pl-3 py-3 text-right" @click.stop>
+                <TableRowMenu
+                  :open="openMenuId === row.id"
                   :aria-label="t('admin.payroll.rowActions')"
-                  @click="toggleRowMenu(row.id)"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-                <div
-                  v-if="openMenuId === row.id"
-                  class="absolute right-4 top-full z-10 mt-1 w-40 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg text-left"
-                  @click.stop
+                  @toggle="toggleRowMenu(row.id)"
+                  @close="openMenuId = null"
                 >
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm text-error-600 hover:bg-error-50 font-medium"
                     @click="openDeleteConfirm(row)"
                   >
@@ -394,12 +393,13 @@
                   </button>
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm hover:bg-neutral-50"
                     @click="openMenuId = null; $router.push(`/payroll/show/${row.id}`)"
                   >
                     {{ t("admin.payroll.viewSlip") }}
                   </button>
-                </div>
+                </TableRowMenu>
               </td>
             </tr>
           </tbody>
@@ -512,6 +512,112 @@
     </Transition>
   </Teleport>
 
+  <!-- Génération manuelle employé par employé -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="generateOpen"
+        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-[1px]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payroll-records-generate-title"
+        @click.self="closeGenerateModal"
+      >
+        <div
+          class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-neutral-200 overflow-hidden"
+          @click.stop
+        >
+          <div class="px-6 pt-6 pb-2">
+            <h2 id="payroll-records-generate-title" class="text-xl font-bold text-neutral-900">
+              {{ t("admin.payroll.generate.title") }}
+            </h2>
+            <p class="mt-2 text-sm text-neutral-600 leading-relaxed">
+              {{ t("admin.payroll.generate.subtitle") }}
+            </p>
+            <p
+              v-if="autoGenerationEnabled"
+              class="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800"
+            >
+              {{ t("admin.payroll.generate.autoBanner") }}
+            </p>
+          </div>
+          <form class="px-6 py-4 space-y-4" @submit.prevent="confirmGenerate">
+            <div>
+              <label class="block text-sm font-medium text-neutral-800 mb-1" for="payroll-generate-employee">
+                {{ t("admin.payroll.generate.employee") }}
+              </label>
+              <select
+                id="payroll-generate-employee"
+                v-model="generateForm.employeeId"
+                class="input-base text-sm"
+                :disabled="generating"
+              >
+                <option value="">{{ t("admin.payroll.generate.chooseEmployee") }}</option>
+                <option v-for="e in employeeOptions" :key="e.id" :value="String(e.id)">
+                  {{ e.name }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-800 mb-1" for="payroll-generate-period">
+                {{ t("admin.payroll.generate.period") }}
+              </label>
+              <input
+                id="payroll-generate-period"
+                v-model="generateForm.period"
+                type="month"
+                class="input-base text-sm"
+                :disabled="generating"
+              />
+            </div>
+            <p
+              v-if="hasLockedSlip"
+              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800"
+            >
+              {{ t("admin.payroll.generate.lockedWarning") }}
+            </p>
+            <p v-if="generateError" class="rounded-lg border border-error-200 bg-error-50 px-3 py-2 text-sm text-error-700">
+              {{ generateError }}
+            </p>
+            <p v-if="generateSuccess" class="rounded-lg border border-success-200 bg-success-50 px-3 py-2 text-sm text-success-700">
+              {{ generateSuccess }}
+            </p>
+          </form>
+          <div class="px-6 py-5 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end border-t border-neutral-100 bg-neutral-50/80">
+            <button
+              type="button"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-lg text-sm font-semibold text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 transition-colors"
+              :disabled="generating"
+              @click="closeGenerateModal"
+            >
+              {{ t("common.cancel") }}
+            </button>
+            <button
+              type="button"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-secondary-600 hover:bg-secondary-700 shadow-sm transition-colors disabled:opacity-60 inline-flex items-center justify-center gap-2"
+              :disabled="generating"
+              @click="confirmGenerate"
+            >
+              <span
+                v-if="generating"
+                class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                aria-hidden="true"
+              />
+              {{ generating ? t("admin.payroll.generate.generating") : t("admin.payroll.generate.submit") }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
   <!-- Loader pendant suppression -->
   <Teleport to="body">
     <Transition
@@ -545,10 +651,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "../i18n/index.js";
 import PayrollKpiCard from "../components/payroll/PayrollKpiCard.vue";
 import PayrollFilterField from "../components/payroll/PayrollFilterField.vue";
+import TableRowMenu from "../components/common/TableRowMenu.vue";
 import { usePayrollRecords } from "./payroll/composables/usePayrollRecords.js";
 import { avatarColor, initialsFromName } from "./payroll/utils/payroll-http.js";
 
@@ -569,6 +676,12 @@ const {
   kpi,
   loading,
   deleting: deleteLoading,
+  generating,
+  generateError,
+  generateSuccess,
+  autoGenerationEnabled,
+  generateForm,
+  hasLockedSlip,
   error,
   filters,
   searchQuery,
@@ -584,6 +697,8 @@ const {
   applyQuickFilter,
   setSearchAndReload,
   deleteRecord,
+  resetGenerateForm,
+  generateOne,
   statusLabel,
   statusBadgeClass,
 } = usePayrollRecords();
@@ -595,6 +710,7 @@ const openMenuId = ref(null);
 
 const deleteConfirmOpen = ref(false);
 const rowToDelete = ref(null);
+const generateOpen = ref(false);
 
 const payrollRecordsSection = ref(null);
 
@@ -612,10 +728,21 @@ function initials(name) {
   return initialsFromName(name);
 }
 
-function scrollToPayrollRecords() {
-  nextTick(() => {
-    payrollRecordsSection.value?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+function openGenerateModal() {
+  resetGenerateForm();
+  generateOpen.value = true;
+}
+
+function closeGenerateModal() {
+  if (generating.value) return;
+  generateOpen.value = false;
+}
+
+async function confirmGenerate() {
+  const ok = await generateOne();
+  if (ok) {
+    generateForm.value = { ...generateForm.value, employeeId: "" };
+  }
 }
 
 function openDeleteConfirm(row) {

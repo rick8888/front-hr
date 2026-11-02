@@ -1,9 +1,10 @@
 <template>
   <div class="px-4 py-4 sm:px-8 sm:py-6 max-w-7xl mx-auto">
-    <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-neutral-900">{{ t("admin.payroll.simulator.title") }}</h1>
+        <h1 class="text-2xl font-bold text-neutral-900">
+          {{ t("admin.payroll.simulator.title") }}
+        </h1>
         <p class="text-sm text-neutral-600 mt-1">
           {{ t("admin.payroll.simulator.subtitle") }}
         </p>
@@ -18,16 +19,17 @@
           {{ t("admin.payroll.breadcrumb.dashboard") }}
         </RouterLink>
         <span>/</span>
-        <RouterLink to="/payroll/dashboard" class="hover:text-secondary-600">{{ t("admin.payroll.breadcrumb.payroll") }}</RouterLink>
+        <RouterLink to="/payroll/dashboard" class="hover:text-secondary-600">
+          {{ t("admin.payroll.breadcrumb.payroll") }}
+        </RouterLink>
         <span>/</span>
-        <span class="text-neutral-800 font-medium">{{ t("admin.payroll.simulator.breadcrumb") }}</span>
+        <span class="text-neutral-800 font-medium">
+          {{ t("admin.payroll.simulator.breadcrumb") }}
+        </span>
       </nav>
     </div>
 
-    <!-- Bandeau info -->
-    <div
-      class="mb-6 flex gap-3 rounded-xl border border-info-500/20 bg-info-50 px-4 py-3 text-sm text-neutral-700"
-    >
+    <div class="mb-6 flex gap-3 rounded-xl border border-info-500/20 bg-info-50 px-4 py-3 text-sm text-neutral-700">
       <span class="flex-shrink-0 text-info-600 mt-0.5" aria-hidden="true">
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -44,279 +46,410 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-5">
-      <!-- Colonne gauche : form -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Employé & période -->
-        <div class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <h2 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide mb-4">
-            {{ t("admin.payroll.simulator.employeePeriod") }}
-          </h2>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("common.name") }}</label>
-              <input v-model="employee.name" type="text" class="input-base text-sm" />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("common.country") }}</label>
-                <select v-model="employee.country" class="input-base text-sm">
-                  <option value="MAR">{{ t("admin.payroll.simulator.morocco") }}</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("admin.payroll.simulator.month") }}</label>
-                <input v-model="month" type="month" class="input-base text-sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gains éditables -->
-        <div class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-              {{ t("admin.payroll.simulator.earnings") }}
-            </h2>
-            <button
-              type="button"
-              class="text-xs font-semibold text-secondary-600 hover:text-secondary-700"
-              @click="addGain"
+      <section class="lg:col-span-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide mb-4">
+          {{ t("admin.payroll.simulator.employeePeriod") }}
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label
+              for="simulator-employee"
+              class="block text-sm font-medium text-neutral-700 mb-1"
             >
-              {{ t("admin.payroll.simulator.addGain") }}
-            </button>
-          </div>
-          <div class="space-y-2">
-            <div
-              v-for="(g, idx) in gainComponents"
-              :key="g.code"
-              class="flex items-center gap-2 rounded-lg border border-green-100 bg-green-50/40 px-3 py-2"
+              {{ t("admin.payroll.simulator.employee") }}
+            </label>
+            <select
+              id="simulator-employee"
+              v-model="selectedEmployeeId"
+              class="input-base text-sm"
+              :disabled="loadingEmployees || !employees.length"
             >
-              <span
-                class="w-7 h-7 rounded-md bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0"
-              >
-                +
-              </span>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-neutral-900 truncate">{{ g.name }}</p>
-                <p class="text-xs text-neutral-500 font-mono">{{ g.code }}</p>
-              </div>
-              <div class="relative w-32">
-                <input
-                  v-model.number="g.value"
-                  type="number"
-                  min="0"
-                  step="50"
-                  class="input-base text-sm pr-12 text-right tabular-nums"
-                />
-                <span
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none"
-                >
-                  MAD
-                </span>
-              </div>
-              <button
-                type="button"
-                class="p-1.5 rounded text-neutral-400 hover:text-error-600 hover:bg-error-50"
-                :aria-label="t('common.delete')"
-                @click="removeComponent(idx, 'gain')"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Déductions automatiques -->
-        <div class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-              {{ t("admin.payroll.simulator.deductions") }}
-            </h2>
-            <span class="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
-              {{ t("admin.payroll.simulator.autoCalc") }}
-            </span>
-          </div>
-          <div class="space-y-2">
-            <div
-              v-for="d in computedDeductions"
-              :key="d.code"
-              class="flex items-center justify-between rounded-lg border border-red-100 bg-red-50/40 px-3 py-2"
-            >
-              <div class="flex items-center gap-2 min-w-0">
-                <span
-                  class="w-7 h-7 rounded-md bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold flex-shrink-0"
-                >
-                  −
-                </span>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <p class="text-sm font-medium text-neutral-900 truncate">
-                      {{ d.name }}
-                    </p>
-                    <span
-                      v-if="d.auto"
-                      class="inline-flex items-center text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600"
-                    >
-                      {{ t("admin.payroll.simulator.auto") }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-neutral-500 font-mono">{{ d.code }}</p>
-                </div>
-              </div>
-              <span class="font-semibold text-red-700 text-sm tabular-nums">
-                − {{ formatMAD(d.value) }}
-              </span>
-            </div>
+              <option value="">{{ t("admin.payroll.simulator.chooseEmployee") }}</option>
+              <option v-for="item in employees" :key="item.id" :value="String(item.id)">
+                {{ item.name }} — {{ item.matricule || item.id }}
+              </option>
+            </select>
+            <p v-if="loadingEmployees" class="mt-1 text-xs text-neutral-500">
+              {{ t("admin.payroll.simulator.loadingEmployees") }}
+            </p>
+            <p v-else-if="!employees.length && !employeesError" class="mt-1 text-xs text-neutral-500">
+              {{ t("admin.payroll.simulator.noEmployees") }}
+            </p>
+            <p v-if="employeesError" role="alert" class="mt-1 text-xs text-error-700">
+              {{ employeesError }}
+            </p>
           </div>
 
-          <!-- Détails calcul -->
-          <dl
-            class="mt-4 pt-4 border-t border-neutral-100 grid grid-cols-2 gap-y-2 gap-x-4 text-xs"
+          <div>
+            <label for="simulator-period" class="block text-sm font-medium text-neutral-700 mb-1">
+              {{ t("admin.payroll.simulator.month") }}
+            </label>
+            <input id="simulator-period" v-model="period" type="month" class="input-base text-sm" />
+          </div>
+
+          <div v-if="selectedEmployee" class="rounded-lg bg-neutral-50 border border-neutral-100 p-3 text-sm">
+            <p class="font-medium text-neutral-900">{{ selectedEmployee.name }}</p>
+            <p class="text-xs text-neutral-500 mt-1">
+              {{ selectedEmployee.job_title || selectedEmployee.department || "—" }}
+              <span v-if="selectedEmployee.currency"> · {{ selectedEmployee.currency }}</span>
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="!selectedEmployeeId || !period || loadingPreview || loadingEmployees"
+            @click="loadPreview"
           >
-            <dt class="text-neutral-500">{{ t("admin.payroll.simulator.cnssBase") }}</dt>
-            <dd class="font-mono text-right text-neutral-800">
-              {{ t("admin.payroll.simulator.cnssBaseFormula", { gross: formatMAD(gross) }) }}
-            </dd>
-            <dt class="text-neutral-500">{{ t("admin.payroll.simulator.amoBase") }}</dt>
-            <dd class="font-mono text-right text-neutral-800">{{ formatMAD(gross) }}</dd>
-            <dt class="text-neutral-500">{{ t("admin.payroll.simulator.irBase") }}</dt>
-            <dd class="font-mono text-right text-neutral-800">{{ formatMAD(taxable) }}</dd>
-          </dl>
+            {{
+              loadingPreview
+                ? t("admin.payroll.simulator.calculating")
+                : t("admin.payroll.simulator.calculate")
+            }}
+          </button>
         </div>
+      </section>
 
-        <!-- Totaux rapides -->
-        <div class="rounded-xl bg-neutral-900 text-white p-5 shadow-sm space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-white/70">GROSS</span>
-            <span class="font-semibold tabular-nums">{{ formatMAD(gross) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-white/70">CNSS</span>
-            <span class="font-semibold tabular-nums text-red-300">
-              − {{ formatMAD(cnss) }}
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-white/70">AMO</span>
-            <span class="font-semibold tabular-nums text-red-300">
-              − {{ formatMAD(amo) }}
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-white/70">IR</span>
-            <span class="font-semibold tabular-nums text-red-300">
-              − {{ formatMAD(ir) }}
-            </span>
-          </div>
-          <div
-            class="flex justify-between pt-2 mt-2 border-t border-white/10 text-base"
-          >
-            <span class="font-semibold">NET</span>
-            <span class="font-bold tabular-nums text-green-300">{{ formatMAD(net) }}</span>
-          </div>
-        </div>
-      </div>
+      <div class="lg:col-span-3 space-y-4">
+        <p
+          v-if="previewError"
+          role="alert"
+          class="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-800"
+        >
+          {{ previewError }}
+        </p>
+        <p
+          v-else-if="!preview && !loadingPreview"
+          class="rounded-xl border border-neutral-200 bg-white px-5 py-8 text-center text-sm text-neutral-500"
+        >
+          {{ t("admin.payroll.simulator.emptyPreview") }}
+        </p>
+        <p
+          v-if="loadingPreview"
+          class="rounded-xl border border-neutral-200 bg-white px-5 py-8 text-center text-sm text-neutral-500"
+          role="status"
+        >
+          {{ t("admin.payroll.simulator.calculating") }}
+        </p>
 
-      <!-- Colonne droite : bulletin -->
-      <div class="lg:col-span-3">
         <PayrollPreview
-          :employee="employee"
-          :month="monthDate"
-          :gains="gains"
-          :deductions="computedDeductions"
-          :gross="gross"
-          :total-deductions="totalDeductions"
-          :taxable="taxable"
-          :net="net"
+          v-if="preview && previewEmployee"
+          :employee="previewEmployee"
+          :month="periodDate"
+          :gains="preview.gains"
+          :deductions="preview.deductions"
+          :gross="preview.summary.gross"
+          :total-deductions="preview.summary.total_deductions"
+          :taxable="preview.summary.taxable"
+          :net="preview.summary.net"
+          :currency="preview.currency"
+          :locale="preview.locale"
         />
+
+        <section
+          v-if="preview?.attendance"
+          class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
+        >
+          <h2 class="text-sm font-semibold text-neutral-900 uppercase tracking-wide mb-4">
+            {{ t("admin.payroll.attendance.title") }}
+          </h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div
+              v-for="item in attendanceItems"
+              :key="item.label"
+              class="rounded-xl border border-neutral-100 bg-neutral-50/80 p-3"
+            >
+              <p class="text-xs text-neutral-500">{{ item.label }}</p>
+              <p class="text-lg font-bold mt-1 tabular-nums" :class="item.valueClass">
+                {{ item.value }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div
+          v-if="preview"
+          role="alert"
+          class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+          {{ t("admin.payroll.simulator.rulesNotValidated") }}
+        </div>
+        <div
+          v-if="preview?.countryCode === 'FR'"
+          role="alert"
+          class="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-800"
+        >
+          {{ t("admin.payroll.simulator.noCountryRules") }}
+        </div>
+        <div
+          v-if="preview?.countryCode === 'CI' || preview?.countryCode === 'SN' || preview?.countryCode === 'CD' || preview?.countryCode === 'CG'"
+          role="alert"
+          class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+          {{ t("admin.payroll.simulator.provisionalCountryRules") }}
+        </div>
+        <div
+          v-if="preview?.countryCode === 'CG'"
+          role="alert"
+          class="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-800"
+        >
+          {{ t("admin.payroll.simulator.noCongoIncomeTaxRules") }}
+        </div>
+
+        <div
+          v-if="preview?.attendance.pending_attendance_days > 0"
+          role="status"
+          class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+          {{
+            t("admin.payroll.simulator.pendingAttendance", {
+              count: preview.attendance.pending_attendance_days,
+            })
+          }}
+        </div>
+        <div
+          v-if="preview?.attendance.recorded_absent_days > 0"
+          role="status"
+          class="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700"
+        >
+          {{
+            t("admin.payroll.simulator.recordedAbsences", {
+              count: preview.attendance.recorded_absent_days,
+            })
+          }}
+        </div>
+        <div
+          v-if="preview?.attendance.no_show_days > 0"
+          role="status"
+          class="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700"
+        >
+          {{
+            t("admin.payroll.simulator.missingPastAttendance", {
+              count: preview.attendance.no_show_days,
+            })
+          }}
+        </div>
+
+        <section
+          v-if="preview"
+          class="rounded-xl border border-neutral-200 bg-white px-5 py-4 text-sm"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-neutral-600">{{ t("admin.payroll.simulator.employerCharges") }}</span>
+            <span class="font-semibold text-neutral-900 tabular-nums">
+              {{ formatMoney(preview.summary.total_employer_charges, preview.currency, preview.locale) }}
+            </span>
+          </div>
+          <p class="mt-2 text-xs text-neutral-500">
+            {{ t("admin.payroll.simulator.notSaved") }}
+          </p>
+        </section>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "../../i18n/index.js";
+import { parseApiError } from "../../utils/apiErrors.js";
 import PayrollPreview from "../../components/payroll/PayrollPreview.vue";
-import { usePayrollSimulator } from "../../composables/usePayrollSimulator";
+import { employeesApiService } from "../employees/services/employees.api.service.js";
+import { payrollApiService } from "./services/payroll.api.service.js";
 
-const { t } = useI18n();
+const { t, locale: uiLocale } = useI18n();
+const employees = ref([]);
+const selectedEmployeeId = ref("");
+const today = new Date();
+const period = ref(
+  `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`,
+);
+const loadingEmployees = ref(false);
+const loadingPreview = ref(false);
+const employeesError = ref("");
+const previewError = ref("");
+const preview = ref(null);
+let previewRequest = 0;
 
-const employee = ref({
-  id: 1,
-  name: "John Doe",
-  country: "MAR",
-});
-
-const components = ref([
-  { code: "BASE_SALARY", name: "Base Salary", type: "gain", value: 10000 },
-  { code: "HRA", name: "House Rent Allowance", type: "gain", value: 2000 },
-  { code: "TRANSPORT", name: "Transport", type: "gain", value: 500 },
-  { code: "CNSS", name: "CNSS", type: "deduction", source_type: "tax" },
-  { code: "AMO", name: "AMO", type: "deduction", source_type: "tax" },
-  { code: "IR", name: "Income Tax", type: "deduction", source_type: "tax" },
-]);
-
-const month = ref(new Date().toISOString().slice(0, 7));
-
-const monthDate = computed(() => {
-  const [y, m] = month.value.split("-").map(Number);
-  if (!y || !m) return new Date();
-  return new Date(y, m - 1, 1);
-});
-
-const {
-  gains,
-  computedDeductions,
-  gross,
-  cnss,
-  amo,
-  ir,
-  taxable,
-  totalDeductions,
-  net,
-} = usePayrollSimulator(components);
-
-const gainComponents = computed(() =>
-  components.value.filter((c) => c.type === "gain")
+const selectedEmployee = computed(
+  () => employees.value.find((employee) => String(employee.id) === selectedEmployeeId.value) ?? null,
 );
 
-function addGain() {
-  const idx = components.value.filter((c) => c.type === "gain").length + 1;
-  components.value.push({
-    code: `GAIN_${idx}`,
-    name: `Gain ${idx}`,
-    type: "gain",
-    value: 0,
-  });
-}
+const periodDate = computed(() => {
+  const [year, month] = period.value.split("-").map(Number);
+  return year && month ? new Date(year, month - 1, 1) : new Date();
+});
 
-function removeComponent(index, type) {
-  const list = components.value.filter((c) => c.type === type);
-  const target = list[index];
-  if (!target) return;
-  const realIdx = components.value.findIndex((c) => c === target);
-  if (realIdx !== -1) components.value.splice(realIdx, 1);
-}
+const previewEmployee = computed(() => {
+  if (!selectedEmployee.value || !preview.value) return null;
+  return {
+    ...selectedEmployee.value,
+    country: preview.value.countryCode,
+  };
+});
 
-function formatMAD(value) {
-  const n = Number(value) || 0;
+const attendanceItems = computed(() => {
+  const attendance = preview.value?.attendance ?? {};
+  const days = (value) => `${Number(value ?? 0).toFixed(1)} j`;
+  return [
+    {
+      label: t("admin.payroll.attendance.workingDays"),
+      value: days(attendance.working_days),
+      valueClass: "text-neutral-900",
+    },
+    {
+      label: t("admin.payroll.attendance.daysWorked"),
+      value: days(attendance.days_worked),
+      valueClass: "text-green-700",
+    },
+    {
+      label: t("admin.payroll.attendance.paidLeave"),
+      value: days(attendance.leave_days),
+      valueClass: "text-amber-700",
+    },
+    {
+      label: t("admin.payroll.attendance.recordedAbsences"),
+      value: days(attendance.recorded_absent_days),
+      valueClass: "text-red-600",
+    },
+    {
+      label: t("admin.payroll.attendance.noShows"),
+      value: days(attendance.no_show_days),
+      valueClass: "text-red-600",
+    },
+    {
+      label: t("admin.payroll.attendance.pending"),
+      value: days(attendance.pending_attendance_days),
+      valueClass: "text-amber-700",
+    },
+    {
+      label: t("admin.payroll.attendance.unpaidLeave"),
+      value: days(attendance.unpaid_leave_days),
+      valueClass: "text-neutral-700",
+    },
+    {
+      label: t("admin.payroll.attendance.payableDays"),
+      value: days(attendance.payable_days),
+      valueClass: "text-primary-700",
+    },
+    {
+      label: t("admin.payroll.attendance.overtime"),
+      value: `${Number(attendance.overtime_hours ?? 0).toFixed(1)} h`,
+      valueClass: "text-sky-700",
+    },
+  ];
+});
+
+watch([selectedEmployeeId, period], () => {
+  previewRequest += 1;
+  preview.value = null;
+  previewError.value = "";
+  loadingPreview.value = false;
+});
+
+onMounted(loadEmployees);
+
+async function loadEmployees() {
+  loadingEmployees.value = true;
+  employeesError.value = "";
   try {
-    return new Intl.NumberFormat("fr-MA", {
+    const list = await employeesApiService.fetchAll();
+    employees.value = list
+      .filter((employee) => employee?.is_active !== false)
+      .map((employee) => ({
+        ...employee,
+        name:
+          employee.full_name ||
+          employee.name ||
+          [employee.first_name, employee.last_name].filter(Boolean).join(" "),
+      }))
+      .filter((employee) => employee.id && employee.name)
+      .sort((left, right) => left.name.localeCompare(right.name));
+  } catch (error) {
+    employeesError.value = parseApiError(error);
+  } finally {
+    loadingEmployees.value = false;
+  }
+}
+
+async function loadPreview() {
+  if (!selectedEmployeeId.value || !period.value) return;
+
+  const request = ++previewRequest;
+  loadingPreview.value = true;
+  previewError.value = "";
+  preview.value = null;
+
+  try {
+    const result = await payrollApiService.preview({
+      employee_id: Number(selectedEmployeeId.value),
+      period: period.value,
+    });
+    if (request !== previewRequest) return;
+
+    if (!result?.summary || !Array.isArray(result.lines)) {
+      throw new Error(t("admin.payroll.simulator.invalidResponse"));
+    }
+    if (!result.attendance || typeof result.attendance !== "object") {
+      throw new Error(t("admin.payroll.simulator.invalidResponse"));
+    }
+
+    const lines = result.lines.filter((line) => line.type !== "info" && line.kind !== "summary");
+    const countryCode = normalizeCountryCode(result.country_code);
+    const currency = result.currency;
+    if (!currency) {
+      throw new Error(t("admin.payroll.simulator.invalidResponse"));
+    }
+    const region = (countryCode || "FR").replace("MAR", "MA");
+    const locale = `${uiLocale.value}-${region}`;
+
+    preview.value = {
+      summary: result.summary,
+      attendance: result.attendance,
+      currency,
+      countryCode,
+      locale,
+      gains: lines
+        .filter((line) => line.type === "earning")
+        .map((line) => ({
+          code: line.code,
+          name: line.label || line.code,
+          value: Number(line.amount) || 0,
+        })),
+      deductions: lines
+        .filter((line) => line.type === "deduction")
+        .map((line) => ({
+          code: line.code,
+          name: line.label || line.code,
+          value: Number(line.amount) || 0,
+          auto: line.kind === "tax_employee" || line.kind === "tax_employer",
+        })),
+    };
+  } catch (error) {
+    if (request === previewRequest) {
+      previewError.value = parseApiError(error);
+    }
+  } finally {
+    if (request === previewRequest) loadingPreview.value = false;
+  }
+}
+
+function normalizeCountryCode(code) {
+  if (!code) return null;
+  return code === "CIV" ? "CI" : code;
+}
+
+function formatMoney(value, currency, locale) {
+  const amount = Number(value) || 0;
+  try {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "MAD",
+      currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(n);
-  } catch (e) {
-    return `${n.toFixed(2)} MAD`;
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
   }
 }
 </script>

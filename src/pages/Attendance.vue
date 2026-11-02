@@ -26,6 +26,17 @@
           </option>
         </select>
       </label>
+      <label class="text-sm font-medium text-neutral-700">
+        <span class="block mb-1.5">{{ t("admin.attendance.selectStatus") }}</span>
+        <select v-model="statusFilter" class="input-base min-w-[200px] bg-white" @change="loadData()">
+          <option value="">{{ t("admin.attendance.allStatuses") }}</option>
+          <option value="on_time">{{ t("admin.attendance.status.onTime") }}</option>
+          <option value="late">{{ t("admin.attendance.status.late") }}</option>
+          <option value="half_day">{{ t("admin.attendance.status.halfDay") }}</option>
+          <option value="leave">{{ t("admin.attendance.status.leave") }}</option>
+          <option value="absent">{{ t("admin.attendance.status.absent") }}</option>
+        </select>
+      </label>
     </div>
 
     <div class="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
@@ -50,18 +61,20 @@
             <tr class="text-left text-xs font-semibold uppercase text-neutral-500 border-y border-neutral-100">
               <th class="px-4 py-3">{{ t("admin.attendance.col.id") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.employee") }}</th>
+              <th class="px-4 py-3">{{ t("admin.attendance.col.status") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.shift") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.checkIn") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.checkOut") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.late") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.earlyOut") }}</th>
               <th class="px-4 py-3">{{ t("admin.attendance.col.overtime") }}</th>
+              <th class="px-4 py-3">{{ t("admin.attendance.col.break") }}</th>
               <th class="px-4 py-3 text-right">{{ t("common.actions") }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-neutral-100">
-            <tr v-if="loading"><td colspan="9" class="px-4 py-12 text-center text-neutral-500">{{ t("common.loading") }}</td></tr>
-            <tr v-else-if="!paginated.length"><td colspan="9" class="px-4 py-12 text-center text-neutral-500">{{ t("admin.attendance.empty") }}</td></tr>
+            <tr v-if="loading"><td colspan="11" class="px-4 py-12 text-center text-neutral-500">{{ t("common.loading") }}</td></tr>
+            <tr v-else-if="!paginated.length"><td colspan="11" class="px-4 py-12 text-center text-neutral-500">{{ t("admin.attendance.empty") }}</td></tr>
             <template v-else>
               <tr v-for="record in paginated" :key="record.id" class="hover:bg-neutral-50">
                 <td class="px-4 py-3 font-mono text-xs">{{ record.id }}</td>
@@ -69,12 +82,14 @@
                   <p class="font-semibold text-neutral-900">{{ record.employee }}</p>
                   <p class="text-xs text-neutral-500">{{ record.employeeCode }}</p>
                 </td>
+                <td class="px-4 py-3">{{ statusLabel(record.status) }}</td>
                 <td class="px-4 py-3">{{ record.shift }}</td>
                 <td class="px-4 py-3">{{ formatTime(record.checkIn) }}</td>
                 <td class="px-4 py-3">{{ formatTime(record.checkOut) }}</td>
                 <td class="px-4 py-3">{{ formatMinutes(record.lateMinutes) }}</td>
                 <td class="px-4 py-3">{{ formatMinutes(record.earlyOutMinutes) }}</td>
                 <td class="px-4 py-3">{{ formatMinutes(record.overtimeMinutes) }}</td>
+                <td class="px-4 py-3">{{ formatMinutes(record.breakMinutes) }}</td>
                 <td class="px-4 py-3 text-right">
                   <button class="text-secondary-600 hover:underline mr-3" @click="openEdit(record)">{{ t("admin.attendance.edit") }}</button>
                   <button class="text-error-600 hover:underline" @click="requestDelete(record)">{{ t("admin.attendance.delete") }}</button>
@@ -153,7 +168,7 @@ const { t, bcp47 } = useI18n();
 
 const {
   employees, shifts, sites, loading, deleting, error, dateFilter, employeeFilter,
-  search, page, pageSize, modalOpen, editingId, form, deleteOpen, deleteTarget,
+  statusFilter, search, page, pageSize, modalOpen, editingId, form, deleteOpen, deleteTarget,
   filtered, totalPages, start, end, paginated, loadData, loadReferenceData,
   openCreate, openEdit, submit, requestDelete, confirmDelete,
 } = useAttendanceRecords();
@@ -163,6 +178,17 @@ function formatTime(value) {
   const [hours, minutes] = value.split(":");
   const date = new Date(2000, 0, 1, Number(hours), Number(minutes));
   return date.toLocaleTimeString(bcp47.value, { hour: "numeric", minute: "2-digit" });
+}
+
+function statusLabel(status) {
+  const key = {
+    on_time: "onTime",
+    late: "late",
+    half_day: "halfDay",
+    leave: "leave",
+    absent: "absent",
+  }[status];
+  return key ? t(`admin.attendance.status.${key}`) : status || "—";
 }
 
 onMounted(() => {

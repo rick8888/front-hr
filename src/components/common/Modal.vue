@@ -68,6 +68,10 @@ const sizeClass = computed(() => {
       return "max-w-2xl";
     case "xl":
       return "max-w-3xl";
+    case "2xl":
+      return "max-w-5xl";
+    case "full":
+      return "max-w-6xl";
     default:
       return "max-w-md";
   }

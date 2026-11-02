@@ -65,13 +65,51 @@ function normalizeCountryOption(raw) {
 }
 
 function normalizeManagerOption(raw) {
+  const name =
+    raw.name ??
+    raw.full_name ??
+    `${raw.first_name ?? ""} ${raw.last_name ?? ""}`.trim();
+  const meta = raw?.metadata && typeof raw.metadata === "object" ? raw.metadata : {};
+  const role = String(meta.role ?? raw.role ?? "").toLowerCase();
+
   return {
     id: raw.id,
-    name: raw.name ?? "",
-    label: raw.name ?? "",
+    name: name || "",
+    label: name || "",
     email: raw.email ?? "",
-    role: raw.role ?? "",
+    role,
   };
+}
+
+function isManagerRole(raw) {
+  const meta = raw?.metadata && typeof raw.metadata === "object" ? raw.metadata : {};
+  const role = String(meta.role ?? raw.role ?? "").toLowerCase();
+  return role === "team_manager";
+}
+
+function mergeManagers(fromEmployees, fromUsers) {
+  const byEmail = new Map();
+
+  for (const raw of fromEmployees) {
+    if (!isManagerRole(raw)) continue;
+    const option = normalizeManagerOption(raw);
+    if (!option.name) continue;
+    const key = option.email.trim().toLowerCase() || `employee:${option.id}`;
+    byEmail.set(key, option);
+  }
+
+  for (const raw of fromUsers) {
+    const option = normalizeManagerOption(raw);
+    if (!option.name) continue;
+    if (option.role !== "team_manager") continue;
+    const key = option.email.trim().toLowerCase() || `user:${option.id}`;
+    // Préférer la fiche employé (id RH) si déjà présente
+    if (!byEmail.has(key)) {
+      byEmail.set(key, option);
+    }
+  }
+
+  return [...byEmail.values()].sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
 
 function normalizeRoleOption(raw) {
@@ -101,7 +139,12 @@ export function useNewEmployeeResources() {
 
   const roleOptions = computed(() =>
     roles.value
-      .filter((role) => role.isActive && role.slug && role.slug !== "super_admin")
+      .filter(
+        (role) =>
+          role.isActive &&
+          role.slug &&
+          !["super_admin", "tenant"].includes(role.slug)
+      )
       .sort((a, b) => a.name.localeCompare(b.name))
   );
 
@@ -137,7 +180,7 @@ export function useNewEmployeeResources() {
         designationsApiService.fetchAll(),
         shiftsApiService.fetchAll(),
         employeesApiService.fetchAll(),
-        companyUsersApiService.fetchUsers({ roles: "tenant,admin" }),
+        companyUsersApiService.fetchUsers({ roles: "team_manager" }).catch(() => []),
         departmentsApiService.fetchAll().catch(() => []),
         countriesApiService.fetchAll().catch(() => []),
         attendanceTypesApiService.fetchAll({ activeOnly: true }).catch(() => []),
@@ -150,9 +193,10 @@ export function useNewEmployeeResources() {
       employees.value = employeesList
         .filter((e) => e.is_active !== false)
         .map(normalizeEmployee);
-      managers.value = (Array.isArray(managersList) ? managersList : [])
-        .map(normalizeManagerOption)
-        .sort((a, b) => a.name.localeCompare(b.name));
+      managers.value = mergeManagers(
+        employeesList.filter((e) => e.is_active !== false),
+        Array.isArray(managersList) ? managersList : []
+      );
       departments.value = departmentsList.filter(isActive).map(normalizeDepartmentOption);
       countries.value = countriesList.map(normalizeCountryOption);
       attendanceTypes.value = attendanceTypesList;

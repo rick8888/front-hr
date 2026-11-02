@@ -5,6 +5,7 @@
       <button
         type="button"
         class="btn-secondary inline-flex items-center justify-center gap-2 w-full"
+        :disabled="downloading"
         @click="$emit('download-pdf')"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,7 +16,7 @@
             d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
           />
         </svg>
-        Download PDF
+        {{ downloading ? t("admin.payroll.show.downloading") : t("admin.payroll.show.downloadPdf") }}
       </button>
       <RouterLink
         :to="backTo"
@@ -125,7 +126,8 @@
     <div class="space-y-2">
       <button
         type="button"
-        class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold bg-secondary-600 text-white hover:bg-secondary-700 transition-colors shadow-sm"
+        class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold bg-secondary-600 text-white hover:bg-secondary-700 transition-colors shadow-sm disabled:opacity-60"
+        :disabled="downloading"
         @click="$emit('download-payslip')"
       >
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +138,7 @@
             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
           />
         </svg>
-        Download Payslip
+        {{ downloading ? t("admin.payroll.show.downloading") : t("admin.payroll.show.downloadPayslip") }}
       </button>
       <RouterLink
         :to="backTo"
@@ -158,21 +160,27 @@
 </template>
 
 <script setup>
-defineProps({
+import { useI18n } from "../../../i18n/index.js";
+
+const { t } = useI18n();
+
+const props = defineProps({
   detail: { type: Object, required: true },
   summary: {
     type: Object,
     required: true,
   },
+  currency: { type: String, default: "EUR" },
   backTo: { type: String, default: "/payroll/records" },
+  downloading: { type: Boolean, default: false },
 });
 
 defineEmits(["download-pdf", "download-payslip", "back"]);
 
 function formatMoney(n) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "USD",
+    currency: props.currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
 }

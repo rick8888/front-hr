@@ -2,7 +2,7 @@
   <div class="rounded-lg border border-neutral-200 bg-neutral-50/60 p-4">
     <h3 class="text-sm font-semibold text-neutral-900">Justificatif de virement</h3>
     <p class="mt-1 text-xs text-neutral-500">
-      Déposez la quittance ou le reçu de votre virement bancaire (PDF, JPG ou PNG).
+      Effectuez le virement avec les coordonnées communiquées par notre équipe, puis joignez le reçu (PDF, JPG ou PNG). Le forfait sera activé après vérification.
     </p>
 
     <div
@@ -58,6 +58,20 @@
     </div>
 
     <p v-if="error" class="mt-2 text-xs text-red-600">{{ error }}</p>
+
+    <div class="mt-4">
+      <label class="mb-1.5 block text-sm font-semibold text-neutral-800">
+        Référence du virement (optionnel)
+      </label>
+      <input
+        :value="modelReference"
+        type="text"
+        maxlength="120"
+        class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        placeholder="Référence de transaction"
+        @input="$emit('update:modelReference', $event.target.value)"
+      />
+    </div>
   </div>
 </template>
 
@@ -66,10 +80,11 @@ import { ref } from "vue";
 
 defineProps({
   file: { type: Object, default: null },
+  modelReference: { type: String, default: "" },
   error: { type: String, default: "" },
 });
 
-const emit = defineEmits(["select", "remove"]);
+const emit = defineEmits(["select", "remove", "update:modelReference"]);
 
 const fileInput = ref(null);
 

@@ -428,7 +428,7 @@
                 </p>
               </div>
               <div>
-                <FieldLabel required>{{ t("admin.employees.create.manager") }}</FieldLabel>
+                <FieldLabel>{{ t("admin.employees.create.manager") }}</FieldLabel>
                 <select
                   v-model="form.reportingManager"
                   class="input-base text-sm"
@@ -555,6 +555,19 @@
                     {{ errors.password }}
                   </p>
                 </div>
+                <label class="mt-4 flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    v-model="form.sendWelcomeEmail"
+                    type="checkbox"
+                    class="w-4 h-4 rounded border-neutral-300 text-secondary-500 focus:ring-secondary-500"
+                  />
+                  <span class="text-sm text-neutral-800">{{
+                    t("admin.employees.create.sendWelcomeEmail")
+                  }}</span>
+                </label>
+                <p class="text-xs text-neutral-500 mt-1">
+                  {{ t("admin.employees.view.lifecycleEmailTemplateHint") }}
+                </p>
               </div>
             </div>
           </div>
@@ -866,6 +879,7 @@ function emptyForm() {
     role: "",
     useDefaultPassword: true,
     password: "",
+    sendWelcomeEmail: true,
     // Attendance
     attendanceType: "open",
     // Probation
@@ -931,10 +945,16 @@ const probationDurationLabel = computed(() => {
 
 const probationEndDate = computed(() => {
   if (!form.value.probationMonths || !form.value.dateOfJoining) return "";
-  const d = new Date(form.value.dateOfJoining);
+  const raw = String(form.value.dateOfJoining).slice(0, 10);
+  const [year, month, day] = raw.split("-").map(Number);
+  if (!year || !month || !day) return "";
+  const d = new Date(year, month - 1, day);
   if (Number.isNaN(d.getTime())) return "";
   d.setMonth(d.getMonth() + Number(form.value.probationMonths));
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
 });
 
 // === Validation ===
@@ -967,8 +987,6 @@ function validateStep2() {
   if (!form.value.dateOfJoining) e.dateOfJoining = t("admin.employees.create.error.joiningRequired");
   if (!form.value.designation) e.designation = t("admin.employees.create.error.designationRequired");
   if (!form.value.team) e.team = t("admin.employees.create.error.teamRequired");
-  if (!form.value.reportingManager)
-    e.reportingManager = t("admin.employees.create.error.managerRequired");
   if (!form.value.shiftId) e.shiftId = t("admin.employees.create.error.shiftRequired");
   if (!form.value.department) e.department = t("admin.employees.create.error.departmentRequired");
   if (!form.value.role) e.role = t("admin.employees.create.error.roleRequired");
@@ -1039,6 +1057,7 @@ async function createEmployee() {
     create_user: true,
     use_default_password: !!form.value.useDefaultPassword,
     password: form.value.useDefaultPassword ? null : form.value.password,
+    notify_by_email: !!form.value.sendWelcomeEmail,
     metadata: {
       gender: form.value.gender || null,
       blood_group: form.value.bloodGroup || null,

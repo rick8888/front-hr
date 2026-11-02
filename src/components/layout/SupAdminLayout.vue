@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col overflow-x-hidden bg-neutral-50 lg:flex-row lg:items-start">
+  <div class="premium-shell flex min-h-screen flex-col overflow-x-hidden bg-neutral-50 lg:flex-row lg:items-start">
     <header
       class="sticky top-0 z-50 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 lg:hidden"
     >

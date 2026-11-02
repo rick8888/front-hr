@@ -45,6 +45,7 @@
     @check-in="checkIn"
     @check-out="checkOut"
     @start-break="startBreak"
+    @end-break="endBreak"
     @open="load"
   />
 </template>
@@ -53,6 +54,9 @@
 import { computed } from "vue";
 import EmployeeAttendanceModal from "./EmployeeAttendanceModal.vue";
 import { useEmployeeWorkTimer } from "../../composables/useEmployeeWorkTimer.js";
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
 
 const {
   open,
@@ -67,16 +71,21 @@ const {
   checkIn,
   checkOut,
   startBreak,
+  endBreak,
   load,
 } = useEmployeeWorkTimer();
 
 const ariaLabel = computed(() => {
-  if (phase.value === "in") return "Présence — pointage en cours";
-  if (phase.value === "done") return "Présence — journée terminée";
-  return "Présence — pointer l’entrée";
+  if (phase.value === "break") return t("ss.attendance.modal.ariaBreak");
+  if (phase.value === "in") return t("ss.attendance.modal.ariaIn");
+  if (phase.value === "done") return t("ss.attendance.modal.ariaOut");
+  return t("ss.attendance.modal.ariaReady");
 });
 
 const fabClass = computed(() => {
+  if (phase.value === "break") {
+    return "bg-amber-500 hover:bg-amber-600 focus-visible:outline-amber-500 shadow-[0_4px_14px_rgba(245,158,11,0.45)]";
+  }
   if (phase.value === "in") {
     return "bg-emerald-600 hover:bg-emerald-700 focus-visible:outline-emerald-600";
   }
@@ -87,6 +96,7 @@ const fabClass = computed(() => {
 });
 
 const fabIconPath = computed(() => {
+  if (phase.value === "break") return "M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z";
   if (phase.value === "in") return "M5 13l4 4L19 7";
   if (phase.value === "done") return "M9 12h12m0 0l-4-4m4 4l-4 4M3 4v16";
   return "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z";

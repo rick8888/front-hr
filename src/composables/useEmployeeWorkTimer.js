@@ -1,35 +1,33 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { attendanceApiService } from "../pages/self-service/services/attendance.api.service.js";
 import { parseApiError } from "../utils/apiErrors.js";
+import { minutesSinceCheckIn } from "../utils/attendanceDuration.js";
 import { formatHoursLabel } from "../data/dashboardEmployeeDemo.js";
+import { useI18n } from "../i18n/index.js";
 
 function toIsoDate(value) {
   if (!value) return "";
-  return String(value).slice(0, 10);
+  if (value instanceof Date) {
+    const y = value.getFullYear();
+    const m = String(value.getMonth() + 1).padStart(2, "0");
+    const d = String(value.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  const iso = String(value).match(/\d{4}-\d{2}-\d{2}/);
+  return iso ? iso[0] : "";
 }
 
-function formatTime12(value) {
+function formatClock(value, locale) {
   if (!value) return null;
-  const raw = String(value).trim();
-  const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-  if (!match) return raw;
-  let hours = Number(match[1]);
+  const match = String(value).trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return String(value);
+  const hours = Number(match[1]);
   const minutes = match[2];
-  const suffix = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-  return `${hours}:${minutes} ${suffix}`;
-}
-
-function minutesSinceCheckIn(checkIn, dayIso) {
-  if (!checkIn) return 0;
-  const match = String(checkIn).match(/^(\d{1,2}):(\d{2})/);
-  if (!match) return 0;
-  const day = toIsoDate(dayIso) || toIsoDate(new Date());
-  const start = new Date(
-    `${day}T${String(match[1]).padStart(2, "0")}:${match[2]}:00`
-  );
-  if (Number.isNaN(start.getTime())) return 0;
-  return Math.max(0, Math.floor((Date.now() - start.getTime()) / 60000));
+  if (locale === "en") {
+    const suffix = hours >= 12 ? "PM" : "AM";
+    return `${hours % 12 || 12}:${minutes} ${suffix}`;
+  }
+  return `${String(hours).padStart(2, "0")}:${minutes}`;
 }
 
 const EMPTY = {
@@ -39,6 +37,9 @@ const EMPTY = {
   checkOut: null,
   checkInRaw: null,
   workingHours: "0m",
+  breakMinutes: 0,
+  breakStartedAt: null,
+  isOnBreak: false,
 };
 
 function mapPayload(payload) {
@@ -46,6 +47,8 @@ function mapPayload(payload) {
   const record = today.record || null;
   const checkIn = record?.check_in ?? record?.checkIn ?? null;
   const checkOut = record?.check_out ?? record?.checkOut ?? null;
+  const breakStartedAt = record?.active_break_started_at ?? null;
+  const isOnBreak = Boolean(record?.is_on_break);
   const dateIso =
     toIsoDate(record?.date ?? today.date) || toIsoDate(new Date());
   const workingMinutes = Number(
@@ -53,21 +56,28 @@ function mapPayload(payload) {
   );
 
   let phase = "out";
-  if (checkIn && !checkOut) phase = "in";
+  if (checkIn && !checkOut) phase = isOnBreak ? "break" : "in";
   else if (checkIn && checkOut) phase = "done";
 
   return {
     todayIso: dateIso,
     phase,
-    checkIn: formatTime12(checkIn),
-    checkOut: formatTime12(checkOut),
+    checkIn: checkIn,
+    checkOut: checkOut,
     checkInRaw: checkIn,
     workingHours: formatHoursLabel(workingMinutes),
+    breakMinutes: Math.max(
+      0,
+      Number(record?.recorded_break_minutes ?? record?.break_minutes ?? 0) || 0,
+    ),
+    breakStartedAt,
+    isOnBreak,
   };
 }
 
 /** Pointage flottant (FAB + modal présence). */
 export function useEmployeeWorkTimer() {
+  const { t, locale } = useI18n();
   const open = ref(false);
   const loading = ref(true);
   const acting = ref(false);
@@ -78,32 +88,44 @@ export function useEmployeeWorkTimer() {
 
   const summary = computed(() => {
     void tick.value;
+    void locale.value;
     const s = state.value;
     const workingHours =
-      s.phase === "in" && s.checkInRaw
+      (s.phase === "in" || s.phase === "break") && s.checkInRaw
         ? formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso))
         : s.workingHours;
+    const activeBreakTimestamp = s.isOnBreak && s.breakStartedAt
+      ? Date.parse(s.breakStartedAt)
+      : Number.NaN;
+    const activeBreakMinutes = Number.isFinite(activeBreakTimestamp)
+      ? Math.max(0, Math.floor((Date.now() - activeBreakTimestamp) / 60000))
+      : 0;
     return {
-      checkIn: s.checkIn || "—",
-      checkOut: s.checkOut || "—",
+      checkIn: formatClock(s.checkIn, locale.value) || "—",
+      checkOut: formatClock(s.checkOut, locale.value) || "—",
       workingHours: workingHours || "0m",
+      breakDuration: formatHoursLabel(s.breakMinutes + activeBreakMinutes),
     };
   });
 
   const durationLabel = computed(() => {
     void tick.value;
+    void locale.value;
     const s = state.value;
-    if (s.phase === "in" && s.checkInRaw) {
+    if ((s.phase === "in" || s.phase === "break") && s.checkInRaw) {
+      if (s.phase === "break") return summary.value.breakDuration;
       return formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso));
     }
     if (s.phase === "done") return s.workingHours || "0m";
-    return "Check In";
+    return t("ss.attendance.modal.fabCheckIn");
   });
 
   const modalTitle = computed(() => {
-    if (state.value.phase === "in") return "You are Checked In";
-    if (state.value.phase === "done") return "You are Checked Out";
-    return "Ready to Check In";
+    void locale.value;
+    if (state.value.phase === "in") return t("ss.attendance.modal.titleIn");
+    if (state.value.phase === "break") return t("ss.attendance.modal.titleBreak");
+    if (state.value.phase === "done") return t("ss.attendance.modal.titleOut");
+    return t("ss.attendance.modal.titleReady");
   });
 
   const todayIso = computed(() => state.value.todayIso);
@@ -120,7 +142,7 @@ export function useEmployeeWorkTimer() {
       applyPayload(await attendanceApiService.fetchMine());
     } catch (e) {
       error.value =
-        parseApiError(e) || "Impossible de charger la présence du jour.";
+        parseApiError(e) || t("ss.attendance.modal.loadError");
       state.value = { ...EMPTY };
     } finally {
       loading.value = false;
@@ -133,7 +155,7 @@ export function useEmployeeWorkTimer() {
     try {
       applyPayload(await attendanceApiService.checkIn());
     } catch (e) {
-      error.value = parseApiError(e) || "Échec du pointage d’entrée.";
+      error.value = parseApiError(e) || t("ss.attendance.modal.checkInError");
     } finally {
       acting.value = false;
     }
@@ -146,14 +168,34 @@ export function useEmployeeWorkTimer() {
       applyPayload(await attendanceApiService.checkOut());
       open.value = false;
     } catch (e) {
-      error.value = parseApiError(e) || "Échec du pointage de sortie.";
+      error.value = parseApiError(e) || t("ss.attendance.modal.checkOutError");
     } finally {
       acting.value = false;
     }
   }
 
-  function startBreak() {
-    error.value = "Les pauses ne sont pas encore disponibles.";
+  async function startBreak() {
+    acting.value = true;
+    error.value = "";
+    try {
+      applyPayload(await attendanceApiService.startBreak());
+    } catch (e) {
+      error.value = parseApiError(e) || t("ss.attendance.modal.startBreakError");
+    } finally {
+      acting.value = false;
+    }
+  }
+
+  async function endBreak() {
+    acting.value = true;
+    error.value = "";
+    try {
+      applyPayload(await attendanceApiService.endBreak());
+    } catch (e) {
+      error.value = parseApiError(e) || t("ss.attendance.modal.endBreakError");
+    } finally {
+      acting.value = false;
+    }
   }
 
   onMounted(() => {
@@ -181,5 +223,6 @@ export function useEmployeeWorkTimer() {
     checkIn,
     checkOut,
     startBreak,
+    endBreak,
   };
 }

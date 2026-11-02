@@ -1,15 +1,29 @@
 /** Admin settings (English) */
 export default {
+  "settings.pageHint":
+    "Configure your company, HR catalogs, documents, and integrations.",
+  "settings.sectionLabel": "Section",
+  "settings.navAria": "Settings menu",
+  "settings.group.company": "Company",
+  "settings.group.documents": "Documents",
+  "settings.group.integrations": "Integrations",
+  "settings.group.personal": "Preferences",
+
   "settings.tabs.general": "General",
   "settings.tabs.business": "Business setup",
   "settings.tabs.departments": "Departments",
   "settings.tabs.holidays": "Holidays",
   "settings.tabs.whatsapp": "WhatsApp",
   "settings.tabs.notifications": "Notifications",
+  "settings.tabs.documentTemplates": "Document templates",
+
+  "settings.tabs.preferences": "Preferences",
 
   "settings.general.title": "General information",
-  "settings.general.subtitle": "Configure your company's basic information",
-  "settings.general.save": "Save changes",
+  "settings.general.subtitle": "Company identity, address, and contacts",
+  "settings.general.save": "Save",
+  "settings.general.resetConfirm": "Reset all fields? Local data will be cleared.",
+  "settings.general.logoTooLarge": "Logo must be under 2 MB.",
   "settings.general.section.company": "Company",
   "settings.general.section.legal": "Legal & Banking",
   "settings.general.section.contact": "Contact & Social",

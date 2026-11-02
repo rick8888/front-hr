@@ -350,26 +350,17 @@
               <td class="px-3 py-3 font-medium text-success-600 tabular-nums">
                 {{ formatMoney(row.netPay, row.currency) }}
               </td>
-              <td class="pr-5 pl-3 py-3 text-right relative" @click.stop>
-                <button
-                  type="button"
-                  class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100"
+              <td class="pr-5 pl-3 py-3 text-right" @click.stop>
+                <TableRowMenu
+                  :open="openMenuId === row.id"
                   :aria-label="t('common.actions')"
-                  @click="toggleRowMenu(row.id)"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-                    />
-                  </svg>
-                </button>
-                <div
-                  v-if="openMenuId === row.id"
-                  class="absolute right-4 top-full z-10 mt-1 w-44 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg text-left"
-                  @click.stop
+                  width-class="w-44"
+                  @toggle="toggleRowMenu(row.id)"
+                  @close="openMenuId = null"
                 >
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm hover:bg-neutral-50"
                     @click="viewPayroll(row)"
                   >
@@ -377,12 +368,13 @@
                   </button>
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm hover:bg-neutral-50"
                     @click="openMenuId = null"
                   >
                     {{ t("admin.payroll.exportLine") }}
                   </button>
-                </div>
+                </TableRowMenu>
               </td>
             </tr>
           </tbody>
@@ -440,6 +432,7 @@ import { useI18n } from "../../../i18n/index.js";
 import PayrollKpiCard from "../../../components/payroll/PayrollKpiCard.vue";
 import PayrollFilterField from "../../../components/payroll/PayrollFilterField.vue";
 import PayrollLineChart from "../../../components/payroll/PayrollLineChart.vue";
+import TableRowMenu from "../../../components/common/TableRowMenu.vue";
 import { useTaxSummary } from "../composables/useTaxSummary.js";
 import { avatarColor, initialsFromName } from "../utils/payroll-http.js";
 

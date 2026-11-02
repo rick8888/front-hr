@@ -6,7 +6,13 @@ import { sitesApiService } from "../../organization/services/sites.api.service.j
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { useI18n } from "../../../i18n/index.js";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export function normalizeAttendanceRecord(raw) {
   return {
@@ -25,6 +31,8 @@ export function normalizeAttendanceRecord(raw) {
     lateMinutes: Number(raw.late_minutes ?? raw.lateMinutes ?? 0),
     earlyOutMinutes: Number(raw.early_out_minutes ?? raw.earlyOutMinutes ?? 0),
     overtimeMinutes: Number(raw.overtime_minutes ?? raw.overtimeMinutes ?? 0),
+    breakMinutes: Number(raw.break_minutes ?? raw.breakMinutes ?? 0),
+    isOnBreak: Boolean(raw.is_on_break ?? raw.isOnBreak),
     status: raw.status ?? "on_time",
   };
 }
@@ -117,18 +125,30 @@ export function useAttendanceRecords({ initialDate = today(), loadReferences = t
 
   async function loadReferenceData() {
     if (!loadReferences) return;
-    try {
-      const [employeeList, shiftList, siteList] = await Promise.all([
-        employeesApiService.fetchAll(),
-        shiftsApiService.fetchAll(),
-        sitesApiService.fetchAll(),
-      ]);
-      employees.value = employeeList;
-      shifts.value = shiftList;
-      sites.value = siteList;
-    } catch (e) {
-      error.value = parseApiError(e) || t("admin.attendance.refError");
+    const [employeesResult, shiftsResult, sitesResult] = await Promise.allSettled([
+      employeesApiService.fetchAll(),
+      shiftsApiService.fetchAll(),
+      sitesApiService.fetchAll(),
+    ]);
+
+    if (employeesResult.status === "fulfilled") {
+      employees.value = employeesResult.value;
+    } else {
+      error.value =
+        parseApiError(employeesResult.reason) || t("admin.attendance.refError");
     }
+
+    if (shiftsResult.status === "fulfilled") {
+      shifts.value = shiftsResult.value;
+    } else if (!error.value) {
+      error.value =
+        parseApiError(shiftsResult.reason) || t("admin.attendance.refError");
+    }
+
+    if (sitesResult.status === "fulfilled") {
+      sites.value = sitesResult.value;
+    }
+    // Sites optionnels : liste de présences utilisable sans lieu
   }
 
   function openCreate() {
@@ -156,14 +176,13 @@ export function useAttendanceRecords({ initialDate = today(), loadReferences = t
     saving.value = true;
     error.value = "";
     try {
-      const result = editingId.value
-        ? await attendanceRecordsApiService.update(editingId.value, payload(form.value))
-        : await attendanceRecordsApiService.create(payload(form.value));
-      const normalized = normalizeAttendanceRecord(result);
-      const index = records.value.findIndex((record) => record.id === normalized.id);
-      if (index === -1) records.value = [normalized, ...records.value];
-      else records.value[index] = normalized;
+      if (editingId.value) {
+        await attendanceRecordsApiService.update(editingId.value, payload(form.value));
+      } else {
+        await attendanceRecordsApiService.create(payload(form.value));
+      }
       modalOpen.value = false;
+      await loadData();
     } catch (e) {
       error.value = parseApiError(e) || t("admin.attendance.saveError");
     } finally {
@@ -182,9 +201,9 @@ export function useAttendanceRecords({ initialDate = today(), loadReferences = t
     error.value = "";
     try {
       await attendanceRecordsApiService.remove(deleteTarget.value.id);
-      records.value = records.value.filter((record) => record.id !== deleteTarget.value.id);
       deleteOpen.value = false;
       deleteTarget.value = null;
+      await loadData();
     } catch (e) {
       error.value = parseApiError(e) || t("admin.attendance.deleteError");
     } finally {

@@ -19,6 +19,7 @@ const MAX_RECEIPT_SIZE_MB = 5;
 export function usePaymentSimulation(methods) {
   const selectedMethodCode = ref("");
   const receiptFile = ref(null);
+  const bankReference = ref("");
   const mobileOperator = ref("");
   const phoneNumber = ref("");
   const cashReference = ref("");
@@ -68,6 +69,7 @@ export function usePaymentSimulation(methods) {
 
   function resetMethodDetails() {
     receiptFile.value = null;
+    bankReference.value = "";
     mobileOperator.value = "";
     phoneNumber.value = "";
     cashReference.value = "";
@@ -150,11 +152,8 @@ export function usePaymentSimulation(methods) {
     if (isBankTransfer.value) {
       return {
         ...base,
-        receipt: {
-          name: receiptFile.value?.name ?? null,
-          size: receiptFile.value?.size ?? null,
-          type: receiptFile.value?.type ?? null,
-        },
+        receipt: receiptFile.value,
+        reference: bankReference.value.trim() || null,
       };
     }
 
@@ -185,6 +184,7 @@ export function usePaymentSimulation(methods) {
   return {
     selectedMethodCode,
     receiptFile,
+    bankReference,
     mobileOperator,
     phoneNumber,
     cashReference,

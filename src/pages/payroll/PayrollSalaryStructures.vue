@@ -442,25 +442,18 @@
                 <span v-else class="text-neutral-400">—</span>
               </td>
               <td class="px-4 py-4 text-neutral-600">{{ row.lastUpdatedLabel }}</td>
-              <td class="px-4 py-4 text-right relative">
-                <button
-                  type="button"
-                  class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100"
+              <td class="px-4 py-4 text-right">
+                <TableRowMenu
+                  :open="openMenuId === row.id"
                   :aria-label="t('common.actions')"
-                  @click.stop="toggleMenu(row.id)"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-                <div
-                  v-if="openMenuId === row.id"
-                  class="absolute right-4 top-full z-10 mt-1 w-56 rounded-xl border border-neutral-200/80 bg-white py-1.5 shadow-lg text-left"
-                  @click.stop
+                  width-class="w-56"
+                  @toggle="toggleMenu(row.id)"
+                  @close="openMenuId = null"
                 >
                   <button
                     type="button"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
+                    role="menuitem"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
                     @click="openViewDetails(row)"
                   >
                     <svg
@@ -486,7 +479,8 @@
                   </button>
                   <button
                     type="button"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
+                    role="menuitem"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
                     @click="goToBuilder(row.id)"
                   >
                     <svg
@@ -506,7 +500,8 @@
                   </button>
                   <button
                     type="button"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
+                    role="menuitem"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-neutral-50 transition-colors"
                     @click="goToBuilder(row.id)"
                   >
                     <svg
@@ -524,7 +519,7 @@
                     </svg>
                     Manage Components
                   </button>
-                </div>
+                </TableRowMenu>
               </td>
             </tr>
           </tbody>
@@ -588,6 +583,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useI18n } from "../../i18n/index.js";
+import TableRowMenu from "../../components/common/TableRowMenu.vue";
 import {
   useSalaryStructureStore,
 } from "./stores/salary-structure.store.js";

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { companiesApiService } from "../../sup-admin/entreprises/services/companies.api.service.js";
+import { tenantProfileApiService } from "../services/tenant-profile.api.service.js";
 import { complianceObligationApiService } from "../../sup-admin/declarations/services/compliance-obligation.api.service.js";
 import { computeAllDeadlines } from "../../../data/compliance-obligation/deadlines.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
@@ -37,9 +37,14 @@ export const useMyDeadlinesStore = defineStore("myDeadlines", () => {
     loading.value = true;
     error.value = null;
     try {
-      const companies = await companiesApiService.fetchCompanies();
-      const list = Array.isArray(companies) ? companies : [];
-      company.value = list.find((c) => c.is_active) ?? list[0] ?? null;
+      const profile = await tenantProfileApiService.fetchProfile();
+      const data = profile?.data ?? profile ?? {};
+      company.value = {
+        name: data.company_name ?? null,
+        country: data.country ?? null,
+        country_id: data.country_id ?? null,
+        is_active: data.account_status === "Active",
+      };
 
       if (!company.value?.country_id) {
         obligations.value = [];

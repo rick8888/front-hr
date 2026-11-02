@@ -1,15 +1,9 @@
 <template>
-  <div class="p-8 space-y-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-neutral-900">{{ t('settings.whatsapp.title') }}</h2>
-        <p class="text-sm text-neutral-600 mt-1">
-          {{ t('settings.whatsapp.subtitle') }}
-        </p>
-      </div>
+  <div class="space-y-6">
+    <div class="flex justify-end">
       <button
         type="button"
-        class="px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-semibold disabled:opacity-50 shrink-0"
+        class="btn-primary text-sm disabled:opacity-50"
         :disabled="loading || saving"
         @click="save"
       >

@@ -3,7 +3,7 @@ import { tenantDashboardApiService } from "../pages/tenant/services/tenant-dashb
 
 function emptyDashboard() {
   return {
-    productName: "Open Core BS SaaS",
+    productName: "Bravo RH",
     firstName: "—",
     applicationUrl: "#",
     currentPlan: "—",
@@ -23,7 +23,7 @@ function mapDashboard(data) {
   if (!data) return emptyDashboard();
 
   return {
-    productName: data.product_name ?? "Open Core BS SaaS",
+    productName: data.product_name ?? "Bravo RH",
     firstName: data.first_name ?? "—",
     applicationUrl: data.application_url ?? "#",
     currentPlan: data.current_plan ?? "—",

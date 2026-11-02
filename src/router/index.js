@@ -116,7 +116,7 @@ import ParametresPage from "../pages/sup-admin/parametres/ParametresPage.vue";
 import StatutsPage from "../pages/sup-admin/statuts/StatutsPage.vue";
 import Forbidden from "../pages/Forbidden.vue";
 
-// Admin-only routes
+// Admin-only routes (fallback rôle employé — les permissions affinent ensuite)
 const adminOnlyRoutes = [
   "/employees",
   "/employees/new",
@@ -134,8 +134,48 @@ const adminOnlyRoutes = [
   "/admin-trainings",
   "/admin-equipments",
   "/leave-management",
+  "/attendance",
+  "/expenses",
+  "/employee-documents",
+  "/leave-requests",
+  "/departments",
+  "/teams",
+  "/designations",
+  "/sites",
 ];
 
+/** Préfixe de route → au moins une permission requise */
+const routePermissionRules = [
+  { prefix: "/sup-admin", anyOf: ["platform.manage", "platform.billing", "platform.roles"] },
+  { prefix: "/payroll", anyOf: ["payroll.view", "payroll.manage"] },
+  { prefix: "/employees", anyOf: ["employees.view", "employees.manage"] },
+  { prefix: "/organization", anyOf: ["organization.manage"] },
+  { prefix: "/departments", anyOf: ["organization.manage"] },
+  { prefix: "/teams", anyOf: ["organization.manage"] },
+  { prefix: "/designations", anyOf: ["organization.manage"] },
+  { prefix: "/sites", anyOf: ["organization.manage"] },
+  { prefix: "/attendance", anyOf: ["attendance.manage"] },
+  { prefix: "/holidays", anyOf: ["organization.manage", "attendance.manage"] },
+  { prefix: "/leave-management", anyOf: ["leave.manage"] },
+  { prefix: "/leave-requests", anyOf: ["leave.manage"] },
+  { prefix: "/expenses", anyOf: ["leave.manage", "payroll.view"] },
+  { prefix: "/employee-documents", anyOf: ["leave.manage", "employees.manage"] },
+  { prefix: "/recruitment", anyOf: ["organization.manage", "employees.manage"] },
+  { prefix: "/candidates", anyOf: ["organization.manage", "employees.manage"] },
+  { prefix: "/admin-trainings", anyOf: ["organization.manage", "employees.manage"] },
+  { prefix: "/admin-equipments", anyOf: ["organization.manage", "employees.manage"] },
+  { prefix: "/settings", anyOf: ["settings.manage"] },
+  { prefix: "/reports", anyOf: ["reports.view"] },
+  { prefix: "/entreprise", anyOf: ["settings.manage"] },
+  { prefix: "/company-info", anyOf: ["settings.manage"] },
+];
+
+function requiredPermissionsForPath(path) {
+  const rule = routePermissionRules
+    .filter((r) => path === r.prefix || path.startsWith(`${r.prefix}/`))
+    .sort((a, b) => b.prefix.length - a.prefix.length)[0];
+  return rule?.anyOf ?? null;
+}
 const routes = [
   {
     path: "/login",
@@ -888,6 +928,18 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
+  // Permissions fines (team_manager, admin partiel, etc.)
+  const requiredPermissions = requiredPermissionsForPath(to.path);
+  if (
+    requiredPermissions &&
+    authStore.isAuthenticated &&
+    !authStore.isTenant &&
+    !authStore.can(...requiredPermissions)
+  ) {
+    next("/forbidden");
+    return;
+  }
+
   // Super Admin : accès réservé au préfixe /sup-admin
   if (
     authStore.isSuperAdmin &&
@@ -909,7 +961,7 @@ router.beforeEach((to, from, next) => {
 
 router.afterEach((to) => {
   if (typeof to.meta.titleKey === "string") {
-    document.title = `${translate(to.meta.titleKey)} · HRMS`;
+    document.title = `${translate(to.meta.titleKey)} · ${translate("app.name")}`;
   }
 });
 

@@ -2,6 +2,11 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { authApiService } from "../services/auth.api.service.js";
 
+function normalizeRole(role) {
+  if (role === "employee") return "employe";
+  return role ?? null;
+}
+
 function mapApiUser(apiUser) {
   if (!apiUser) return null;
 
@@ -9,7 +14,8 @@ function mapApiUser(apiUser) {
     id: apiUser.id,
     name: apiUser.name,
     email: apiUser.email,
-    role: apiUser.role,
+    role: normalizeRole(apiUser.role),
+    permissions: Array.isArray(apiUser.permissions) ? apiUser.permissions : [],
     company_id: apiUser.company_id,
     company: apiUser.company_name ?? apiUser.company ?? null,
   };
@@ -25,12 +31,20 @@ export const useAuthStore = defineStore("auth", () => {
   );
   const isEmployee = computed(() => user.value?.role === "employe");
   const isTenant = computed(() => user.value?.role === "tenant");
+  const permissions = computed(() => user.value?.permissions ?? []);
   const homePath = computed(() => {
     if (isTenant.value) return "/tenant/dashboard";
     if (isSuperAdmin.value) return "/sup-admin/entreprises";
     if (isEmployee.value) return "/dashboard-2";
     return "/dashboard";
   });
+
+  function can(...keys) {
+    if (isSuperAdmin.value) return true;
+    const list = permissions.value;
+    if (!list.length) return false;
+    return keys.some((key) => list.includes(key));
+  }
 
   function persistUser() {
     if (user.value) {
@@ -44,7 +58,12 @@ export const useAuthStore = defineStore("auth", () => {
 
     if (savedUser && token) {
       try {
-        user.value = JSON.parse(savedUser);
+        const parsed = JSON.parse(savedUser);
+        user.value = {
+          ...parsed,
+          role: normalizeRole(parsed.role),
+          permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
+        };
         isAuthenticated.value = true;
       } catch {
         logout();
@@ -100,7 +119,9 @@ export const useAuthStore = defineStore("auth", () => {
     isEmployee,
     isTenant,
     isSuperAdmin,
+    permissions,
     homePath,
+    can,
     hydrateAuth,
     validateAuth,
     login,

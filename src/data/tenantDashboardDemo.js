@@ -2,7 +2,7 @@
  * Données démo — tableau de bord tenant (aligné maquette).
  */
 export const tenantDashboardDemo = {
-  productName: "Open Core BS SaaS",
+  productName: "Bravo RH",
   firstName: "John",
   currentPlan: "Starter",
   planStatus: "Active",

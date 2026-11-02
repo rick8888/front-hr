@@ -66,10 +66,14 @@
             {{ t("ss.attendance.checkOut") }}:
             <strong class="text-rose-700">{{ today.record.checkOut || "--:--" }}</strong>
           </span>
+          <span>
+            {{ t("ss.attendance.col.break") }}:
+            <strong class="text-amber-700">{{ formatDuration(today.record.breakMinutes) }}</strong>
+          </span>
           <span
             class="inline-flex items-center rounded-md bg-secondary-50 px-2 py-1 text-xs font-medium text-secondary-700"
           >
-            {{ today.record.status }}
+            {{ attendanceStatusLabel(today.record.status) }}
           </span>
         </div>
       </template>
@@ -147,5 +151,18 @@ const selectedRecord = ref(null);
 function onViewRow(row) {
   selectedRecord.value = row;
   detailOpen.value = true;
+}
+
+function formatDuration(minutes) {
+  const total = Number(minutes) || 0;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  return hours ? `${hours}h ${String(rest).padStart(2, "0")}m` : `${rest}m`;
+}
+
+function attendanceStatusLabel(status) {
+  const key = `ss.attendance.status.${String(status || "").replace(/\s+/g, "_")}`;
+  const translated = t(key);
+  return translated === key ? status : translated;
 }
 </script>

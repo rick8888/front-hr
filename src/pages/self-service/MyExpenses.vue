@@ -59,15 +59,11 @@
         @submit="onSubmitNewExpense"
       />
 
-      <ConfirmDialog
+      <ExpenseDetailsModal
         v-model="viewOpen"
+        :record="recordToView"
         :title="t('ss.expenses.details')"
-        :message="viewMessage"
-        variant="info"
-        :confirm-text="t('ss.close')"
-        :cancel-text="t('ss.back')"
-        @confirm="viewOpen = false"
-        @cancel="viewOpen = false"
+        :show-employee="false"
       />
     </div>
   </div>
@@ -77,7 +73,7 @@
 import { computed, ref } from "vue";
 import PageHero from "../../components/common/PageHero.vue";
 import SimpleListingCard from "../../components/common/SimpleListingCard.vue";
-import ConfirmDialog from "../../components/common/ConfirmDialog.vue";
+import ExpenseDetailsModal from "../../components/expenses/ExpenseDetailsModal.vue";
 import MyExpensesFiltersCard from "../../components/self-service/MyExpensesFiltersCard.vue";
 import MyExpensesTable from "../../components/self-service/MyExpensesTable.vue";
 import SubmitExpenseModal from "../../components/self-service/SubmitExpenseModal.vue";
@@ -124,20 +120,6 @@ const modalOpen = ref(false);
 const viewOpen = ref(false);
 const recordToView = ref(null);
 
-const viewMessage = computed(() => {
-  const r = recordToView.value;
-  if (!r) return "";
-  const parts = [
-    `#${r.id}`,
-    r.type,
-    formatDate(r.expenseDate),
-    formatAmount(r.amount, r.currency),
-    r.status,
-  ];
-  if (r.description) parts.push(r.description);
-  return parts.join(" · ");
-});
-
 function onSubmitExpense() {
   modalOpen.value = true;
 }
@@ -150,28 +132,5 @@ async function onSubmitNewExpense(payload) {
 function onViewRow(row) {
   recordToView.value = row;
   viewOpen.value = true;
-}
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso + "T12:00:00");
-  if (Number.isNaN(d.getTime())) return iso;
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${dd}-${mm}-${d.getFullYear()}`;
-}
-
-function formatAmount(amount, currency = "USD") {
-  const n = Number(amount) || 0;
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `$${n}`;
-  }
 }
 </script>

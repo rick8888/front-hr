@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { leaveRequestsApiService } from "../../leave/services/leaveRequests.api.service.js";
 import { leaveTypesApiService } from "../../leave/services/leaveTypes.api.service.js";
-import { leaveBalancesApiService } from "../../leave/services/leaveBalances.api.service.js";
+import { myLeaveBalanceApiService } from "../services/myLeaveBalance.api.service.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 
 import { getPolicyAvailable } from "../../../data/leavePoliciesDemo.js";
@@ -20,16 +20,17 @@ function mapPolicies(leaveTypes, balancesByCode = {}) {
         code,
         name: t.name || code,
         description: t.description || "",
-        annualEntitlement: Number(bal.entitled ?? 0),
+        annualEntitlement: Number(bal.entitled ?? bal.entitlement ?? 0),
         additional:
           Number(bal.additional ?? 0) + Number(bal.carried_forward ?? 0),
         used: Number(bal.used ?? 0),
         available: Number(
           bal.available ??
-            Number(bal.entitled ?? 0) +
+            Number(bal.entitled ?? bal.entitlement ?? 0) +
               Number(bal.carried_forward ?? 0) +
               Number(bal.additional ?? 0) -
-              Number(bal.used ?? 0)
+              Number(bal.used ?? 0) -
+              Number(bal.pending ?? 0)
         ),
       };
     })
@@ -38,12 +39,26 @@ function mapPolicies(leaveTypes, balancesByCode = {}) {
 
 function buildBalancesMap(payload) {
   const map = {};
+  // Self-service /leave-balance
+  if (Array.isArray(payload?.by_type)) {
+    for (const row of payload.by_type) {
+      const code = String(row.code || "").toUpperCase();
+      if (!code) continue;
+      map[code] = {
+        entitled: row.entitlement,
+        entitlement: row.entitlement,
+        used: row.used,
+        pending: row.pending,
+        available: row.available,
+      };
+    }
+    return map;
+  }
   const employee = Array.isArray(payload?.employees) ? payload.employees[0] : null;
   const balances = employee?.balances || {};
   for (const [code, bal] of Object.entries(balances)) {
     map[String(code).toUpperCase()] = bal;
   }
-  // show() shape: balances is array of type+balance
   if (Array.isArray(payload?.balances)) {
     for (const row of payload.balances) {
       const code = String(row.code || "").toUpperCase();
@@ -118,7 +133,7 @@ export function useApplyForLeave() {
     }
 
     try {
-      const balancePayload = await leaveBalancesApiService.fetchAll(year, { mine: 1 });
+      const balancePayload = await myLeaveBalanceApiService.fetchMine(year);
       balancesByCode = buildBalancesMap(balancePayload);
     } catch {
       balancesByCode = {};

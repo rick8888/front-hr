@@ -3,7 +3,7 @@
     <div>
       <h3 class="text-sm font-semibold text-neutral-900">Opérateur mobile money</h3>
       <p class="mt-1 text-xs text-neutral-500">
-        Sélectionnez votre portefeuille mobile pour initier le paiement.
+        Sélectionnez l'opérateur et indiquez le numéro utilisé pour le paiement. L'équipe vérifiera le règlement avant d'activer le forfait.
       </p>
     </div>
 
@@ -40,7 +40,7 @@
       />
       <p v-if="phoneError" class="mt-1 text-xs text-red-600">{{ phoneError }}</p>
       <p v-else class="mt-1 text-xs text-neutral-500">
-        Vous recevrez une demande de confirmation sur ce numéro.
+        Aucun débit automatique n'est effectué depuis cette demande.
       </p>
     </div>
   </div>

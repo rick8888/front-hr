@@ -197,34 +197,50 @@
 
       <!-- Demo Info -->
       <div class="p-4 bg-info-50 border border-info-200 rounded-lg">
-        <p class="text-xs font-semibold text-info-900 mb-2">Demo Credentials</p>
-        <div class="space-y-2">
-          <div>
-            <p class="text-xs font-medium text-info-900 mb-0.5">Admin:</p>
-            <p class="text-xs text-info-700">
-              <span class="font-medium">Email:</span> admin@bravorh.com<br />
-              <span class="font-medium">Password:</span> password123
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-2 text-left"
+          :aria-expanded="demoCredentialsOpen"
+          aria-controls="demo-credentials-panel"
+          @click="demoCredentialsOpen = !demoCredentialsOpen"
+        >
+          <p class="text-xs font-semibold text-info-900">
+            {{ t("login.demoCredentials") }}
+          </p>
+          <svg
+            class="h-4 w-4 flex-shrink-0 text-info-700 transition-transform duration-200"
+            :class="demoCredentialsOpen ? '-rotate-180' : ''"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        <div
+          v-show="demoCredentialsOpen"
+          id="demo-credentials-panel"
+          class="mt-2 space-y-2"
+        >
+          <div
+            v-for="(account, index) in demoAccounts"
+            :key="account.email"
+            :class="index > 0 ? 'pt-2 border-t border-info-200' : ''"
+          >
+            <p class="text-xs font-medium text-info-900 mb-0.5">
+              {{ account.label }}:
             </p>
-          </div>
-          <div class="pt-2 border-t border-info-200">
-            <p class="text-xs font-medium text-info-900 mb-0.5">Employee:</p>
             <p class="text-xs text-info-700">
-              <span class="font-medium">Email:</span> employee@bravorh.com<br />
-              <span class="font-medium">Password:</span> password123
-            </p>
-          </div>
-          <div class="pt-2 border-t border-info-200">
-            <p class="text-xs font-medium text-info-900 mb-0.5">Tenant:</p>
-            <p class="text-xs text-info-700">
-              <span class="font-medium">Email:</span> tenant@bravorh.com<br />
-              <span class="font-medium">Password:</span> password123
-            </p>
-          </div>
-          <div class="pt-2 border-t border-info-200">
-            <p class="text-xs font-medium text-info-900 mb-0.5">Super Admin:</p>
-            <p class="text-xs text-info-700">
-              <span class="font-medium">Email:</span> superadmin@bravorh.com<br />
-              <span class="font-medium">Password:</span> password123
+              <span class="font-medium">{{ t("login.email") }}:</span>
+              {{ account.email }}<br />
+              <span class="font-medium">{{ t("login.password") }}:</span>
+              {{ account.password }}
             </p>
           </div>
         </div>
@@ -252,6 +268,18 @@ const rememberMe = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
 const errorMessage = ref("");
+const demoCredentialsOpen = ref(false);
+
+const demoAccounts = [
+  { label: "Admin", email: "admin@bravorh.com", password: "password123" },
+  { label: "Employee", email: "employee@bravorh.com", password: "password123" },
+  { label: "Tenant", email: "tenant@bravorh.com", password: "password123" },
+  {
+    label: "Super Admin",
+    email: "superadmin@bravorh.com",
+    password: "password123",
+  },
+];
 
 const handleLogin = async () => {
   errorMessage.value = "";

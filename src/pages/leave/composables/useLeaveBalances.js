@@ -9,10 +9,18 @@ function normalizeEmployee(raw = {}) {
     employee: raw.employee ?? "",
     employeeCode: raw.employee_code ?? raw.employeeCode ?? "",
     designation: raw.designation ?? "-",
-    team: raw.team ?? "-",
+    team: raw.team ?? raw.department ?? "-",
     email: raw.email ?? "",
+    status: raw.status ?? (raw.is_active === false ? "inactive" : "active"),
+    isActive: raw.is_active !== false && raw.isActive !== false,
     balances: raw.balances ?? {},
   };
+}
+
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === "object") return Object.values(value);
+  return [];
 }
 
 function normalizeBalance(raw = {}) {
@@ -96,10 +104,12 @@ export function useLeaveBalances() {
     error.value = "";
     try {
       const payload = await leaveBalancesApiService.fetchAll(year.value);
-      leaveTypes.value = Array.isArray(payload?.leave_types) ? payload.leave_types : [];
-      rows.value = (payload?.employees ?? []).map(normalizeEmployee);
+      leaveTypes.value = asArray(payload?.leave_types ?? payload?.leaveTypes);
+      rows.value = asArray(payload?.employees).map(normalizeEmployee);
     } catch (exception) {
       error.value = parseApiError(exception) || t("admin.leave.balances.loadError");
+      leaveTypes.value = [];
+      rows.value = [];
     } finally {
       loading.value = false;
     }
@@ -149,8 +159,8 @@ export function useEmployeeLeaveBalance(employeeCode) {
     try {
       const payload = await leaveBalancesApiService.fetchEmployee(employeeCode.value, year.value);
       employee.value = normalizeEmployee(payload?.employee);
-      balanceRows.value = (payload?.balances ?? []).map(normalizeBalance);
-      adjustmentHistory.value = (payload?.adjustments ?? []).map(normalizeAdjustment);
+      balanceRows.value = asArray(payload?.balances).map(normalizeBalance);
+      adjustmentHistory.value = asArray(payload?.adjustments).map(normalizeAdjustment);
     } catch (exception) {
       employee.value = null;
       balanceRows.value = [];
@@ -172,8 +182,8 @@ export function useEmployeeLeaveBalance(employeeCode) {
         reason,
       });
       employee.value = normalizeEmployee(payload?.employee);
-      balanceRows.value = (payload?.balances ?? []).map(normalizeBalance);
-      adjustmentHistory.value = (payload?.adjustments ?? []).map(normalizeAdjustment);
+      balanceRows.value = asArray(payload?.balances).map(normalizeBalance);
+      adjustmentHistory.value = asArray(payload?.adjustments).map(normalizeAdjustment);
       return true;
     } catch (exception) {
       error.value = parseApiError(exception) || t("admin.leave.balances.saveError");

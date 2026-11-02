@@ -10,4 +10,9 @@ export const companyUsersApiService = {
     const { data } = await apiClient.post("/company-users", payload);
     return data.data ?? data;
   },
+
+  async updateAdmin(id, payload) {
+    const { data } = await apiClient.put(`/company-users/${id}`, payload);
+    return data.data ?? data;
+  },
 };

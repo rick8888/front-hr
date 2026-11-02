@@ -18,10 +18,11 @@ export const HTTP_STATUS = {
 };
 
 export const USER_ROLES = {
+  SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
-  HR_MANAGER: "hr_manager",
-  EMPLOYEE: "employee",
-  MANAGER: "manager",
+  TENANT: "tenant",
+  TEAM_MANAGER: "team_manager",
+  EMPLOYEE: "employe",
 };
 
 export const LEAVE_TYPES = [

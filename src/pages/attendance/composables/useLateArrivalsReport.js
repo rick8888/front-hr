@@ -2,8 +2,13 @@ import { computed, ref, watch } from "vue";
 import { attendanceRecordsApiService } from "../services/attendanceRecords.api.service.js";
 import { employeesApiService } from "../../employees/services/employees.api.service.js";
 import { shiftsApiService } from "../services/shifts.api.service.js";
+import { normalizeEmployee } from "../../employees/composables/useEmployees.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { normalizeAttendanceRecord } from "./useAttendanceRecords.js";
+import {
+  fetchDepartmentCatalog,
+  mergeDepartmentNames,
+} from "./attendanceReportFilters.js";
 import { useI18n } from "../../../i18n/index.js";
 
 const isoDate = (date) => date.toISOString().slice(0, 10);
@@ -28,6 +33,7 @@ export const WEEKDAYS = [
 export function useLateArrivalsReport() {
   const { t } = useI18n();
   const employees = ref([]);
+  const departmentCatalog = ref([]);
   const shifts = ref([]);
   const records = ref([]);
   const loading = ref(false);
@@ -46,7 +52,7 @@ export function useLateArrivalsReport() {
   const pageSize = ref(10);
 
   const departments = computed(() =>
-    [...new Set(employees.value.map((e) => e.department).filter(Boolean))].sort()
+    mergeDepartmentNames(departmentCatalog.value, employees.value)
   );
 
   const employeeById = computed(() => {
@@ -182,7 +188,7 @@ export function useLateArrivalsReport() {
     loading.value = true;
     error.value = "";
     try {
-      const [employeeList, shiftList, recordList] = await Promise.all([
+      const [employeeList, shiftList, recordList, deptList] = await Promise.all([
         employees.value.length
           ? Promise.resolve(employees.value)
           : employeesApiService.fetchAll(),
@@ -193,8 +199,12 @@ export function useLateArrivalsReport() {
           from: fromDate.value,
           to: toDate.value,
         }),
+        fetchDepartmentCatalog(departmentCatalog.value),
       ]);
-      employees.value = employeeList;
+      employees.value = (Array.isArray(employeeList) ? employeeList : []).map(
+        normalizeEmployee
+      );
+      departmentCatalog.value = deptList;
       shifts.value = shiftList;
       records.value = recordList.map(normalizeAttendanceRecord);
     } catch (e) {

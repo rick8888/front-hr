@@ -105,6 +105,9 @@
               <td class="px-5 py-3.5 md:px-6 font-medium text-neutral-800">
                 {{ formatDuration(row.totalMinutes) }}
               </td>
+              <td class="px-5 py-3.5 md:px-6 text-neutral-600">
+                {{ formatDuration(row.breakMinutes) }}
+              </td>
               <td class="px-5 py-3.5 md:px-6 text-neutral-500">
                 {{ row.overtime ?? "--" }}
               </td>
@@ -243,6 +246,7 @@ const columns = computed(() => {
     { key: "checkIn", label: t("ss.attendance.col.checkIn") },
     { key: "checkOut", label: t("ss.attendance.col.checkOut") },
     { key: "totalHours", label: t("common.totalHours") },
+    { key: "break", label: t("ss.attendance.col.break") },
     { key: "overtime", label: t("ss.attendance.col.overtime") },
     { key: "status", label: t("common.status") },
     { key: "actions", label: t("common.actions") },

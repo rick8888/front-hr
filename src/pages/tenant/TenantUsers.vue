@@ -26,7 +26,7 @@
         :page-count="pageCount"
         :page-size="pageSize"
         :search-query="searchQuery"
-        @add="openModal = true"
+        @add="openCreate"
         @update:current-page="page = $event"
         @update:page-size="pageSize = $event"
         @update:search-query="searchQuery = $event"
@@ -37,14 +37,15 @@
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Email</th>
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Rôle</th>
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Créé le</th>
+            <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-100">
           <tr v-if="loading">
-            <td colspan="4" class="px-6 py-16 text-center text-sm text-neutral-500">Chargement…</td>
+            <td colspan="5" class="px-6 py-16 text-center text-sm text-neutral-500">Chargement…</td>
           </tr>
           <tr v-else-if="paginatedUsers.length === 0">
-            <td colspan="4" class="px-6 py-16 text-center text-sm text-neutral-500">
+            <td colspan="5" class="px-6 py-16 text-center text-sm text-neutral-500">
               Aucun administrateur trouvé.
             </td>
           </tr>
@@ -61,6 +62,24 @@
               </span>
             </td>
             <td class="px-5 py-4 text-sm text-neutral-600">{{ formatDate(user.created_at) }}</td>
+            <td class="px-5 py-4 text-right">
+              <button
+                type="button"
+                class="inline-flex rounded p-1.5 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
+                title="Modifier"
+                aria-label="Modifier"
+                @click="openEdit(user)"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </button>
+            </td>
           </tr>
         </tbody>
       </ListingTableShell>
@@ -68,10 +87,11 @@
 
     <TenantAddAdminModal
       v-model:open="openModal"
+      :user="editingUser"
       :saving="saving"
       :server-errors="serverErrors"
       :server-message="serverMessage"
-      @submit="handleCreate"
+      @submit="handleSubmit"
     />
   </div>
 </template>
@@ -87,6 +107,7 @@ const loading = ref(false);
 const saving = ref(false);
 const error = ref("");
 const openModal = ref(false);
+const editingUser = ref(null);
 const serverErrors = ref({});
 const serverMessage = ref("");
 
@@ -155,6 +176,20 @@ const rangeLabel = computed(() => {
   return { from, to };
 });
 
+function openCreate() {
+  editingUser.value = null;
+  serverErrors.value = {};
+  serverMessage.value = "";
+  openModal.value = true;
+}
+
+function openEdit(user) {
+  editingUser.value = user;
+  serverErrors.value = {};
+  serverMessage.value = "";
+  openModal.value = true;
+}
+
 async function loadUsers() {
   loading.value = true;
   error.value = "";
@@ -169,21 +204,38 @@ async function loadUsers() {
   }
 }
 
-async function handleCreate(payload) {
+async function handleSubmit(payload) {
   saving.value = true;
   serverErrors.value = {};
   serverMessage.value = "";
   try {
-    const created = await companyUsersApiService.createAdmin(payload);
-    users.value = [...users.value, created].sort((a, b) =>
-      a.name.localeCompare(b.name, "fr")
-    );
+    if (editingUser.value?.id) {
+      const updated = await companyUsersApiService.updateAdmin(
+        editingUser.value.id,
+        payload
+      );
+      users.value = users.value
+        .map((u) => (u.id === updated.id ? updated : u))
+        .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    } else {
+      const created = await companyUsersApiService.createAdmin(payload);
+      users.value = [...users.value, created].sort((a, b) =>
+        a.name.localeCompare(b.name, "fr")
+      );
+    }
     openModal.value = false;
+    editingUser.value = null;
   } catch (e) {
-    serverMessage.value = e.response?.data?.message || "";
-    serverErrors.value = e.response?.data?.errors || {};
+    const responseErrors = e.response?.data?.errors || {};
+    const quotaMessage =
+      responseErrors["quota.users"]?.[0] ||
+      responseErrors["quota.employees"]?.[0];
+    serverMessage.value = quotaMessage || e.response?.data?.message || "";
+    serverErrors.value = responseErrors;
     if (!serverMessage.value && !Object.keys(serverErrors.value).length) {
-      serverMessage.value = "Impossible de créer l'administrateur.";
+      serverMessage.value = editingUser.value
+        ? "Impossible de modifier l'administrateur."
+        : "Impossible de créer l'administrateur.";
     }
   } finally {
     saving.value = false;

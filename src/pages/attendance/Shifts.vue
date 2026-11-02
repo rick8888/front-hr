@@ -42,6 +42,7 @@
       >
         <h2 class="text-base font-semibold text-neutral-900">{{ t("admin.attendance.shifts.listTitle") }}</h2>
         <button
+          v-if="canConfigureShifts"
           type="button"
           class="inline-flex items-center gap-1.5 px-4 py-2 bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-medium rounded-lg shadow-sm transition-colors disabled:opacity-50"
           :disabled="loading"
@@ -98,7 +99,7 @@
               <th class="px-6 py-3">{{ t("admin.attendance.shifts.col.days") }}</th>
               <th class="px-6 py-3 min-w-[100px] max-w-[200px]">{{ t("admin.attendance.shifts.col.note") }}</th>
               <th class="px-6 py-3 w-24">{{ t("common.status") }}</th>
-              <th class="px-6 py-3 w-20 text-right pr-8">{{ t("common.actions") }}</th>
+              <th v-if="canConfigureShifts" class="px-6 py-3 w-20 text-right pr-8">{{ t("common.actions") }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-neutral-100">
@@ -187,7 +188,7 @@
                     {{ row.active ? t("common.active") : t("common.inactive") }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right pr-6" @click.stop>
+                <td v-if="canConfigureShifts" class="px-6 py-4 text-right pr-6" @click.stop>
                   <div class="relative inline-block">
                     <button
                       type="button"
@@ -383,12 +384,17 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import ConfirmDialog from "../../components/common/ConfirmDialog.vue";
 import { ALL_DAYS, useShifts } from "./composables/useShifts.js";
 import { useI18n } from "../../i18n/index.js";
+import { useAuthStore } from "../../stores/authStore.js";
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const canConfigureShifts = computed(() =>
+  authStore.can("organization.manage", "settings.manage"),
+);
 
 const {
   loading,

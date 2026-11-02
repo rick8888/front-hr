@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { employeesApiService } from "../services/employees.api.service.js";
 import { departmentsApiService } from "../../organization/services/departments.api.service.js";
+import { rolesApiService } from "../../sup-admin/parametres/services/roles.api.service.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { useEmployeeImportExport } from "./useEmployeeImportExport.js";
 import { useI18n } from "../../../i18n/index.js";
@@ -11,7 +12,38 @@ import {
   catalogStatusOptions,
 } from "../../../stores/entityStatusCatalog.store.js";
 
+function readMetadata(raw) {
+  return raw?.metadata && typeof raw.metadata === "object" ? raw.metadata : {};
+}
+
+const KNOWN_ROLE_SLUGS = new Set([
+  "admin",
+  "team_manager",
+  "employe",
+  "employee",
+  "tenant",
+  "super_admin",
+]);
+
+function normalizeRoleSlug(value) {
+  if (!value || typeof value !== "string") return "";
+  const slug = value.trim().toLowerCase();
+  if (slug === "employee") return "employe";
+  return KNOWN_ROLE_SLUGS.has(slug) ? slug : "";
+}
+
+function resolveAccountRole(raw, meta) {
+  return (
+    normalizeRoleSlug(meta.role) ||
+    normalizeRoleSlug(raw.account_role) ||
+    normalizeRoleSlug(raw.role)
+  );
+}
+
 export function normalizeEmployee(raw) {
+  const meta = readMetadata(raw);
+  const accountRole = resolveAccountRole(raw, meta);
+  const jobTitle = raw.job_title ?? meta.designation ?? "";
   return {
     id: raw.id,
     name: raw.name ?? raw.full_name ?? `${raw.first_name ?? ""} ${raw.last_name ?? ""}`.trim(),
@@ -20,11 +52,20 @@ export function normalizeEmployee(raw) {
     email: raw.email ?? "",
     phone: raw.phone ?? "",
     department: raw.department ?? "",
-    role: raw.role ?? raw.job_title ?? "",
+    accountRole,
+    jobTitle,
+    role: accountRole || jobTitle || raw.role || "",
     status: raw.status ?? (raw.is_active ? "active" : "inactive"),
     joinDate: raw.joinDate ?? raw.hired_at ?? "",
     matricule: raw.matricule,
     isActive: !!raw.is_active,
+    probationMonths: Number(
+      raw.probation_months ?? raw.probationMonths ?? meta.probation_months ?? 0
+    ) || 0,
+    probationEndDate:
+      raw.probation_end_date ?? raw.probationEndDate ?? meta.probation_end_date ?? null,
+    probationNotes:
+      raw.probation_notes ?? raw.probationNotes ?? meta.probation_notes ?? "",
   };
 }
 
@@ -41,7 +82,7 @@ const EMPTY_KPIS = {
 
 /** Vue détail employé (EmployeeView) à partir de l’API. */
 export function normalizeEmployeeDetail(raw) {
-  const meta = raw?.metadata && typeof raw.metadata === "object" ? raw.metadata : {};
+  const meta = readMetadata(raw);
   const firstName = raw?.first_name ?? "";
   const lastName = raw?.last_name ?? "";
   const name =
@@ -71,6 +112,13 @@ export function normalizeEmployeeDetail(raw) {
     reportingManager: raw?.reporting_manager ?? raw?.reportingManager ?? meta.reporting_manager ?? "—",
     role: raw?.role ?? meta.role ?? raw?.job_title ?? "—",
     joinDate: raw?.joinDate ?? raw?.hired_at ?? null,
+    probationMonths: Number(
+      raw?.probation_months ?? raw?.probationMonths ?? meta.probation_months ?? 0
+    ) || 0,
+    probationEndDate:
+      raw?.probation_end_date ?? raw?.probationEndDate ?? meta.probation_end_date ?? null,
+    probationNotes:
+      raw?.probation_notes ?? raw?.probationNotes ?? meta.probation_notes ?? "",
     employmentType: raw?.contract_type ?? "—",
     attendanceType: raw?.attendance_type ?? raw?.attendanceType ?? meta.attendance_type ?? "—",
     qrGroup: raw?.qr_group ?? raw?.qrGroup ?? meta.qr_group ?? "",
@@ -97,6 +145,7 @@ export function useEmployees() {
 
   const employees = ref([]);
   const departmentOptions = ref([]);
+  const roleCatalog = ref([]);
   const loading = ref(false);
   const deleting = ref(false);
   const error = ref("");
@@ -112,13 +161,50 @@ export function useEmployees() {
 
   const deleteOpen = ref(false);
   const deleteMessage = ref("");
+  const statusModalOpen = ref(false);
+  const statusUpdating = ref(false);
+  const statusSuccess = ref("");
+  const bulkStatusTarget = ref("active");
 
-  const roleOptions = computed(() => {
-    const roles = new Set(
-      employees.value.map((e) => e.role).filter((r) => r && r.trim())
+  const roleFilterOptions = computed(() => {
+    const hidden = new Set(["super_admin", "tenant"]);
+    const fromCatalog = roleCatalog.value
+      .filter(
+        (role) =>
+          role.slug &&
+          !hidden.has(role.slug) &&
+          role.is_active !== false &&
+          role.isActive !== false
+      )
+      .map((role) => ({
+        value: role.slug === "employee" ? "employe" : role.slug,
+        label: role.name || role.slug,
+      }));
+
+    if (fromCatalog.length) {
+      return fromCatalog.sort((a, b) => a.label.localeCompare(b.label, "fr"));
+    }
+
+    const slugs = new Set(
+      employees.value.map((e) => e.accountRole).filter(Boolean)
     );
-    return [...roles].sort((a, b) => a.localeCompare(b));
+    return [...slugs]
+      .sort((a, b) => a.localeCompare(b, "fr"))
+      .map((slug) => ({ value: slug, label: slug }));
   });
+
+  function employeeRoleLabel(employee) {
+    const slug = employee?.accountRole || "";
+    if (!slug) {
+      return employee?.jobTitle || employee?.role || "—";
+    }
+    const match = roleCatalog.value.find(
+      (role) =>
+        role.slug === slug ||
+        (slug === "employe" && role.slug === "employee")
+    );
+    return match?.name || slug;
+  }
 
   const employeeStats = computed(() => {
     const list = employees.value;
@@ -157,7 +243,9 @@ export function useEmployees() {
     }
 
     if (selectedRole.value) {
-      filtered = filtered.filter((employee) => employee.role === selectedRole.value);
+      filtered = filtered.filter(
+        (employee) => employee.accountRole === selectedRole.value
+      );
     }
 
     return filtered;
@@ -176,12 +264,14 @@ export function useEmployees() {
     loading.value = true;
     error.value = "";
     try {
-      const [employeeList, departments] = await Promise.all([
+      const [employeeList, departments, roles] = await Promise.all([
         employeesApiService.fetchAll(),
         departmentsApiService.fetchAll().catch(() => []),
+        rolesApiService.fetchAll().catch(() => []),
       ]);
       employees.value = employeeList.map(normalizeEmployee);
       departmentOptions.value = departments.map((d) => d.name).filter(Boolean);
+      roleCatalog.value = Array.isArray(roles) ? roles : [];
     } catch (e) {
       error.value = parseApiError(e) || t("admin.employees.loadError");
     } finally {
@@ -269,7 +359,61 @@ export function useEmployees() {
   }
 
   function bulkChangeStatus() {
-    error.value = t("admin.employees.bulkStatusSoon");
+    if (!selectedEmployees.value.length) return;
+    error.value = "";
+    statusSuccess.value = "";
+    const selected = employees.value.filter((emp) =>
+      selectedEmployees.value.includes(emp.id)
+    );
+    const allInactive =
+      selected.length > 0 && selected.every((emp) => emp.status === "inactive");
+    bulkStatusTarget.value = allInactive ? "active" : "inactive";
+    statusModalOpen.value = true;
+  }
+
+  async function confirmBulkStatus(status) {
+    if (!selectedEmployees.value.length || statusUpdating.value) return;
+    if (!["active", "inactive"].includes(status)) return;
+
+    statusUpdating.value = true;
+    error.value = "";
+    statusSuccess.value = "";
+    const ids = [...selectedEmployees.value];
+
+    try {
+      const { updated, skipped } = await employeesApiService.bulkStatus(ids, status);
+      const byId = new Map(updated.map((raw) => [raw.id, normalizeEmployee(raw)]));
+
+      employees.value = employees.value.map((emp) => byId.get(emp.id) ?? emp);
+
+      statusModalOpen.value = false;
+      selectedEmployees.value = [];
+
+      if (skipped.length && updated.length) {
+        statusSuccess.value = t("admin.employees.bulkStatusPartial", {
+          updated: updated.length,
+          skipped: skipped.length,
+        });
+      } else if (skipped.length && !updated.length) {
+        error.value = t("admin.employees.bulkStatusPartial", {
+          updated: 0,
+          skipped: skipped.length,
+        });
+      } else {
+        statusSuccess.value = t("admin.employees.bulkStatusSuccess", {
+          n: updated.length,
+        });
+      }
+    } catch (e) {
+      error.value = parseApiError(e) || t("admin.employees.bulkStatusError");
+    } finally {
+      statusUpdating.value = false;
+    }
+  }
+
+  function cancelBulkStatus() {
+    if (statusUpdating.value) return;
+    statusModalOpen.value = false;
   }
 
   const {
@@ -339,7 +483,8 @@ export function useEmployees() {
   return {
     employees,
     departmentOptions,
-    roleOptions,
+    roleFilterOptions,
+    employeeRoleLabel,
     loading,
     deleting,
     exporting,
@@ -356,6 +501,10 @@ export function useEmployees() {
     itemsPerPage,
     deleteOpen,
     deleteMessage,
+    statusModalOpen,
+    statusUpdating,
+    statusSuccess,
+    bulkStatusTarget,
     employeeStats,
     filteredEmployees,
     totalPages,
@@ -372,6 +521,8 @@ export function useEmployees() {
     viewEmployee,
     bulkSendEmail,
     bulkChangeStatus,
+    confirmBulkStatus,
+    cancelBulkStatus,
     bulkExport,
     exportEmployees,
     importEmployees,

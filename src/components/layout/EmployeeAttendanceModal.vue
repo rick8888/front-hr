@@ -57,7 +57,7 @@
                 id="employee-attendance-modal-title"
                 class="mt-3 text-xl font-bold text-neutral-900"
               >
-                {{ title }}
+                {{ titleLabel }}
               </h2>
               <p class="mt-1 text-sm text-neutral-500">{{ todayLabel }}</p>
             </header>
@@ -70,7 +70,7 @@
             </div>
 
             <section class="px-6 pb-2 pt-5">
-              <h3 class="text-sm font-semibold text-neutral-900">Today's Summary</h3>
+              <h3 class="text-sm font-semibold text-neutral-900">{{ t("ss.attendance.modal.summary") }}</h3>
 
               <div
                 v-if="loading"
@@ -80,7 +80,7 @@
                   class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-emerald-500"
                   aria-hidden="true"
                 />
-                Chargement…
+                {{ t("common.loading") }}
               </div>
 
               <ul v-else class="mt-3 space-y-3">
@@ -104,7 +104,7 @@
                     </svg>
                   </span>
                   <div>
-                    <p class="text-xs font-medium text-neutral-500">Check In</p>
+                    <p class="text-xs font-medium text-neutral-500">{{ t("ss.attendance.checkIn") }}</p>
                     <p class="text-sm font-semibold text-neutral-900">
                       {{ summary.checkIn }}
                     </p>
@@ -130,7 +130,7 @@
                     </svg>
                   </span>
                   <div>
-                    <p class="text-xs font-medium text-neutral-500">Check Out</p>
+                    <p class="text-xs font-medium text-neutral-500">{{ t("ss.attendance.checkOut") }}</p>
                     <p class="text-sm font-semibold text-neutral-900">
                       {{ summary.checkOut || "—" }}
                     </p>
@@ -164,9 +164,27 @@
                     </svg>
                   </span>
                   <div>
-                    <p class="text-xs font-medium text-neutral-500">Working Hours</p>
+                    <p class="text-xs font-medium text-neutral-500">{{ t("ss.attendance.col.workHours") }}</p>
                     <p class="text-sm font-semibold text-neutral-900">
                       {{ summary.workingHours }}
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span
+                    class="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-600"
+                    aria-hidden="true"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3 2" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="text-xs font-medium text-neutral-500">{{ t("ss.attendance.modal.breakDuration") }}</p>
+                    <p class="text-sm font-semibold text-neutral-900">{{ summary.breakDuration }}</p>
+                    <p class="mt-1 text-[11px] text-neutral-500">
+                      {{ t("ss.attendance.modal.breakNoPayrollImpact") }}
                     </p>
                   </div>
                 </li>
@@ -186,11 +204,11 @@
                   class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                   aria-hidden="true"
                 />
-                Check In Now
+                {{ t("ss.attendance.modal.checkInNow") }}
               </button>
 
               <button
-                v-if="phase === 'in'"
+                v-if="phase === 'in' || phase === 'break'"
                 type="button"
                 class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-600 disabled:opacity-60"
                 :disabled="acting || loading"
@@ -216,7 +234,7 @@
                     d="M9 12h12m0 0l-4-4m4 4l-4 4M3 4v16"
                   />
                 </svg>
-                Check Out Now
+                {{ t("ss.attendance.modal.checkOutNow") }}
               </button>
 
               <button
@@ -240,7 +258,16 @@
                     d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2h2M9 5l3-2 3 2"
                   />
                 </svg>
-                Start Break
+                {{ t("ss.attendance.modal.startBreak") }}
+              </button>
+              <button
+                v-if="phase === 'break'"
+                type="button"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600 disabled:opacity-60"
+                :disabled="acting || loading"
+                @click="$emit('end-break')"
+              >
+                {{ t("ss.attendance.modal.endBreak") }}
               </button>
 
               <RouterLink
@@ -272,7 +299,7 @@
                     d="M16 3v4M8 3v4M3 11h18"
                   />
                 </svg>
-                View Full Attendance
+                {{ t("ss.attendance.modal.viewFull") }}
               </RouterLink>
             </footer>
           </div>
@@ -284,15 +311,18 @@
 
 <script setup>
 import { computed, watch } from "vue";
+import { useI18n } from "../../i18n/index.js";
+
+const { t, locale, bcp47 } = useI18n();
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   todayIso: { type: String, default: "" },
-  title: { type: String, default: "You are Checked In" },
+  title: { type: String, default: "" },
   phase: {
     type: String,
     default: "out",
-    validator: (v) => ["out", "in", "done"].includes(v),
+    validator: (v) => ["out", "in", "break", "done"].includes(v),
   },
   loading: { type: Boolean, default: false },
   acting: { type: Boolean, default: false },
@@ -303,6 +333,7 @@ const props = defineProps({
       checkIn: "—",
       checkOut: "—",
       workingHours: "0m",
+      breakDuration: "0m",
     }),
   },
   viewAttendanceTo: {
@@ -316,14 +347,27 @@ const emit = defineEmits([
   "check-in",
   "check-out",
   "start-break",
+  "end-break",
   "open",
 ]);
 
+const titleLabel = computed(() => {
+  void locale.value;
+  if (props.title) return props.title;
+  if (props.phase === "break") return t("ss.attendance.modal.titleBreak");
+  if (props.phase === "in") return t("ss.attendance.modal.titleIn");
+  if (props.phase === "done") return t("ss.attendance.modal.titleOut");
+  return t("ss.attendance.modal.titleReady");
+});
+
 const todayLabel = computed(() => {
-  const iso = props.todayIso || new Date().toISOString().slice(0, 10);
+  void locale.value;
+  const now = new Date();
+  const localIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const iso = props.todayIso || localIso;
   const d = new Date(iso + "T12:00:00");
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString(bcp47.value, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -333,18 +377,21 @@ const todayLabel = computed(() => {
 
 const headerClass = computed(() => {
   if (props.phase === "in") return "bg-emerald-50";
+  if (props.phase === "break") return "bg-amber-50";
   if (props.phase === "done") return "bg-sky-50";
   return "bg-amber-50";
 });
 
 const iconWrapClass = computed(() => {
   if (props.phase === "in") return "bg-emerald-100 text-emerald-600";
+  if (props.phase === "break") return "bg-amber-100 text-amber-600";
   if (props.phase === "done") return "bg-sky-100 text-sky-600";
   return "bg-amber-100 text-amber-600";
 });
 
 const headerIconPath = computed(() => {
   if (props.phase === "in") return "M5 13l4 4L19 7";
+  if (props.phase === "break") return "M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z";
   if (props.phase === "done") return "M9 12h12m0 0l-4-4m4 4l-4 4M3 4v16";
   return "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z";
 });

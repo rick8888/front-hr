@@ -1,10 +1,18 @@
 <template>
-  <div v-if="detail" class="px-4 py-4 sm:px-8 sm:py-6 max-w-7xl mx-auto space-y-6 w-full min-w-0">
-    <!-- En-tête -->
+  <div v-if="loading" class="px-4 py-16 sm:px-8 max-w-lg mx-auto text-center">
+    <span
+      class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-secondary-600"
+      aria-hidden="true"
+    />
+    <p class="mt-4 text-sm text-neutral-600">{{ t("admin.payroll.show.loading") }}</p>
+  </div>
+
+  <div v-else-if="detail" class="px-4 py-4 sm:px-8 sm:py-6 max-w-7xl mx-auto space-y-6 w-full min-w-0">
+    <!-- En-tï¿½te -->
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-neutral-900">{{ t("admin.payroll.show.title") }}</h1>
-        <p class="text-sm text-neutral-600 mt-1">{{ detail.employeeName }} — {{ detail.periodLabel }}</p>
+        <p class="text-sm text-neutral-600 mt-1">{{ detail.employeeName }} ï¿½ {{ detail.periodLabel }}</p>
       </div>
       <nav
         class="text-xs text-neutral-500 flex flex-wrap items-center justify-end gap-1"
@@ -22,6 +30,13 @@
         <span>/</span>
         <span class="text-neutral-800 font-medium">{{ t("admin.payroll.show.title") }}</span>
       </nav>
+    </div>
+
+    <div
+      v-if="error"
+      class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700"
+    >
+      {{ error }}
     </div>
 
     <div
@@ -50,21 +65,25 @@
           :deductions="detail.deductions"
           :gross="salaryDisplay.gross"
           :net="salaryDisplay.net"
+          :currency="detail.currency"
+          :attendance="detail.attendance"
         />
-        <PayrollShowModifiersTable :modifiers="detail.modifiers" />
+        <PayrollShowModifiersTable :modifiers="detail.modifiers" :currency="detail.currency" />
       </div>
 
       <!-- Colonne droite -->
       <PayrollShowSidebar
         :detail="detail"
         :summary="salaryDisplay"
+        :currency="detail.currency"
         :back-to="backToList"
+        :downloading="downloadingPdf"
         @download-pdf="onDownloadPdf"
         @download-payslip="onDownloadPayslip"
-        @back="logTimelineNav('Retour à la liste des paies')"
+        @back="logTimelineNav('Retour ï¿½ la liste des paies')"
       >
         <template #actions>
-          <!-- Paie rejetée -->
+          <!-- Paie rejetï¿½e -->
           <section
             v-if="payrollRejected"
             class="rounded-xl border border-red-200 bg-red-50/40 shadow-sm overflow-hidden"
@@ -119,7 +138,7 @@
             </div>
           </section>
 
-          <!-- Après approbation -->
+          <!-- Aprï¿½s approbation -->
           <div v-else class="space-y-3">
             <p
               v-if="actionFeedback"
@@ -159,7 +178,7 @@
 
   <div v-else class="px-4 py-10 sm:px-8 sm:py-16 max-w-lg mx-auto text-center">
     <p class="text-lg font-semibold text-neutral-900">{{ t("admin.payroll.show.notFound") }}</p>
-    <p class="text-sm text-neutral-600 mt-2">{{ t("admin.payroll.show.notFoundHint") }}</p>
+    <p class="text-sm text-neutral-600 mt-2">{{ error || t("admin.payroll.show.notFoundHint") }}</p>
     <RouterLink :to="backToList" class="btn-secondary inline-flex mt-6">{{ t("admin.payroll.show.backToList") }}</RouterLink>
   </div>
 
@@ -341,7 +360,7 @@
     </Transition>
   </Teleport>
 
-  <!-- Confirmation Â« Mark as Paid Â» -->
+  <!-- Confirmation ï¿½ Mark as Paid ï¿½ -->
   <Teleport to="body">
     <Transition
       enter-active-class="transition duration-200 ease-out"
@@ -520,118 +539,100 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onUnmounted } from "vue";
+import { computed, ref, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "../../i18n/index.js";
-import { getPayrollDetail } from "../../data/payrollRecordsDemo.js";
-import { useAuthStore } from "../../stores/authStore.js";
+import { usePayrollShow } from "./composables/usePayrollShow.js";
 import PayrollShowEmployeeCard from "../../components/payroll/show/PayrollShowEmployeeCard.vue";
 import PayrollShowAttendanceCard from "../../components/payroll/show/PayrollShowAttendanceCard.vue";
 import PayrollShowSalaryBreakdown from "../../components/payroll/show/PayrollShowSalaryBreakdown.vue";
 import PayrollShowModifiersTable from "../../components/payroll/show/PayrollShowModifiersTable.vue";
 import PayrollShowSidebar from "../../components/payroll/show/PayrollShowSidebar.vue";
 
-const MANUAL_ADJUST_STORAGE_KEY = (id) => `payroll:manualAdjustTotals:${String(id)}`;
-const APPROVED_STORAGE_KEY = (id) => `payroll:showApproved:${String(id)}`;
-const MARK_PAID_DONE_KEY = (id) => `payroll:markPaidDone:${String(id)}`;
-const REJECTED_STORAGE_KEY = (id) => `payroll:rejected:${String(id)}`;
-const TIMELINE_STORAGE_KEY = (id) => `payroll:timeline:${String(id)}`;
-
-function round2(n) {
-  return Math.round(Number(n) * 100) / 100;
-}
-
-const STATUS = {
-  paid: { badge: "bg-green-100 text-green-800" },
-  pending: { badge: "bg-amber-100 text-amber-800" },
-  approved: { badge: "bg-sky-100 text-sky-800" },
-  rejected: { badge: "bg-red-100 text-red-800" },
-};
-
 const route = useRoute();
 const { t } = useI18n();
-const authStore = useAuthStore();
 
-const detail = computed(() => getPayrollDetail(route.params.id));
+const {
+  detail,
+  loading,
+  error,
+  actionFeedback,
+  displayStatus,
+  payrollApproved,
+  payrollRejected,
+  markPaidDone,
+  salaryDisplay,
+  recalcLoading,
+  approveLoading,
+  markPaidLoading,
+  rejectLoading,
+  rejectReason,
+  rejectValidationError,
+  downloadingPdf,
+  recalculate,
+  approve,
+  reject,
+  markPaid,
+  cancelApproval,
+  downloadPdf,
+  logTimelineNav,
+  statusLabel,
+  statusBadgeClass,
+  clearTimers,
+} = usePayrollShow();
 
 const fromRegister = computed(() => route.query.from === "register");
 const backToList = computed(() =>
   fromRegister.value ? "/payroll/reports/payroll-register" : "/payroll/records"
 );
 
-function currentActorName() {
-  const n = authStore.user?.name?.trim();
-  return n || "Guest";
-}
+const recalcConfirmOpen = ref(false);
+const recalcSuccessVisible = ref(false);
+let recalcSuccessTimer = null;
 
-const payrollApproved = ref(false);
-const payrollRejected = ref(false);
 const approveConfirmOpen = ref(false);
-const markPaidDone = ref(false);
 const markPaidConfirmOpen = ref(false);
-const markPaidLoading = ref(false);
-const approveLoading = ref(false);
-const actionFeedback = ref("");
-let actionFeedbackTimer = null;
-let markPaidProcessTimer = null;
-let approveProcessTimer = null;
-
-const timeline = ref([]);
 const rejectModalOpen = ref(false);
-const rejectReason = ref("");
-const rejectValidationError = ref("");
-const rejectLoading = ref(false);
-let rejectProcessTimer = null;
 
-const displayStatus = computed(() => {
-  if (markPaidDone.value) return "paid";
-  if (payrollRejected.value) return "rejected";
-  // Statut métier source (ex. Pending) — distinct du badge d'approbation
-  return detail.value?.status ?? "pending";
-});
-
-function formatTimelineAt() {
-  return new Date().toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function openRecalcConfirm() {
+  recalcConfirmOpen.value = true;
 }
-
-function loadTimeline() {
-  try {
-    const raw = sessionStorage.getItem(TIMELINE_STORAGE_KEY(route.params.id));
-    timeline.value = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(timeline.value)) timeline.value = [];
-  } catch {
-    timeline.value = [];
+function closeRecalcConfirm() {
+  recalcConfirmOpen.value = false;
+}
+async function confirmRecalculate() {
+  closeRecalcConfirm();
+  const ok = await recalculate();
+  if (ok) {
+    recalcSuccessVisible.value = true;
+    if (recalcSuccessTimer) clearTimeout(recalcSuccessTimer);
+    recalcSuccessTimer = setTimeout(() => {
+      recalcSuccessVisible.value = false;
+      recalcSuccessTimer = null;
+    }, 4000);
   }
 }
 
-function saveTimeline() {
-  try {
-    sessionStorage.setItem(TIMELINE_STORAGE_KEY(route.params.id), JSON.stringify(timeline.value));
-  } catch {
-    /* ignore */
-  }
+function openApproveConfirm() {
+  approveConfirmOpen.value = true;
+}
+function closeApproveConfirm() {
+  approveConfirmOpen.value = false;
+}
+async function confirmApprovePayroll() {
+  closeApproveConfirm();
+  await approve();
 }
 
-function pushTimeline(title, detail = null) {
-  const entry = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    at: formatTimelineAt(),
-    title,
-    actor: currentActorName(),
-    detail,
-  };
-  timeline.value = [entry, ...timeline.value].slice(0, 50);
-  saveTimeline();
+function openMarkPaidConfirm() {
+  markPaidConfirmOpen.value = true;
 }
-
-function logTimelineNav(title) {
-  pushTimeline(title);
+function closeMarkPaidConfirm() {
+  markPaidConfirmOpen.value = false;
+}
+async function confirmMarkAsPaid() {
+  closeMarkPaidConfirm();
+  await markPaid();
 }
 
 function openRejectModal() {
@@ -639,318 +640,36 @@ function openRejectModal() {
   rejectValidationError.value = "";
   rejectModalOpen.value = true;
 }
-
 function closeRejectModal() {
   rejectModalOpen.value = false;
   rejectReason.value = "";
   rejectValidationError.value = "";
 }
-
-function submitRejectFromModal() {
-  const reason = rejectReason.value.trim();
-  if (!reason) {
-    rejectValidationError.value = t("admin.payroll.show.rejectRequired");
-    return;
-  }
-  rejectValidationError.value = "";
-  rejectModalOpen.value = false;
-  rejectReason.value = "";
-  rejectLoading.value = true;
-  if (rejectProcessTimer) clearTimeout(rejectProcessTimer);
-  rejectProcessTimer = setTimeout(() => {
-    payrollRejected.value = true;
-    payrollApproved.value = false;
-    markPaidDone.value = false;
-    try {
-      sessionStorage.setItem(REJECTED_STORAGE_KEY(route.params.id), JSON.stringify({ reason }));
-      sessionStorage.removeItem(APPROVED_STORAGE_KEY(route.params.id));
-      sessionStorage.removeItem(MARK_PAID_DONE_KEY(route.params.id));
-    } catch {
-      /* ignore */
-    }
-    pushTimeline(t("admin.payroll.show.timeline.rejected"), reason);
-    rejectLoading.value = false;
-    rejectProcessTimer = null;
-  }, 2200);
-}
-
-/** Après confirmation : même formule que la page ajustements (brut + gains manuels, retenues + déductions manuelles) */
-const breakdownOverride = ref(null);
-
-const salaryDisplay = computed(() => {
-  const d = detail.value;
-  if (!d) return { gross: 0, totalDeductions: 0, net: 0 };
-  if (breakdownOverride.value) {
-    return {
-      gross: breakdownOverride.value.gross,
-      totalDeductions: breakdownOverride.value.totalDeductions,
-      net: breakdownOverride.value.net,
-    };
-  }
-  return {
-    gross: d.grossSalary,
-    totalDeductions: d.totalDeductions,
-    net: d.netSalary,
-  };
-});
-
-const recalcConfirmOpen = ref(false);
-const recalcSuccessVisible = ref(false);
-const recalcLoading = ref(false);
-let recalcSuccessTimer = null;
-let recalcProcessTimer = null;
-
-function openApproveConfirm() {
-  approveConfirmOpen.value = true;
-}
-
-function closeApproveConfirm() {
-  approveConfirmOpen.value = false;
-}
-
-function confirmApprovePayroll() {
-  if (approveLoading.value) return;
-  closeApproveConfirm();
-  approveLoading.value = true;
-  if (approveProcessTimer) clearTimeout(approveProcessTimer);
-  approveProcessTimer = setTimeout(() => {
-    payrollApproved.value = true;
-    try {
-      sessionStorage.setItem(APPROVED_STORAGE_KEY(route.params.id), "1");
-    } catch {
-      /* ignore */
-    }
-    pushTimeline(t("admin.payroll.show.timeline.approved"));
-    approveLoading.value = false;
-    approveProcessTimer = null;
-  }, 2200);
-}
-
-function openMarkPaidConfirm() {
-  markPaidConfirmOpen.value = true;
-}
-
-function closeMarkPaidConfirm() {
-  markPaidConfirmOpen.value = false;
-}
-
-function confirmMarkAsPaid() {
-  closeMarkPaidConfirm();
-  markPaidLoading.value = true;
-  if (markPaidProcessTimer) clearTimeout(markPaidProcessTimer);
-  markPaidProcessTimer = setTimeout(() => {
-    markPaidLoading.value = false;
-    markPaidDone.value = true;
-    try {
-      sessionStorage.setItem(MARK_PAID_DONE_KEY(route.params.id), "1");
-    } catch {
-      /* ignore */
-    }
-    pushTimeline(t("admin.payroll.show.timeline.paid"));
-    actionFeedback.value = t("admin.payroll.show.paidFeedback");
-    if (actionFeedbackTimer) clearTimeout(actionFeedbackTimer);
-    actionFeedbackTimer = setTimeout(() => {
-      actionFeedback.value = "";
-      actionFeedbackTimer = null;
-    }, 4000);
-    markPaidProcessTimer = null;
-  }, 2200);
-}
-
-function onCancelPayroll() {
-  if (!confirm(t("admin.payroll.show.cancelConfirm"))) return;
-  payrollApproved.value = false;
-  markPaidDone.value = false;
-  try {
-    sessionStorage.removeItem(APPROVED_STORAGE_KEY(route.params.id));
-    sessionStorage.removeItem(MARK_PAID_DONE_KEY(route.params.id));
-  } catch {
-    /* ignore */
-  }
-  actionFeedback.value = "";
-  pushTimeline(t("admin.payroll.show.timeline.cancelled"), t("admin.payroll.show.cancelNote"));
-}
-
-function onDownloadPayslip() {
-  pushTimeline(t("admin.payroll.show.timeline.downloadPayslip"), t("admin.payroll.show.demoNoFile"));
-  actionFeedback.value = t("admin.payroll.show.downloadDemo");
-  if (actionFeedbackTimer) clearTimeout(actionFeedbackTimer);
-  actionFeedbackTimer = setTimeout(() => {
-    actionFeedback.value = "";
-    actionFeedbackTimer = null;
-  }, 4000);
-}
-
-function onDownloadPdf() {
-  pushTimeline(t("admin.payroll.show.timeline.downloadPdf"), t("admin.payroll.show.demoNoFile"));
-  window.print();
-}
-
-function readManualAdjustTotals() {
-  try {
-    const raw = sessionStorage.getItem(MANUAL_ADJUST_STORAGE_KEY(route.params.id));
-    if (!raw) return { e: 0, ded: 0 };
-    const o = JSON.parse(raw);
-    return { e: Number(o.e) || 0, ded: Number(o.ded) || 0 };
-  } catch {
-    return { e: 0, ded: 0 };
-  }
-}
-
-function openRecalcConfirm() {
-  recalcConfirmOpen.value = true;
-}
-
-function closeRecalcConfirm() {
-  recalcConfirmOpen.value = false;
-}
-
-function confirmRecalculate() {
-  if (recalcLoading.value) return;
-  const d = detail.value;
-  if (!d) return;
-  const { e, ded } = readManualAdjustTotals();
-  closeRecalcConfirm();
-  recalcLoading.value = true;
-  if (recalcProcessTimer) clearTimeout(recalcProcessTimer);
-  recalcProcessTimer = setTimeout(() => {
-    breakdownOverride.value = {
-      gross: round2(d.grossSalary + e),
-      totalDeductions: round2(d.totalDeductions + ded),
-      net: round2(d.grossSalary + e - (d.totalDeductions + ded)),
-    };
-    pushTimeline(
-      t("admin.payroll.show.timeline.recalculated"),
-      t("admin.payroll.show.timeline.recalcDetail", {
-        earnings: formatMoney(e),
-        deductions: formatMoney(ded),
-      })
-    );
-    recalcSuccessVisible.value = true;
-    if (recalcSuccessTimer) clearTimeout(recalcSuccessTimer);
-    recalcSuccessTimer = setTimeout(() => {
-      recalcSuccessVisible.value = false;
-      recalcSuccessTimer = null;
-    }, 4000);
-    recalcLoading.value = false;
-    recalcProcessTimer = null;
-  }, 2200);
-}
-
-function formatMoney(n) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(Number(n) || 0);
-}
-
-function statusLabel(key) {
-  const translated = t(`admin.payroll.status.${key}`);
-  if (translated !== `admin.payroll.status.${key}`) return translated;
-  return key;
-}
-
-function statusBadgeClass(key) {
-  return STATUS[key]?.badge ?? "bg-neutral-100 text-neutral-700";
-}
-
-function initials(name) {
-  if (!name) return "??";
-  const p = name.split(/\s+/).filter(Boolean);
-  if (p.length >= 2) return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
-
-function avatarColor(name) {
-  const colors = ["#6366f1", "#8b5cf6", "#0ea5e9", "#059669", "#d97706", "#7c3aed", "#ec4899"];
-  let h = 0;
-  for (let i = 0; i < (name || "").length; i++) h += name.charCodeAt(i);
-  return colors[h % colors.length];
-}
-
-watch(
-  () => route.params.id,
-  () => {
-    breakdownOverride.value = null;
-    recalcConfirmOpen.value = false;
-    recalcLoading.value = false;
-    if (recalcProcessTimer) {
-      clearTimeout(recalcProcessTimer);
-      recalcProcessTimer = null;
-    }
-    approveConfirmOpen.value = false;
-    markPaidConfirmOpen.value = false;
-    markPaidLoading.value = false;
-    approveLoading.value = false;
-    if (approveProcessTimer) {
-      clearTimeout(approveProcessTimer);
-      approveProcessTimer = null;
-    }
+async function submitRejectFromModal() {
+  const ok = await reject();
+  if (ok) {
     rejectModalOpen.value = false;
-    rejectReason.value = "";
-    rejectValidationError.value = "";
-    rejectLoading.value = false;
-    if (rejectProcessTimer) {
-      clearTimeout(rejectProcessTimer);
-      rejectProcessTimer = null;
-    }
-    recalcSuccessVisible.value = false;
-    if (recalcSuccessTimer) {
-      clearTimeout(recalcSuccessTimer);
-      recalcSuccessTimer = null;
-    }
-    if (markPaidProcessTimer) {
-      clearTimeout(markPaidProcessTimer);
-      markPaidProcessTimer = null;
-    }
-    if (actionFeedbackTimer) {
-      clearTimeout(actionFeedbackTimer);
-      actionFeedbackTimer = null;
-    }
-    actionFeedback.value = "";
-    try {
-      const rejectedRaw = sessionStorage.getItem(REJECTED_STORAGE_KEY(route.params.id));
-      payrollRejected.value = Boolean(rejectedRaw);
-      if (payrollRejected.value) {
-        payrollApproved.value = false;
-        markPaidDone.value = false;
-      } else {
-        const storedApproved = sessionStorage.getItem(APPROVED_STORAGE_KEY(route.params.id)) === "1";
-        const storedPaid = sessionStorage.getItem(MARK_PAID_DONE_KEY(route.params.id)) === "1";
-        const d = getPayrollDetail(route.params.id);
-        payrollApproved.value = storedApproved || Boolean(d?.defaultApproved);
-        markPaidDone.value = storedPaid;
-      }
-    } catch {
-      const d = getPayrollDetail(route.params.id);
-      payrollApproved.value = Boolean(d?.defaultApproved);
-      markPaidDone.value = false;
-      payrollRejected.value = false;
-    }
-    loadTimeline();
-  },
-  { immediate: true }
-);
+  }
+}
 
-watch(
-  () => [route.params.id, detail.value],
-  () => {
-    if (detail.value?.employeeName) {
-      document.title = `Payroll — ${detail.value.employeeName}`;
-    } else {
-      document.title = t("admin.payroll.show.title");
-    }
-  },
-  { immediate: true }
-);
+async function onCancelPayroll() {
+  if (!confirm(t("admin.payroll.show.cancelConfirm"))) return;
+  await cancelApproval();
+}
+
+async function onDownloadPayslip() {
+  await downloadPdf();
+}
+
+async function onDownloadPdf() {
+  await downloadPdf();
+}
 
 onUnmounted(() => {
   if (recalcSuccessTimer) clearTimeout(recalcSuccessTimer);
-  if (recalcProcessTimer) clearTimeout(recalcProcessTimer);
-  if (markPaidProcessTimer) clearTimeout(markPaidProcessTimer);
-  if (approveProcessTimer) clearTimeout(approveProcessTimer);
-  if (rejectProcessTimer) clearTimeout(rejectProcessTimer);
-  if (actionFeedbackTimer) clearTimeout(actionFeedbackTimer);
+  clearTimers();
 });
 </script>
+
+
+

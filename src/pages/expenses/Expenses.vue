@@ -206,15 +206,10 @@
       @cancel="cancelConfirm"
     />
 
-    <ConfirmDialog
+    <ExpenseDetailsModal
       v-model="viewOpen"
+      :record="viewRow"
       :title="t('admin.leave.expenses.details')"
-      :message="viewMessage"
-      variant="info"
-      :confirm-text="t('common.close')"
-      :cancel-text="t('common.back')"
-      @confirm="viewOpen = false"
-      @cancel="viewOpen = false"
     />
   </div>
 </template>
@@ -225,6 +220,7 @@ import LeaveRequestsPageHero from "../../components/leave/LeaveRequestsPageHero.
 import ListingTableShell from "../../components/leave-management/ListingTableShell.vue";
 import KpiCard from "../../components/common/KpiCard.vue";
 import ConfirmDialog from "../../components/common/ConfirmDialog.vue";
+import ExpenseDetailsModal from "../../components/expenses/ExpenseDetailsModal.vue";
 import ExpensesFiltersPanel from "../../components/expenses/ExpensesFiltersPanel.vue";
 import { useExpenses } from "./composables/useExpenses.js";
 import { useI18n } from "../../i18n/index.js";
@@ -285,21 +281,6 @@ const columns = computed(() => {
     { key: "receipt", label: t("admin.leave.expenses.col.receipt") },
     { key: "actions", label: t("common.actions"), thClass: "text-right" },
   ];
-});
-
-const viewMessage = computed(() => {
-  const r = viewRow.value;
-  if (!r) return "";
-  const parts = [
-    `#${r.id}`,
-    r.employee,
-    r.type,
-    formatDate(r.expenseDate),
-    formatAmount(r.amount, r.currency),
-    r.status,
-  ];
-  if (r.description) parts.push(r.description);
-  return parts.join(" · ");
 });
 
 function initials(name) {

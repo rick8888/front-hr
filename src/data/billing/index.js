@@ -24,6 +24,7 @@ export const INVOICE_STATUS_TONES = {
 
 export const PAYMENT_METHOD_LABELS = {
   bank_transfer: "Virement bancaire",
+  mobile_money: "Mobile money",
   card: "Carte bancaire",
   check: "Chèque",
   cash: "Espèces",

@@ -335,25 +335,17 @@
                   {{ row.stepLabel }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-right relative">
-                <button
-                  type="button"
-                  class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-                  :aria-expanded="openMenuId === row.id"
+              <td class="px-4 py-3 text-right">
+                <TableRowMenu
+                  :open="openMenuId === row.id"
                   :aria-label="t('common.actions')"
-                  @click.stop="toggleMenu(row.id)"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-                <div
-                  v-if="openMenuId === row.id"
-                  class="absolute right-4 top-full z-10 mt-1 w-36 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg text-left"
-                  @click.stop
+                  width-class="w-36"
+                  @toggle="toggleMenu(row.id)"
+                  @close="openMenuId = null"
                 >
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50"
                     @click="openEdit(row)"
                   >
@@ -361,13 +353,14 @@
                   </button>
                   <button
                     type="button"
+                    role="menuitem"
                     class="w-full px-3 py-2 text-left text-sm text-error-600 hover:bg-error-50 disabled:opacity-40"
                     :disabled="row.is_system"
                     @click="removeRow(row)"
                   >
                     {{ t("common.delete") }}
                   </button>
-                </div>
+                </TableRowMenu>
               </td>
             </tr>
           </tbody>
@@ -627,6 +620,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useI18n } from "../../i18n/index.js";
 import FormulaEditor from "../../components/payroll/FormulaEditor.vue";
+import TableRowMenu from "../../components/common/TableRowMenu.vue";
 import { useSalaryComponentStore } from "./stores/salary-component.store.js";
 
 const { t } = useI18n();

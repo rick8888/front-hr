@@ -135,6 +135,22 @@
         </div>
       </template>
 
+      <div v-if="form.type === 'progressive'">
+        <label class="mb-1 block text-sm font-medium text-neutral-800">
+          Ajustement facultatif du montant calculé
+        </label>
+        <textarea
+          v-model="form.formula"
+          rows="2"
+          class="input-base w-full resize-y font-mono text-sm"
+          placeholder="Ex. : MIN(TAX_AMOUNT, BASE * 0.3)"
+        />
+        <p class="mt-1 text-xs text-neutral-500">
+          Variables disponibles : BASE (assiette plafonnée) et TAX_AMOUNT (impôt progressif calculé).
+        </p>
+        <p v-if="errors.formula" class="mt-1 text-xs text-red-600">{{ errors.formula }}</p>
+      </div>
+
       <TaxBracketsEditor
         v-if="form.type === 'progressive'"
         v-model="form.brackets"
@@ -303,7 +319,12 @@ function buildPayload() {
     employee_rate: employeeRate,
     ceiling: form.ceiling || null,
     floor: form.floor || null,
-    formula: form.type === "formula" ? form.formula.trim() : null,
+    formula:
+      form.type === "formula"
+        ? form.formula.trim()
+        : form.type === "progressive"
+          ? form.formula.trim() || null
+          : null,
     reduces_taxable: form.reduces_taxable,
     is_active: form.is_active,
     sequence: form.sequence,

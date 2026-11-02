@@ -1,8 +1,13 @@
 import { computed, ref, watch } from "vue";
 import { attendanceRecordsApiService } from "../services/attendanceRecords.api.service.js";
 import { employeesApiService } from "../../employees/services/employees.api.service.js";
+import { normalizeEmployee } from "../../employees/composables/useEmployees.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { normalizeAttendanceRecord } from "./useAttendanceRecords.js";
+import {
+  fetchDepartmentCatalog,
+  mergeDepartmentNames,
+} from "./attendanceReportFilters.js";
 import { useI18n } from "../../../i18n/index.js";
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
@@ -39,6 +44,7 @@ export function formatDuration(minutes, { long = false } = {}) {
 export function useMonthlyAttendanceSummary() {
   const { t } = useI18n();
   const employees = ref([]);
+  const departmentCatalog = ref([]);
   const records = ref([]);
   const loading = ref(false);
   const error = ref("");
@@ -53,7 +59,7 @@ export function useMonthlyAttendanceSummary() {
   const pageSize = ref(10);
 
   const departments = computed(() =>
-    [...new Set(employees.value.map((e) => e.department).filter(Boolean))].sort()
+    mergeDepartmentNames(departmentCatalog.value, employees.value)
   );
 
   const workingDays = computed(() => workingDaysInMonth(month.value));
@@ -158,13 +164,17 @@ export function useMonthlyAttendanceSummary() {
     error.value = "";
     try {
       const range = monthRange(month.value);
-      const [employeeList, recordList] = await Promise.all([
+      const [employeeList, recordList, deptList] = await Promise.all([
         employees.value.length
           ? Promise.resolve(employees.value)
           : employeesApiService.fetchAll(),
         attendanceRecordsApiService.fetchAll(range),
+        fetchDepartmentCatalog(departmentCatalog.value),
       ]);
-      employees.value = employeeList;
+      employees.value = (Array.isArray(employeeList) ? employeeList : []).map(
+        normalizeEmployee
+      );
+      departmentCatalog.value = deptList;
       records.value = recordList.map(normalizeAttendanceRecord);
     } catch (e) {
       error.value = parseApiError(e) || t("admin.attendance.reports.monthly.loadError");

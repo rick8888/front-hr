@@ -133,26 +133,12 @@
               {{ statusLabel(row.status) }}
             </span>
           </td>
-          <td class="relative whitespace-nowrap px-5 py-4 text-right md:px-6">
-            <button
-              type="button"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
-              :aria-expanded="actionMenuOpen === row.id"
-              aria-haspopup="true"
+          <td class="whitespace-nowrap px-5 py-4 text-right md:px-6">
+            <TableRowMenu
+              :open="actionMenuOpen === row.id"
               :aria-label="t('admin.leave.types.actionsFor', { id: row.id })"
-              @click.stop="toggleMenu(row.id)"
-            >
-              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"
-                />
-              </svg>
-            </button>
-            <div
-              v-if="actionMenuOpen === row.id"
-              class="absolute right-4 top-full z-10 mt-0.5 w-40 rounded-lg border border-neutral-200 bg-white py-1 shadow-md md:right-6"
-              role="menu"
-              @click.stop
+              @toggle="toggleMenu(row.id)"
+              @close="closeMenu"
             >
               <button
                 type="button"
@@ -200,7 +186,7 @@
                 </svg>
                 {{ t("common.delete") }}
               </button>
-            </div>
+            </TableRowMenu>
           </td>
         </tr>
       </tbody>
@@ -310,6 +296,7 @@ import { onMounted } from "vue";
 import LeaveRequestsPageHero from "../../components/leave/LeaveRequestsPageHero.vue";
 import ListingTableShell from "../../components/leave-management/ListingTableShell.vue";
 import LeaveTypeFormModal from "../../components/leave-management/LeaveTypeFormModal.vue";
+import TableRowMenu from "../../components/common/TableRowMenu.vue";
 import { useLeaveTypes } from "../leave/composables/useLeaveTypes.js";
 import { useI18n } from "../../i18n/index.js";
 
