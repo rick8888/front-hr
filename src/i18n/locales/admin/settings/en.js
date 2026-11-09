@@ -16,6 +16,7 @@ export default {
   "settings.tabs.whatsapp": "WhatsApp",
   "settings.tabs.notifications": "Notifications",
   "settings.tabs.documentTemplates": "Document templates",
+  "settings.tabs.notificationTemplates": "Notification templates",
 
   "settings.tabs.preferences": "Preferences",
 
@@ -80,6 +81,8 @@ export default {
   "settings.notifications.attendance": "Attendance reminders",
   "settings.notifications.attendanceHint": "Daily attendance check reminders",
   "settings.notifications.save": "Save changes",
+  "settings.notificationTemplates.subtitle":
+    "Customize emails sent for your company's HR alerts. Duplicate a platform template, edit it, then publish it.",
 
   "settings.business.title": "Business setup",
   "settings.business.subtitle": "Overview of HR catalogs and company-wide rules",

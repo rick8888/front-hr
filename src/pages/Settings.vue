@@ -71,6 +71,12 @@
             v-else-if="activeTab === 'document-templates'"
             :platform-only="false"
           />
+          <DocumentTemplatesSettingsPanel
+            v-else-if="activeTab === 'notification-templates'"
+            :platform-only="false"
+            initial-family-filter="notification"
+            initial-channel-filter="email"
+          />
           <SettingsWhatsAppPanel v-else-if="activeTab === 'whatsapp'" />
           <SettingsPreferencesPanel v-else-if="activeTab === 'preferences'" />
           <SettingsNotificationsPanel v-else-if="activeTab === 'notifications'" />
@@ -135,6 +141,11 @@ const menuGroups = computed(() => {
           id: "document-templates",
           label: t("settings.tabs.documentTemplates"),
           hint: t("admin.employees.documentTemplates.hintTenant"),
+        },
+        {
+          id: "notification-templates",
+          label: t("settings.tabs.notificationTemplates"),
+          hint: t("settings.notificationTemplates.subtitle"),
         },
       ],
     },

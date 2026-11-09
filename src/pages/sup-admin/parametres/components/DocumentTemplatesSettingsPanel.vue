@@ -214,6 +214,8 @@ import { useI18n } from "../../../../i18n/index.js";
 
 const props = defineProps({
   platformOnly: { type: Boolean, default: false },
+  initialFamilyFilter: { type: String, default: "all" },
+  initialChannelFilter: { type: String, default: "all" },
 });
 
 const { t } = useI18n();
@@ -255,7 +257,11 @@ const {
   duplicateTemplate,
   askDelete,
   confirmDelete,
-} = useDocumentTemplatesSettings({ platformOnly: props.platformOnly });
+} = useDocumentTemplatesSettings({
+  platformOnly: props.platformOnly,
+  initialFamilyFilter: props.initialFamilyFilter,
+  initialChannelFilter: props.initialChannelFilter,
+});
 
 function familyLabel(value) {
   const f = families.find((x) => x.value === value);

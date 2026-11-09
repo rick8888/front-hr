@@ -63,4 +63,9 @@ export const equipmentAssignmentsApiService = {
     );
     return unwrap(data);
   },
+
+  async returnItem(id) {
+    const { data } = await apiClient.patch(`/equipment-assignments/${id}/return`);
+    return unwrap(data);
+  },
 };

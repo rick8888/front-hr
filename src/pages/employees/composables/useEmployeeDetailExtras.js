@@ -113,6 +113,21 @@ function normalizeLeaveHistory(raw = {}) {
 }
 
 function timelineCategory(activity = {}) {
+  const event = String(activity.event || "").toLowerCase();
+  if (event.startsWith("employee.onboarding_")) return "onboarding";
+  if (event.startsWith("employee.offboarding_")) return "offboarding";
+  if (event.startsWith("employee.probation_")) return "probation";
+  if (
+    event.startsWith("performance_review.") ||
+    event.startsWith("performance_objective.") ||
+    event.startsWith("training_enrollment.created_from_performance_objective")
+  ) {
+    return "performance";
+  }
+  if (event.startsWith("training_enrollment.")) return "training";
+  if (event.startsWith("equipment_assignment.")) return "equipment";
+  if (event.startsWith("payroll.")) return "payroll";
+
   const type = String(activity.type || "").toLowerCase();
   const title = String(activity.title || "").toLowerCase();
   const description = String(activity.description || "").toLowerCase();
@@ -137,9 +152,15 @@ function timelineCategory(activity = {}) {
 }
 
 function normalizeTimelineEvent(activity = {}, index = 0) {
+  const eventTitle = activity.event
+    ? t(`admin.employees.activityEvents.${activity.event}`)
+    : "";
   return {
     id: activity.id ?? `timeline-${index + 1}`,
-    title: activity.title || t("admin.employees.view.activity"),
+    title:
+      eventTitle && eventTitle !== `admin.employees.activityEvents.${activity.event}`
+        ? eventTitle
+        : activity.title || t("admin.employees.view.activity"),
     date: activity.timestamp
       ? new Date(activity.timestamp).toLocaleDateString("en-GB", {
           day: "2-digit",
@@ -149,6 +170,7 @@ function normalizeTimelineEvent(activity = {}, index = 0) {
       : "—",
     description: activity.description || "",
     category: timelineCategory(activity),
+    timestamp: activity.timestamp || null,
   };
 }
 
@@ -276,10 +298,12 @@ export async function loadEmployeeDetailExtras(employee) {
   });
 
   timeline.sort((a, b) => {
-    const da = new Date(a.date);
-    const db = new Date(b.date);
-    if (Number.isNaN(da.getTime()) || Number.isNaN(db.getTime())) return 0;
-    return db - da;
+    const da = a.timestamp ? new Date(a.timestamp) : new Date(a.date);
+    const db = b.timestamp ? new Date(b.timestamp) : new Date(b.date);
+    const aTime = da.getTime();
+    const bTime = db.getTime();
+    if (Number.isNaN(aTime) || Number.isNaN(bTime)) return 0;
+    return bTime - aTime;
   });
 
   const kpis = computeKpis({ attendanceLog, leaveBalances, leaveHistory });

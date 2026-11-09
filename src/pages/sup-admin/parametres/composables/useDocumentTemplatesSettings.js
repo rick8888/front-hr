@@ -13,8 +13,8 @@ export function useDocumentTemplatesSettings(options = {}) {
   const loading = ref(false);
   const error = ref("");
   const searchQuery = ref("");
-  const familyFilter = ref("all");
-  const channelFilter = ref("all");
+  const familyFilter = ref(options.initialFamilyFilter || "all");
+  const channelFilter = ref(options.initialChannelFilter || "all");
   const currentPage = ref(1);
   const pageSize = ref(10);
 

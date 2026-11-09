@@ -16,6 +16,7 @@ export default {
   "settings.tabs.whatsapp": "WhatsApp",
   "settings.tabs.notifications": "Notifications",
   "settings.tabs.documentTemplates": "Modèles documentaires",
+  "settings.tabs.notificationTemplates": "Modèles de notifications",
   "settings.tabs.preferences": "Préférences",
 
   "settings.general.title": "Informations générales",
@@ -81,6 +82,8 @@ export default {
   "settings.notifications.attendance": "Rappels de présence",
   "settings.notifications.attendanceHint": "Rappels quotidiens de pointage",
   "settings.notifications.save": "Enregistrer les modifications",
+  "settings.notificationTemplates.subtitle":
+    "Personnalisez les e-mails envoyés pour les alertes RH de votre entreprise. Dupliquez un modèle plateforme, modifiez-le puis publiez-le.",
 
   "settings.business.title": "Paramétrage métier",
   "settings.business.subtitle": "Vue d'ensemble des catalogues RH et règles globales de l'entreprise",

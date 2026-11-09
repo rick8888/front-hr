@@ -49,6 +49,7 @@ export function useAdminDashboard() {
   const attendanceList = ref([]);
   const scheduledEvents = ref([]);
   const scheduleHighlightDates = ref([]);
+  const hrActions = ref(null);
 
   const currentDate = ref(
     new Date(new Date().getFullYear(), new Date().getMonth(), 1)
@@ -169,6 +170,10 @@ export function useAdminDashboard() {
       scheduleHighlightDates.value = Array.isArray(payload.schedule_dates)
         ? payload.schedule_dates
         : [];
+      hrActions.value =
+        payload.hr_actions && typeof payload.hr_actions === "object"
+          ? payload.hr_actions
+          : null;
     } catch (e) {
       error.value = parseApiError(e) || t("admin.dashboard.loadError");
       stats.value = [...kpiPlaceholders.value];
@@ -176,6 +181,7 @@ export function useAdminDashboard() {
       attendanceList.value = [];
       scheduledEvents.value = [];
       scheduleHighlightDates.value = [];
+      hrActions.value = null;
     } finally {
       loading.value = false;
     }
@@ -236,6 +242,7 @@ export function useAdminDashboard() {
     filteredChartData: chartData,
     attendanceList,
     scheduledEvents,
+    hrActions,
     currentDate,
     currentMonth,
     weekdayLabels,

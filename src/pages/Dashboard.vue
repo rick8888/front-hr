@@ -25,6 +25,51 @@
           />
         </div>
 
+        <section
+          v-if="hrActions"
+          class="mb-6 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm"
+        >
+          <h2 class="mb-4 text-lg font-bold text-neutral-900">
+            {{ t("admin.dashboard.hrActions.title") }}
+          </h2>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <RouterLink
+              v-for="action in hrActionCards"
+              :key="action.key"
+              :to="action.to"
+              class="rounded-lg border border-neutral-200 p-4 transition hover:border-primary-300 hover:bg-primary-50"
+            >
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <h3 class="font-semibold text-neutral-900">
+                  {{ t(action.titleKey) }}
+                </h3>
+                <span class="rounded-full bg-primary-100 px-2.5 py-1 text-sm font-bold text-primary-700">
+                  {{ hrActions[action.key]?.count ?? 0 }}
+                </span>
+              </div>
+              <ul
+                v-if="hrActions[action.key]?.items?.length"
+                class="space-y-2"
+              >
+                <li
+                  v-for="item in hrActions[action.key].items"
+                  :key="item.id"
+                  class="border-t border-neutral-100 pt-2"
+                >
+                  <p class="text-sm font-medium text-neutral-800">{{ item.label }}</p>
+                  <p v-if="item.detail" class="text-xs text-neutral-600">{{ item.detail }}</p>
+                  <p v-if="item.due_date" class="text-xs text-neutral-500">
+                    {{ t("admin.dashboard.hrActions.dueDate", { date: item.due_date }) }}
+                  </p>
+                </li>
+              </ul>
+              <p v-else class="text-sm text-neutral-500">
+                {{ t("admin.dashboard.hrActions.empty") }}
+              </p>
+            </RouterLink>
+          </div>
+        </section>
+
         <!-- Attendance Overview Chart -->
         <div class="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm mb-6">
           <div class="flex items-center justify-between mb-6">
@@ -812,6 +857,7 @@ const {
   chartFilter,
   filteredChartData,
   attendanceList,
+  hrActions,
   scheduledEvents,
   currentMonth,
   weekdayLabels,
@@ -821,6 +867,24 @@ const {
   selectDate,
   getAvatarColor,
 } = useAdminDashboard();
+
+const hrActionCards = [
+  {
+    key: "probation",
+    titleKey: "admin.dashboard.hrActions.probation",
+    to: "/employees/probation",
+  },
+  {
+    key: "objectives",
+    titleKey: "admin.dashboard.hrActions.objectives",
+    to: "/performance-reviews",
+  },
+  {
+    key: "offboarding",
+    titleKey: "admin.dashboard.hrActions.offboarding",
+    to: "/employees/offboarding",
+  },
+];
 
 const employeeAttendanceData = ref([
   { day: "Lun", present: 100 },

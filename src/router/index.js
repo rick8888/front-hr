@@ -8,6 +8,7 @@ import Dashboard2 from "../pages/Dashboard2.vue";
 import Employees from "../pages/Employees.vue";
 import EmployeeShow from "../pages/EmployeeShow.vue";
 import EmployeeOnboarding from "../pages/EmployeeOnboarding.vue";
+import EmployeeOffboarding from "../pages/EmployeeOffboarding.vue";
 import EmployeeView from "../pages/EmployeeView.vue";
 import NewEmployee from "../pages/NewEmployee.vue";
 import EditEmployee from "../pages/EditEmployee.vue";
@@ -65,6 +66,7 @@ import Team from "../pages/organization/Team.vue";
 import Designation from "../pages/organization/Designation.vue";
 import Sites from "../pages/organization/Sites.vue";
 import EmployeeCategoryList from "../pages/employees/EmployeeCategoryList.vue";
+import EmployeeProbation from "../pages/EmployeeProbation.vue";
 import LeaveTypes from "../pages/leave-management/LeaveTypes.vue";
 import CompensatoryOffs from "../pages/leave-management/CompensatoryOffs.vue";
 import Expenses from "../pages/expenses/Expenses.vue";
@@ -149,7 +151,10 @@ const adminOnlyRoutes = [
 const routePermissionRules = [
   { prefix: "/sup-admin", anyOf: ["platform.manage", "platform.billing", "platform.roles"] },
   { prefix: "/payroll", anyOf: ["payroll.view", "payroll.manage"] },
+  { prefix: "/employees/offboarding", anyOf: ["employees.manage"] },
+  { prefix: "/employees/probation", anyOf: ["employees.manage"] },
   { prefix: "/employees", anyOf: ["employees.view", "employees.manage"] },
+  { prefix: "/performance-reviews", anyOf: ["employees.view", "employees.manage"] },
   { prefix: "/organization", anyOf: ["organization.manage"] },
   { prefix: "/departments", anyOf: ["organization.manage"] },
   { prefix: "/teams", anyOf: ["organization.manage"] },
@@ -312,10 +317,21 @@ const routes = [
     meta: { titleKey: "admin.employees.categories.title" },
   },
   {
+    path: "/employees/probation",
+    name: "EmployeeProbation",
+    component: EmployeeProbation,
+    meta: { titleKey: "admin.employees.probation.title" },
+  },
+  {
     path: "/employees/view/:id",
     name: "EmployeeView",
     component: EmployeeView,
     meta: { titleKey: "admin.employees.view.title" },
+  },
+  {
+    path: "/employees/offboarding",
+    name: "EmployeeOffboarding",
+    component: EmployeeOffboarding,
   },
   {
     path: "/employees/:id/onboarding",

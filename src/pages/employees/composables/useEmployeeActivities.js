@@ -6,10 +6,16 @@ import { getVisiblePages } from "../../../composables/useLeaveRequestsTable.js";
 import { t } from "../../../i18n/index.js";
 
 function normalizeActivity(raw, index) {
+  const eventTitle = raw?.event
+    ? t(`admin.employees.activityEvents.${raw.event}`)
+    : "";
   return {
     id: raw?.id ?? `activity-${index + 1}`,
     type: raw?.type || "status",
-    title: raw?.title || t("admin.employees.view.activity"),
+    title:
+      eventTitle && eventTitle !== `admin.employees.activityEvents.${raw.event}`
+        ? eventTitle
+        : raw?.title || t("admin.employees.view.activity"),
     description: raw?.description || "",
     status: raw?.status || null,
     timestamp: raw?.timestamp || null,

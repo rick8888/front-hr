@@ -917,7 +917,7 @@
     <div v-else-if="tab === 'timeline'">
       <Card :title="t('admin.employees.view.timelineTitle')">
         <template #header-right>
-          <div class="inline-flex rounded-lg border border-neutral-200 overflow-hidden text-xs">
+          <div class="inline-flex flex-wrap rounded-lg border border-neutral-200 overflow-hidden text-xs">
             <button
               v-for="f in timelineFilters"
               :key="f.id"
@@ -1643,6 +1643,12 @@ const timelineFilters = computed(() => {
     { id: "all", label: t("admin.employees.view.filter.all") },
     { id: "status", label: t("admin.employees.view.filter.status") },
     { id: "probation", label: t("admin.employees.view.filter.probation") },
+    { id: "onboarding", label: t("admin.employees.view.filter.onboarding") },
+    { id: "performance", label: t("admin.employees.view.filter.performance") },
+    { id: "training", label: t("admin.employees.view.filter.training") },
+    { id: "equipment", label: t("admin.employees.view.filter.equipment") },
+    { id: "payroll", label: t("admin.employees.view.filter.payroll") },
+    { id: "offboarding", label: t("admin.employees.view.filter.offboarding") },
     { id: "changes", label: t("admin.employees.view.filter.changes") },
   ];
 });
@@ -1700,6 +1706,10 @@ const statusLabel = computed(() => {
     suspended: t("admin.employees.view.status.suspended"),
     terminated: t("admin.employees.status.terminated"),
     retired: t("admin.employees.status.retired"),
+    draft: t("admin.payroll.status.draft"),
+    computed: t("admin.payroll.status.computed"),
+    validated: t("admin.payroll.status.validated"),
+    paid: t("admin.payroll.status.paid"),
   };
   return map[employee.value.status] || t("admin.employees.view.status.unknown");
 });
@@ -1712,6 +1722,12 @@ const statusBadgeClass = computed(() => {
     suspended: "bg-warning-50 text-warning-700",
     terminated: "bg-error-50 text-error-600",
     retired: "bg-info-50 text-info-600",
+    enrolled: t("admin.performance.trainingStatus.enrolled"),
+    inprogress: t("admin.performance.trainingStatus.in_progress"),
+    completed: t("admin.performance.trainingStatus.completed"),
+    cancelled: t("admin.performance.trainingStatus.cancelled"),
+    assigned: t("admin.employees.activityStatus.assigned"),
+    returned: t("admin.employees.activityStatus.returned"),
   };
   return map[employee.value.status] || "bg-neutral-100 text-neutral-600";
 });
@@ -1723,6 +1739,8 @@ const genderLabel = computed(() => {
     male: t("admin.employees.create.gender.male"),
     female: t("admin.employees.create.gender.female"),
     other: t("admin.employees.create.gender.other"),
+    assigned: t("admin.employees.activityStatus.assigned"),
+    returned: t("admin.employees.activityStatus.returned"),
   };
   return map[g] || null;
 });
@@ -1824,6 +1842,10 @@ function displayRecordStatus(status) {
     suspended: t("admin.employees.view.status.suspended"),
     terminated: t("admin.employees.status.terminated"),
     retired: t("admin.employees.status.retired"),
+    enrolled: t("admin.performance.trainingStatus.enrolled"),
+    inprogress: t("admin.performance.trainingStatus.in_progress"),
+    completed: t("admin.performance.trainingStatus.completed"),
+    cancelled: t("admin.performance.trainingStatus.cancelled"),
   };
   return map[key] || status;
 }
@@ -1841,6 +1863,8 @@ function statusBadge(kind, label) {
     Rejected: "bg-error-50 text-error-600",
     Cancelled: "bg-neutral-100 text-neutral-600",
     Warning: "bg-error-50 text-error-600",
+    Assigned: "bg-info-50 text-info-700",
+    Returned: "bg-success-50 text-success-700",
   };
   return map[kind] || map[label] || "bg-neutral-100 text-neutral-600";
 }

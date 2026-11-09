@@ -93,6 +93,8 @@ export default {
   "admin.payroll.status.approved": "Approuvé",
   "admin.payroll.status.rejected": "Rejeté",
   "admin.payroll.status.draft": "Brouillon",
+  "admin.payroll.status.computed": "Calculé",
+  "admin.payroll.status.validated": "Validé",
   "admin.payroll.status.cancelled": "Annulé",
 
   "admin.payroll.dashboard.title": "Tableau de bord de la paie",

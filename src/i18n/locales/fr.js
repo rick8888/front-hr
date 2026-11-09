@@ -113,6 +113,9 @@ export default {
 
   "nav.dashboard": "Tableau de bord",
   "nav.employees": "Employés",
+  "nav.employees.offboarding": "Départs et offboarding",
+  "nav.employees.development": "Développement",
+  "nav.employees.performance": "Évaluations & objectifs",
   "nav.organization": "Organisation",
   "nav.attendance": "Présence",
   "nav.leave": "Congés",

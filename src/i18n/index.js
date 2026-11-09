@@ -15,6 +15,8 @@ import adminRecruitmentEn from "./locales/admin/recruitment/en.js";
 import adminRecruitmentFr from "./locales/admin/recruitment/fr.js";
 import adminEmployeesEn from "./locales/admin/employees/en.js";
 import adminEmployeesFr from "./locales/admin/employees/fr.js";
+import adminPerformanceEn from "./locales/admin/performance/en.js";
+import adminPerformanceFr from "./locales/admin/performance/fr.js";
 import landingEn from "./locales/landing/en.js";
 import landingFr from "./locales/landing/fr.js";
 import {
@@ -25,8 +27,8 @@ import {
 } from "./preferences.js";
 
 const MESSAGES = {
-  en: { ...en, ...adminEn, ...adminSettingsEn, ...adminPayrollEn, ...adminAttendanceEn, ...adminLeaveEn, ...adminRecruitmentEn, ...adminEmployeesEn, ...landingEn },
-  fr: { ...fr, ...adminFr, ...adminSettingsFr, ...adminPayrollFr, ...adminAttendanceFr, ...adminLeaveFr, ...adminRecruitmentFr, ...adminEmployeesFr, ...landingFr },
+  en: { ...en, ...adminEn, ...adminSettingsEn, ...adminPayrollEn, ...adminAttendanceEn, ...adminLeaveEn, ...adminRecruitmentEn, ...adminEmployeesEn, ...adminPerformanceEn, ...landingEn },
+  fr: { ...fr, ...adminFr, ...adminSettingsFr, ...adminPayrollFr, ...adminAttendanceFr, ...adminLeaveFr, ...adminRecruitmentFr, ...adminEmployeesFr, ...adminPerformanceFr, ...landingFr },
 };
 
 const localeRef = ref(normalizeLocale(loadPreferences().language));

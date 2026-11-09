@@ -93,6 +93,8 @@ export default {
   "admin.payroll.status.approved": "Approved",
   "admin.payroll.status.rejected": "Rejected",
   "admin.payroll.status.draft": "Draft",
+  "admin.payroll.status.computed": "Computed",
+  "admin.payroll.status.validated": "Validated",
   "admin.payroll.status.cancelled": "Cancelled",
 
   "admin.payroll.dashboard.title": "Payroll Dashboard",

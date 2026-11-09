@@ -410,16 +410,25 @@ const employeeManagementSubItems = computed(() => {
       : null,
     { type: "group", labelKey: "nav.employees.categories", id: "e-cat" },
     { id: "e-onb", labelKey: "nav.employees.onboarding", path: "/employees/categories/onboarding" },
+    canManage
+      ? { id: "e-offboarding", labelKey: "nav.employees.offboarding", path: "/employees/offboarding" }
+      : null,
     {
       id: "e-prob",
       labelKey: "nav.employees.probation",
-      path: "/employees/categories/on-probation",
+      path: canManage ? "/employees/probation" : "/employees/categories/on-probation",
     },
     { id: "e-inact", labelKey: "nav.employees.inactive", path: "/employees/categories/inactive" },
     {
       id: "e-term",
       labelKey: "nav.employees.terminated",
       path: "/employees/categories/terminated",
+    },
+    { type: "group", labelKey: "nav.employees.development", id: "e-development" },
+    {
+      id: "e-performance",
+      labelKey: "nav.employees.performance",
+      path: "/performance-reviews",
     },
   ].filter(Boolean);
 
@@ -688,7 +697,7 @@ function isPayrollSubActive(path) {
 const isActive = (path) => route.path === path;
 
 function sectionFromPath(path) {
-  if (path.startsWith("/employees")) return "employees";
+  if (path.startsWith("/employees") || path.startsWith("/performance-reviews")) return "employees";
   if (path.startsWith("/organization")) return "organization";
   if (
     path === "/attendance" ||

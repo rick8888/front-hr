@@ -72,7 +72,7 @@ export const EMPLOYEE_CATEGORIES = {
     statusBadgeClass: "badge-warning",
     uidPrefix: "PROB",
     matches(employee) {
-      if (employee.status !== "active") return false;
+      if (employee.status !== "active" || employee.metadata?.probation_decision) return false;
       return isCurrentlyOnProbation(employee);
     },
   },
