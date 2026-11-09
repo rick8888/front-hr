@@ -95,7 +95,7 @@ export function usePaymentSimulation(methods) {
       return false;
     }
     if (!ACCEPTED_RECEIPT_TYPES.includes(file.type)) {
-      errors.receipt_file = "Format accepté : PDF, JPG ou PNG.";
+      errors.receipt_file = "Format accepté : PDF, JPG, PNG ou WEBP.";
       return false;
     }
     if (file.size > MAX_RECEIPT_SIZE_MB * 1024 * 1024) {
@@ -127,9 +127,7 @@ export function usePaymentSimulation(methods) {
       return false;
     }
 
-    if (isBankTransfer.value) {
-      if (!validateReceipt(receiptFile.value)) valid = false;
-    }
+    if (!validateReceipt(receiptFile.value)) valid = false;
 
     if (isMobileMoney.value) {
       if (!mobileOperator.value) {
@@ -160,6 +158,7 @@ export function usePaymentSimulation(methods) {
     if (isMobileMoney.value) {
       return {
         ...base,
+        receipt: receiptFile.value,
         mobile_operator: mobileOperator.value,
         mobile_operator_label: selectedOperator.value?.label ?? null,
         phone_number: phoneNumber.value.trim(),
@@ -169,6 +168,7 @@ export function usePaymentSimulation(methods) {
     if (isCash.value) {
       return {
         ...base,
+        receipt: receiptFile.value,
         reference: cashReference.value.trim() || null,
       };
     }

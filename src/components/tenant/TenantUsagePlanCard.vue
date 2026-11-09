@@ -2,7 +2,7 @@
   <section
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
-    <p class="text-sm font-medium text-neutral-700">Current Plan</p>
+    <p class="text-sm font-medium text-neutral-700">{{ t("tenant.usage.currentPlan") }}</p>
 
     <div
       v-if="loading"
@@ -24,15 +24,27 @@
       </div>
       <div class="text-right">
         <p class="text-2xl font-bold text-neutral-900">{{ plan.price }}</p>
-        <p class="text-sm text-neutral-500">{{ plan.cadence }}</p>
+        <p class="text-sm text-neutral-500">{{ cadence }}</p>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue";
+import { useI18n } from "../../i18n/index.js";
+
+const { t, locale } = useI18n();
+
+const props = defineProps({
   plan: { type: Object, required: true },
   loading: { type: Boolean, default: false },
+});
+
+const cadence = computed(() => {
+  void locale.value;
+  return /monthly/i.test(props.plan.cadence || "")
+    ? t("tenant.usage.perMonth")
+    : props.plan.cadence;
 });
 </script>

@@ -4,7 +4,7 @@
   >
     <header class="flex items-center justify-between">
       <p class="text-sm font-semibold text-neutral-900">
-        {{ loading ? "…" : metric.label }}
+        {{ loading ? "…" : metricLabel }}
       </p>
       <span
         class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-secondary-50 text-[#7c7cf8]"
@@ -23,16 +23,18 @@
 
     <template v-else>
       <div class="mt-4 flex items-center justify-between text-sm">
-        <span class="text-neutral-500">Used</span>
+        <span class="text-neutral-500">{{ t("tenant.usage.used") }}</span>
         <span class="font-medium text-neutral-700">{{ usageLabel }}</span>
       </div>
 
       <div
         class="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100"
         role="progressbar"
+        :aria-label="metricLabel"
         :aria-valuenow="percent"
         aria-valuemin="0"
         aria-valuemax="100"
+        :aria-valuetext="usageLabel"
       >
         <div
           class="h-full rounded-full bg-[#7c7cf8] transition-[width] duration-300"
@@ -46,6 +48,9 @@
 <script setup>
 import { computed, h } from "vue";
 import { usagePercent } from "../../composables/useTenantUsage.js";
+import { useI18n } from "../../i18n/index.js";
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
   metric: { type: Object, required: true },
@@ -56,10 +61,17 @@ const percent = computed(() =>
   usagePercent(props.metric.used, props.metric.limit),
 );
 
+const metricLabel = computed(() => {
+  void locale.value;
+  const key = {
+    users: "tenant.usage.users",
+    employees: "tenant.usage.employees",
+    storage: "tenant.usage.storage",
+  }[String(props.metric.id || props.metric.label || "").toLowerCase()];
+  return key ? t(key) : props.metric.label;
+});
+
 const usageLabel = computed(() => {
-  if (props.metric.display) {
-    return props.metric.display;
-  }
   if (typeof props.metric.formatUsage === "function") {
     return props.metric.formatUsage(
       props.metric.used,
@@ -68,10 +80,27 @@ const usageLabel = computed(() => {
     );
   }
   if (props.metric.limit == null) {
-    return `${props.metric.used} / Unlimited`;
+    return props.metric.unit === "GB"
+      ? t("tenant.usage.storageUnlimited", { used: formatNumber(props.metric.used) })
+      : t("tenant.usage.usedUnlimited", { used: formatNumber(props.metric.used) });
   }
-  return `${props.metric.used} / ${props.metric.limit}`;
+  if (props.metric.unit === "GB") {
+    return t("tenant.usage.storageUsage", {
+      used: formatNumber(props.metric.used),
+      limit: formatNumber(props.metric.limit),
+    });
+  }
+  return t("tenant.usage.limitedUsage", {
+    used: formatNumber(props.metric.used),
+    limit: formatNumber(props.metric.limit),
+  });
 });
+
+function formatNumber(value) {
+  return new Intl.NumberFormat(locale.value === "fr" ? "fr-FR" : "en-US", {
+    maximumFractionDigits: 2,
+  }).format(Number(value));
+}
 
 const iconComponent = computed(() => {
   const common = {

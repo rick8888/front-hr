@@ -32,7 +32,7 @@ export function useAdminDashboard() {
   const { t, locale, bcp47 } = useI18n();
   const loading = ref(true);
   const error = ref("");
-  const chartFilter = ref("today");
+  const chartFilter = ref("week");
 
   const kpiPlaceholders = computed(() => {
     void locale.value;
@@ -110,7 +110,7 @@ export function useAdminDashboard() {
       });
     }
 
-    const remainingDays = 42 - days.length;
+    const remainingDays = (7 - (days.length % 7)) % 7;
     for (let i = 1; i <= remainingDays; i++) {
       const date = new Date(year, month + 1, i);
       days.push({
@@ -155,6 +155,7 @@ export function useAdminDashboard() {
         id: row.id,
         name: row.name || "—",
         initials: row.initials || "—",
+        avatarUrl: row.avatar_url || null,
         designation: row.designation || "—",
         type: row.type === "Office" ? t("admin.dashboard.type.office") : (row.type || t("admin.dashboard.type.office")),
         checkIn: row.check_in || row.checkIn || "—",

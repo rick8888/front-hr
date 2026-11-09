@@ -30,6 +30,9 @@
         <span class="text-3xl font-bold text-neutral-900">{{ formattedPrice }}</span>
         <span v-if="plan.price_monthly > 0" class="text-sm text-neutral-500">/ mois</span>
       </p>
+      <p v-if="configuredPrices.length > 1" class="mt-1 text-xs text-neutral-500">
+        Tarifs : {{ configuredPrices.join(" · ") }}
+      </p>
 
       <ul class="mt-5 flex-1 space-y-2">
         <li v-for="(line, idx) in highlights" :key="idx" class="flex items-start gap-2 text-sm text-neutral-700">
@@ -64,5 +67,11 @@ const props = defineProps({
 defineEmits(["edit"]);
 
 const formattedPrice = computed(() => formatPlanPrice(props.plan));
+const configuredPrices = computed(() => Object.entries(props.plan.currency_prices ?? {})
+  .map(([currency, amount]) => new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(Number(amount))));
 const highlights = computed(() => buildPlanHighlights(props.plan));
 </script>

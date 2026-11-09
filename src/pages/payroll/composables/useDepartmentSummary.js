@@ -153,6 +153,9 @@ export function useDepartmentSummary() {
   });
 
   const kpi = computed(() => computeDepartmentSummaryKpi(filteredRows.value));
+  const hasMixedCurrencies = computed(
+    () => new Set(filteredRows.value.map((row) => row.currency).filter(Boolean)).size > 1
+  );
   const chartLabels = computed(() => filteredRows.value.map((r) => r.department));
   const chartGross = computed(() => filteredRows.value.map((r) => r.totalGross));
   const chartNet = computed(() => filteredRows.value.map((r) => r.totalNet));
@@ -192,6 +195,7 @@ export function useDepartmentSummary() {
     departmentOptions,
     cycleOptions,
     kpi,
+    hasMixedCurrencies,
     chartLabels,
     chartGross,
     chartNet,

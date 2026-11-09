@@ -295,11 +295,12 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="flex items-center justify-center w-10 h-10 text-sm font-bold rounded-full bg-primary-200 text-primary-700"
-                  >
-                    {{ getInitials(employee.name) }}
-                  </div>
+                  <EmployeeAvatar
+                    :name="employee.name"
+                    :avatar-url="employee.avatarUrl"
+                    size-class="h-10 w-10 text-sm font-bold"
+                    fallback-class="bg-primary-200 text-primary-700"
+                  />
                   <div>
                     <div class="font-medium text-neutral-900">
                       {{ employee.name }}
@@ -334,6 +335,15 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
+                  <button
+                    v-if="canManageEmployees && employee.status === 'onboarding'"
+                    type="button"
+                    class="rounded-md px-2 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50"
+                    :title="t('admin.employees.onboarding.continueAction')"
+                    @click="viewOnboarding(employee)"
+                  >
+                    {{ t("admin.employees.onboarding.continueAction") }}
+                  </button>
                   <button
                     @click="viewEmployee(employee)"
                     class="p-1 transition-colors text-neutral-400 hover:text-neutral-600"
@@ -446,6 +456,7 @@ import KpiCard from "../components/common/KpiCard.vue";
 import EmployeeBulkStatusModal from "./employees/components/EmployeeBulkStatusModal.vue";
 import { useEmployees } from "./employees/composables/useEmployees.js";
 import { useI18n } from "../i18n/index.js";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import { useAuthStore } from "../stores/authStore.js";
 
 const { t, locale } = useI18n();
@@ -484,7 +495,6 @@ const {
   totalPages,
   paginatedEmployees,
   loadEmployees,
-  getInitials,
   getStatusBadgeClass,
   getStatusLabel,
   employeeStatusOptions,
@@ -493,6 +503,7 @@ const {
   clearSelection,
   clearFilters,
   viewEmployee,
+  viewOnboarding,
   bulkSendEmail,
   bulkChangeStatus,
   confirmBulkStatus,

@@ -52,6 +52,7 @@ export function normalizeEmployee(raw) {
     email: raw.email ?? "",
     phone: raw.phone ?? "",
     department: raw.department ?? "",
+    avatarUrl: raw.avatar_url ?? null,
     accountRole,
     jobTitle,
     role: accountRole || jobTitle || raw.role || "",
@@ -124,6 +125,7 @@ export function normalizeEmployeeDetail(raw) {
     qrGroup: raw?.qr_group ?? raw?.qrGroup ?? meta.qr_group ?? "",
     department: raw?.department ?? "",
     status: raw?.status ?? (raw?.is_active ? "active" : "inactive"),
+    avatarUrl: raw?.avatar_url ?? null,
     emergency: {
       name: meta.emergency_contact_name ?? null,
       relationship: meta.emergency_relationship ?? null,
@@ -297,6 +299,7 @@ export function useEmployees() {
     const map = {
       active: "admin.employees.status.active",
       inactive: "admin.employees.status.inactive",
+      onboarding: "admin.employees.status.onboarding",
       "on-leave": "admin.employees.status.onLeave",
       terminated: "admin.employees.status.terminated",
       exited: "admin.employees.status.exited",
@@ -310,6 +313,7 @@ export function useEmployees() {
     catalogStatusOptions("employees", [
       { value: "active", label: t("admin.employees.status.active") },
       { value: "inactive", label: t("admin.employees.status.inactive") },
+      { value: "onboarding", label: t("admin.employees.status.onboarding") },
       { value: "terminated", label: t("admin.employees.status.terminated") },
     ])
   );
@@ -345,6 +349,10 @@ export function useEmployees() {
 
   function viewEmployee(employee) {
     router.push(`/employees/view/${employee.id}`);
+  }
+
+  function viewOnboarding(employee) {
+    router.push(`/employees/${employee.id}/onboarding`);
   }
 
   function bulkSendEmail() {
@@ -519,6 +527,7 @@ export function useEmployees() {
     clearSelection,
     clearFilters,
     viewEmployee,
+    viewOnboarding,
     bulkSendEmail,
     bulkChangeStatus,
     confirmBulkStatus,

@@ -98,6 +98,7 @@ export function useMonthlyAttendanceSummary() {
       return {
         employeeId: employee.id,
         name: employee.name || employee.full_name || "—",
+        avatarUrl: employee.avatarUrl || null,
         code: employee.matricule || "",
         department: employee.department || "",
         presentDays,

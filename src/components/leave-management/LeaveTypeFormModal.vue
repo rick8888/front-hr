@@ -2,43 +2,47 @@
   <Teleport to="body">
     <div
       v-if="open"
-      class="leave-type-modal-scroll fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
+      class="leave-type-modal-scroll fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
       @click.self="close"
     >
       <div
-        class="my-8 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl"
+        class="my-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="titleId"
         @click.stop
       >
         <header
-          class="flex shrink-0 items-center justify-between border-b border-neutral-200 px-6 py-4"
+          class="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-5 py-4 sm:px-7"
         >
-          <h2 :id="titleId" class="text-xl font-bold text-neutral-900">
+          <h2 :id="titleId" class="text-xl font-bold tracking-tight text-slate-900">
             {{ resolvedHeaderTitle }}
           </h2>
           <button
             type="button"
-            class="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+            class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50"
             :aria-label="t('common.close')"
+            :disabled="saving"
             @click="close"
           >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </header>
 
-        <div class="leave-type-modal-scroll min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-6">
+        <div class="leave-type-modal-scroll min-h-0 flex-1 space-y-7 overflow-y-auto px-5 py-6 sm:px-7">
           <div
             v-if="error"
-            class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+            class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
           >
             {{ error }}
           </div>
 
-          <FormSection :title="t('admin.leave.types.section.basic')">
+          <FormSection
+            :title="t('admin.leave.types.section.basic')"
+            body-class="space-y-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5"
+          >
             <TextField
               id="leave-type-name"
               v-model="form.name"
@@ -68,7 +72,10 @@
             />
           </FormSection>
 
-          <FormSection :title="t('admin.leave.types.section.accrual')">
+          <FormSection
+            :title="t('admin.leave.types.section.accrual')"
+            body-class="space-y-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+          >
             <SwitchField
               v-model="form.enableAutomaticAccrual"
               :label="t('admin.leave.types.enableAccrual')"
@@ -114,7 +121,10 @@
             </div>
           </FormSection>
 
-          <FormSection :title="t('admin.leave.types.section.carryForward')">
+          <FormSection
+            :title="t('admin.leave.types.section.carryForward')"
+            body-class="space-y-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+          >
             <SwitchField v-model="form.allowCarryForward" :label="t('admin.leave.types.allowCarryForward')" />
             <div v-if="form.allowCarryForward" class="space-y-4">
               <TextField
@@ -140,7 +150,10 @@
             </div>
           </FormSection>
 
-          <FormSection :title="t('admin.leave.types.section.encashment')">
+          <FormSection
+            :title="t('admin.leave.types.section.encashment')"
+            body-class="space-y-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+          >
             <SwitchField v-model="form.allowEncashment" :label="t('admin.leave.types.allowEncashment')" />
             <div v-if="form.allowEncashment">
               <TextField
@@ -158,12 +171,20 @@
         </div>
 
         <footer
-          class="flex shrink-0 flex-col-reverse gap-3 border-t border-neutral-200 bg-neutral-50 px-6 py-4 sm:flex-row sm:justify-start"
+          class="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7"
         >
           <button
             type="button"
             :disabled="saving"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 sm:w-auto"
+            class="w-full rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            @click="close"
+          >
+            {{ t("common.cancel") }}
+          </button>
+          <button
+            type="button"
+            :disabled="saving"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             @click="submit"
           >
             <span
@@ -171,13 +192,6 @@
               class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
             />
             {{ saving ? t("common.saving") : resolvedSubmitLabel }}
-          </button>
-          <button
-            type="button"
-            class="w-full rounded-lg border border-orange-100 bg-orange-50 px-5 py-2.5 text-sm font-medium text-orange-800 shadow-xs hover:bg-orange-100/90 sm:w-auto"
-            @click="close"
-          >
-            {{ t("common.cancel") }}
           </button>
         </footer>
       </div>

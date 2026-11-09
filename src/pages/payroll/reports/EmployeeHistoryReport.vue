@@ -70,12 +70,13 @@
       <!-- Profil -->
       <section class="rounded-xl border border-neutral-200 bg-white shadow-sm p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-5">
-          <div
-            class="w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold shrink-0"
+          <EmployeeAvatar
+            :name="selectedEmployee.name"
+            :avatar-url="selectedEmployee.avatarUrl"
+            size-class="h-16 w-16 text-lg font-bold"
+            fallback-class="text-white"
             :style="{ backgroundColor: avatarColor(selectedEmployee.name) }"
-          >
-            {{ initials(selectedEmployee.name) }}
-          </div>
+          />
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 flex-1 min-w-0 text-sm">
             <div>
               <p class="text-xs text-neutral-500 uppercase tracking-wide">{{ t("admin.payroll.reports.history.col.name") }}</p>
@@ -122,18 +123,18 @@
         </PayrollKpiCard>
         <PayrollKpiCard
           :label="t('admin.payroll.reports.history.kpi.earned')"
-          :value="loadingHistory ? '…' : formatMoney(kpi.totalEarned)"
+          :value="loadingHistory ? '…' : formatCurrencyGroups(kpi.totalEarnedByCurrency)"
           :sublabel="t('admin.payroll.reports.history.kpi.earnedHint')"
           value-class="text-success-600"
           icon-class="bg-success-50 text-success-600"
         >
           <template #icon>
-            <span class="text-lg font-bold">$</span>
+            <span class="text-lg font-bold">¤</span>
           </template>
         </PayrollKpiCard>
         <PayrollKpiCard
           :label="t('admin.payroll.reports.history.kpi.deductions')"
-          :value="loadingHistory ? '…' : formatMoney(kpi.totalDeductions)"
+          :value="loadingHistory ? '…' : formatCurrencyGroups(kpi.totalDeductionsByCurrency)"
           :sublabel="t('admin.payroll.reports.history.kpi.deductionsHint')"
           value-class="text-error-600"
           icon-class="bg-error-50 text-error-600"
@@ -151,7 +152,7 @@
         </PayrollKpiCard>
         <PayrollKpiCard
           :label="t('admin.payroll.reports.history.kpi.avgNet')"
-          :value="loadingHistory ? '…' : formatMoney(kpi.averageNetPay)"
+          :value="loadingHistory ? '…' : formatCurrencyGroups(kpi.averageNetPayByCurrency)"
           :sublabel="t('admin.payroll.reports.history.kpi.avgNetHint')"
           value-class="text-primary-600"
           icon-class="bg-primary-100 text-primary-600"
@@ -188,6 +189,12 @@
         >
           {{ t("admin.payroll.reports.history.loadingTrend") }}
         </div>
+        <p
+          v-else-if="hasMixedCurrencies"
+          class="flex h-[280px] items-center justify-center text-sm text-neutral-500 text-center"
+        >
+          {{ t("admin.payroll.dashboard.chart.multiCurrencyHint") }}
+        </p>
         <PayrollLineChart
           v-else
           :title="t('admin.payroll.reports.history.chartTitle')"
@@ -341,18 +348,18 @@
                 </td>
                 <td class="px-3 py-3 text-neutral-800">{{ row.period }}</td>
                 <td class="px-3 py-3 text-neutral-700">{{ row.cycle }}</td>
-                <td class="px-3 py-3 font-medium tabular-nums">{{ formatMoney(row.grossSalary) }}</td>
+                <td class="px-3 py-3 font-medium tabular-nums">{{ formatMoney(row.grossSalary, row.currency) }}</td>
                 <td class="px-3 py-3 text-success-600 font-medium tabular-nums">
-                  {{ formatMoney(row.allowances) }}
+                  {{ formatMoney(row.allowances, row.currency) }}
                 </td>
                 <td class="px-3 py-3 text-error-600 font-medium tabular-nums">
-                  {{ formatMoney(row.deductions) }}
+                  {{ formatMoney(row.deductions, row.currency) }}
                 </td>
                 <td class="px-3 py-3 text-error-600 font-medium tabular-nums">
-                  {{ formatMoney(row.tax) }}
+                  {{ formatMoney(row.tax, row.currency) }}
                 </td>
                 <td class="px-3 py-3 text-primary-600 font-semibold tabular-nums">
-                  {{ formatMoney(row.netSalary) }}
+                  {{ formatMoney(row.netSalary, row.currency) }}
                 </td>
                 <td class="px-3 py-3">
                   <span
@@ -430,6 +437,7 @@ import PayrollKpiCard from "../../../components/payroll/PayrollKpiCard.vue";
 import PayrollFilterField from "../../../components/payroll/PayrollFilterField.vue";
 import PayrollLineChart from "../../../components/payroll/PayrollLineChart.vue";
 import EmployeeSearchSelect from "../../../components/payroll/EmployeeSearchSelect.vue";
+import EmployeeAvatar from "../../../components/common/EmployeeAvatar.vue";
 import { useEmployeeHistory } from "../composables/useEmployeeHistory.js";
 import { PAYROLL_STATUS_UI } from "../mappers/payroll-record.mapper.js";
 
@@ -444,6 +452,7 @@ const {
   filteredRows,
   kpi,
   trend,
+  hasMixedCurrencies,
   loadingEmployees,
   loadingHistory,
   error,
@@ -466,12 +475,18 @@ onMounted(() => {
   bootstrap();
 });
 
-function formatMoney(n) {
+function formatMoney(n, currency = "EUR") {
   return new Intl.NumberFormat(bcp47.value, {
     style: "currency",
-    currency: "USD",
+    currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
+}
+
+function formatCurrencyGroups(groups = []) {
+  return groups.length
+    ? groups.map(({ currency, amount }) => formatMoney(amount, currency)).join(" · ")
+    : "—";
 }
 
 function statusLabel(key) {
@@ -480,13 +495,6 @@ function statusLabel(key) {
 
 function statusBadgeClass(key) {
   return PAYROLL_STATUS_UI[key]?.badge ?? "bg-neutral-100 text-neutral-700";
-}
-
-function initials(name) {
-  if (!name) return "??";
-  const p = name.split(/\s+/).filter(Boolean);
-  if (p.length >= 2) return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
 }
 
 function avatarColor(name) {

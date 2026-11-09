@@ -18,7 +18,7 @@
 
       <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <TenantDashboardStatCard
-          label="Current Plan"
+          :label="t('tenant.dashboard.currentPlan')"
           :value="dashboard.currentPlan"
           :loading="loading"
           tone="purple"
@@ -55,13 +55,13 @@
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              {{ dashboard.planStatus }}
+              {{ localizedStatus }}
             </span>
           </template>
         </TenantDashboardStatCard>
 
         <TenantDashboardStatCard
-          label="Next Payment"
+          :label="t('tenant.dashboard.nextPayment')"
           :value="dashboard.nextPaymentAmount"
           :loading="loading"
           tone="cyan"
@@ -87,12 +87,12 @@
             </svg>
           </template>
           <template #footer>
-            <span class="text-sm text-neutral-500">{{ dashboard.nextPaymentDate }}</span>
+            <span class="text-sm text-neutral-500">{{ formatDashboardDate(dashboard.nextPaymentDate) }}</span>
           </template>
         </TenantDashboardStatCard>
 
         <TenantDashboardStatCard
-          label="Users"
+          :label="t('tenant.dashboard.users')"
           :value="String(dashboard.usersCount)"
           :loading="loading"
           tone="green"
@@ -109,7 +109,7 @@
           </template>
           <template #footer>
             <span class="text-sm text-neutral-500">
-              of {{ dashboard.usersAllowedLabel }} allowed
+              {{ usersAllowedText }}
             </span>
           </template>
         </TenantDashboardStatCard>
@@ -123,7 +123,7 @@
           :price="dashboard.priceLabel"
           :started="dashboard.startedDate"
           :next-billing="dashboard.nextBillingDate"
-          :status="dashboard.planStatus"
+          :status="localizedStatus"
           :loading="loading"
         />
       </div>
@@ -132,15 +132,17 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import TenantPortalTopBar from "../../components/tenant/TenantPortalTopBar.vue";
 import TenantWelcomeHero from "../../components/tenant/TenantWelcomeHero.vue";
 import TenantDashboardStatCard from "../../components/tenant/TenantDashboardStatCard.vue";
 import TenantQuickActionsCard from "../../components/tenant/TenantQuickActionsCard.vue";
 import TenantSubscriptionDetailsCard from "../../components/tenant/TenantSubscriptionDetailsCard.vue";
 import { useTenantDashboard } from "../../composables/useTenantDashboard.js";
+import { useI18n } from "../../i18n/index.js";
 
 const { loading, error, dashboard, load } = useTenantDashboard();
+const { t, locale } = useI18n();
 
 const heroPaths = {
   subscription: "/tenant/subscription",
@@ -148,11 +150,50 @@ const heroPaths = {
   support: "/tenant/support",
 };
 
-const quickActions = [
-  { label: "View Billing History", to: "/tenant/billings", icon: "document" },
-  { label: "Download Invoices", to: "/tenant/invoices", icon: "download" },
-  { label: "Check Usage", to: "/tenant/usage", icon: "chart" },
-];
+const quickActions = computed(() => {
+  void locale.value;
+  return [
+    { label: t("tenant.dashboard.viewBillingHistory"), to: "/tenant/billings", icon: "document" },
+    { label: t("tenant.dashboard.downloadInvoices"), to: "/tenant/invoices", icon: "download" },
+    { label: t("tenant.dashboard.checkUsage"), to: "/tenant/usage", icon: "chart" },
+  ];
+});
+
+const localizedStatus = computed(() => {
+  void locale.value;
+  const statuses = {
+    active: "tenant.dashboard.status.active",
+    inactive: "tenant.dashboard.status.inactive",
+    suspended: "tenant.dashboard.status.suspended",
+    cancelled: "tenant.dashboard.status.cancelled",
+    expired: "tenant.dashboard.status.expired",
+  };
+  const key = statuses[String(dashboard.value.planStatus).toLowerCase()];
+  return key ? t(key) : dashboard.value.planStatus;
+});
+
+const usersAllowedText = computed(() => {
+  void locale.value;
+  if (dashboard.value.usersAllowedLabel.toLowerCase() === "unlimited") {
+    return t("tenant.dashboard.usersUnlimited");
+  }
+  return t("tenant.dashboard.usersAllowed", {
+    count: dashboard.value.usersAllowedLabel,
+  });
+});
+
+function formatDashboardDate(value) {
+  if (!value || value === "—") return value || "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat(locale.value === "fr" ? "fr-FR" : "en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
 
 onMounted(() => {
   load();

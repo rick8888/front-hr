@@ -120,7 +120,7 @@
           <article
             v-for="candidate in candidatesByStage(stage)"
             :key="candidate.id"
-            draggable="true"
+            :draggable="!candidate.hiredEmployeeId"
             @dragstart="onDragStart(candidate.id)"
             class="border border-neutral-200 rounded-lg p-3 bg-neutral-50 hover:bg-white cursor-grab active:cursor-grabbing transition-colors"
           >
@@ -133,6 +133,24 @@
             </div>
             <p class="text-xs text-neutral-500 mt-2 truncate">{{ candidate.email }}</p>
             <p class="text-xs text-neutral-500 mt-1">{{ candidate.lastAction || "—" }}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                v-if="canManageEmployees && candidate.stage === 'Offer' && !candidate.hiredEmployeeId"
+                type="button"
+                class="text-xs font-medium text-primary-700 hover:text-primary-800"
+                @click="openHiring(candidate)"
+              >
+                {{ t("admin.recruitment.hireAction") }}
+              </button>
+              <button
+                v-if="canManageEmployees && candidate.hiredEmployeeId"
+                type="button"
+                class="text-xs font-medium text-primary-700 hover:text-primary-800"
+                @click="openOnboarding(candidate)"
+              >
+                {{ t("admin.recruitment.onboardingAction") }}
+              </button>
+            </div>
           </article>
 
           <div
@@ -161,34 +179,127 @@
       <p class="text-sm text-neutral-700 mt-4">{{ selectedCandidate.summary || "Aucun résumé." }}</p>
     </div>
 
-    <div v-if="isModalOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closeCandidateModal">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-xl mx-4" @click.stop>
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">Nouveau candidat</h2>
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
+      @click.self="closeCandidateModal"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="candidate-modal-title"
+        class="my-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl"
+        @click.stop
+      >
+        <div class="flex items-center justify-between border-b border-neutral-200 px-6 py-5 sm:px-7">
+          <div>
+            <h2 id="candidate-modal-title" class="text-xl font-bold text-neutral-900">Nouveau candidat</h2>
+            <p class="mt-1 text-sm text-neutral-500">Renseignez les informations du candidat et son poste.</p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            aria-label="Fermer"
+            @click="closeCandidateModal"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div class="px-6 py-5 space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <input v-model="candidateForm.name" type="text" placeholder="Nom complet" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm" />
-            <input v-model="candidateForm.email" type="email" placeholder="Email" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm" />
-            <input v-model="candidateForm.phone" type="text" placeholder="Téléphone" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm" />
-            <select v-model="candidateForm.jobOpeningId" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm">
-              <option value="">Sélectionner un poste</option>
-              <option v-for="job in openJobs" :key="job.id" :value="job.id">
-                {{ job.title }}
-              </option>
-            </select>
-            <input v-model="candidateForm.experience" type="text" placeholder="Expérience (ex: 5 ans)" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm" />
-            <select v-model="candidateForm.source" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm">
-              <option>LinkedIn</option>
-              <option>Indeed</option>
-              <option>Cooptation</option>
-              <option>Site carrière</option>
-            </select>
+
+        <div class="max-h-[calc(100vh-12rem)] overflow-y-auto px-6 py-6 sm:px-7">
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label for="candidate-name" class="mb-2 block text-sm font-semibold text-neutral-700">
+                Nom complet <span class="text-error-600">*</span>
+              </label>
+              <input
+                id="candidate-name"
+                v-model="candidateForm.name"
+                type="text"
+                placeholder="Ex. Nadia Amrani"
+                class="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label for="candidate-email" class="mb-2 block text-sm font-semibold text-neutral-700">
+                E-mail <span class="text-error-600">*</span>
+              </label>
+              <input
+                id="candidate-email"
+                v-model="candidateForm.email"
+                type="email"
+                placeholder="nom@exemple.com"
+                class="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label for="candidate-phone" class="mb-2 block text-sm font-semibold text-neutral-700">Téléphone</label>
+              <input
+                id="candidate-phone"
+                v-model="candidateForm.phone"
+                type="text"
+                placeholder="Numéro de téléphone"
+                class="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label for="candidate-job" class="mb-2 block text-sm font-semibold text-neutral-700">
+                Poste <span class="text-error-600">*</span>
+              </label>
+              <select
+                id="candidate-job"
+                v-model="candidateForm.jobOpeningId"
+                class="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              >
+                <option value="">Sélectionner un poste</option>
+                <option v-for="job in openJobs" :key="job.id" :value="job.id">
+                  {{ job.title }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label for="candidate-experience" class="mb-2 block text-sm font-semibold text-neutral-700">Expérience</label>
+              <input
+                id="candidate-experience"
+                v-model="candidateForm.experience"
+                type="text"
+                placeholder="Ex. 5 ans"
+                class="w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div>
+              <label for="candidate-source" class="mb-2 block text-sm font-semibold text-neutral-700">Source</label>
+              <select
+                id="candidate-source"
+                v-model="candidateForm.source"
+                class="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              >
+                <option>LinkedIn</option>
+                <option>Indeed</option>
+                <option>Cooptation</option>
+                <option>Site carrière</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
-          <button @click="closeCandidateModal" class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg">Annuler</button>
-          <button @click="saveCandidate" class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700">Enregistrer</button>
+
+        <div class="flex flex-col-reverse gap-3 border-t border-neutral-200 px-6 py-4 sm:flex-row sm:justify-end sm:px-7">
+          <button
+            type="button"
+            class="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            @click="closeCandidateModal"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            @click="saveCandidate"
+          >
+            Enregistrer
+          </button>
         </div>
       </div>
     </div>
@@ -197,13 +308,18 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { candidateService } from "../services";
 import { jobOpeningsApiService } from "./recruitment/services/recruitment.api.service.js";
 import { useI18n } from "../i18n/index.js";
+import { useAuthStore } from "../stores/authStore.js";
 
 const { t } = useI18n();
+const router = useRouter();
+const authStore = useAuthStore();
+const canManageEmployees = authStore.can("employees.manage");
 const CACHE_KEY = "candidates-kanban-cache-v1";
-const stages = ["Applied", "Screening", "Interview", "Offer", "Hired"];
+const stages = ["Applied", "Screening", "Interview", "Offer", "Rejected", "Hired"];
 
 const loading = ref(true);
 
@@ -282,6 +398,7 @@ const normalizeCandidate = (candidate, fallbackId = null) => ({
   stage: stages.includes(candidate.stage ?? candidate.status)
     ? (candidate.stage ?? candidate.status)
     : "Applied",
+  hiredEmployeeId: candidate.hired_employee_id ?? candidate.hiredEmployeeId ?? null,
 });
 
 const loadOpenJobs = async () => {
@@ -338,6 +455,11 @@ const onDragStart = (candidateId) => {
 const onDrop = async (targetStage) => {
   const candidateId = draggedCandidateId.value;
   if (!candidateId) return;
+  if (targetStage === "Hired") {
+    alert("Utilisez l’action « Embaucher » depuis le candidat pour créer son dossier employé.");
+    draggedCandidateId.value = null;
+    return;
+  }
   const index = candidates.value.findIndex((candidate) => candidate.id === candidateId);
   if (index === -1) return;
 
@@ -358,6 +480,14 @@ const onDrop = async (targetStage) => {
   } finally {
     draggedCandidateId.value = null;
   }
+};
+
+const openHiring = (candidate) => {
+  router.push({ path: "/recruitment", query: { hireCandidate: candidate.id } });
+};
+
+const openOnboarding = (candidate) => {
+  router.push({ name: "EmployeeOnboarding", params: { id: candidate.hiredEmployeeId } });
 };
 
 const viewCandidate = (candidate) => {

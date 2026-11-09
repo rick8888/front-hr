@@ -76,11 +76,12 @@
           :key="leader.id"
           class="border border-neutral-200 rounded-lg p-4 text-center"
         >
-          <div
-            class="w-16 h-16 bg-primary-200 rounded-full flex items-center justify-center text-primary-700 font-bold text-xl mx-auto mb-3"
-          >
-            {{ getInitials(leader.name) }}
-          </div>
+          <EmployeeAvatar
+            :name="leader.name"
+            :avatar-url="leader.avatar_url || leader.avatarUrl"
+            size-class="mx-auto mb-3 h-16 w-16 text-xl font-bold"
+            fallback-class="bg-primary-200 text-primary-700"
+          />
           <p class="font-medium text-neutral-900">{{ leader.name }}</p>
           <p class="text-sm text-neutral-600">{{ leader.position }}</p>
           <p class="text-xs text-neutral-500 mt-2">{{ leader.email }}</p>
@@ -208,6 +209,7 @@
 
 <script setup>
 import { ref } from "vue";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import Modal from "../components/common/Modal.vue";
 
 const isEditModalOpen = ref(false);
@@ -302,13 +304,6 @@ const deleteLeader = () => {
   selectedLeader.value = null;
 };
 
-const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
 </script>
 
 <style scoped></style>

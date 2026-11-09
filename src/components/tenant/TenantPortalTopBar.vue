@@ -4,10 +4,10 @@
   >
     <div>
       <h1 class="text-lg font-bold text-neutral-900 md:text-xl">
-        Welcome to your Tenant Portal
+        {{ t("tenant.dashboard.portalTitle") }}
       </h1>
       <p class="mt-1 text-sm text-neutral-500">
-        Manage your subscription, billing, and access your application
+        {{ t("tenant.dashboard.portalDescription") }}
       </p>
     </div>
     <a
@@ -30,12 +30,16 @@
           d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
         />
       </svg>
-      Access Your Application
+      {{ t("tenant.dashboard.accessApplication") }}
     </a>
   </section>
 </template>
 
 <script setup>
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
+
 defineProps({
   applicationUrl: { type: String, required: true },
 });

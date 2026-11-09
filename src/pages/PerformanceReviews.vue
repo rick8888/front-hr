@@ -34,11 +34,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="review in reviews" :key="review.id" class="card">
         <div class="flex items-center gap-3 mb-4">
-          <div
-            class="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center text-primary-700 font-bold"
-          >
-            {{ getInitials(review.employee) }}
-          </div>
+          <EmployeeAvatar
+            :name="review.employee"
+            :avatar-url="review.avatar_url || review.avatarUrl"
+            size-class="h-12 w-12 font-bold"
+            fallback-class="bg-primary-200 text-primary-700"
+          />
           <div>
             <p class="font-medium text-neutral-900">{{ review.employee }}</p>
             <p class="text-xs text-neutral-600">{{ review.role }}</p>
@@ -140,6 +141,7 @@
 
 <script setup>
 import { ref } from "vue";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import Modal from "../components/common/Modal.vue";
 
 const isReviewModalOpen = ref(false);
@@ -238,14 +240,6 @@ const saveReview = () => {
     reviewDate: "",
     comments: "",
   };
-};
-
-const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
 };
 
 const getRatingClass = (rating) => {

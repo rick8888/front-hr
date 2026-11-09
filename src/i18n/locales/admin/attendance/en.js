@@ -240,6 +240,7 @@ export default {
 
   "admin.attendance.reports.monthly.title": "Monthly Attendance Summary",
   "admin.attendance.reports.monthly.crumb": "Monthly Summary",
+  "admin.attendance.reports.monthly.apply": "Apply",
   "admin.attendance.reports.monthly.tableTitle": "Employee-wise Monthly Summary",
   "admin.attendance.reports.monthly.kpi.employees": "Total Employees",
   "admin.attendance.reports.monthly.kpi.avgAttendance": "Average Attendance",
@@ -281,6 +282,7 @@ export default {
   "admin.attendance.reports.overtime.kpi.avg": "Avg Overtime/Employee",
   "admin.attendance.reports.overtime.kpi.weekend": "Weekend Overtime",
   "admin.attendance.reports.overtime.minHours": "Minimum Overtime Hours",
+  "admin.attendance.reports.overtime.apply": "Apply",
   "admin.attendance.reports.overtime.dayType": "Day Type",
   "admin.attendance.reports.overtime.approvalStatus": "Approval Status",
   "admin.attendance.reports.overtime.dayType.all": "All Days",

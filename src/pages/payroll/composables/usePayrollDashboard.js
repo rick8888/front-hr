@@ -8,6 +8,7 @@ import {
   buildStatusSegments,
   pickRecentPayrolls,
   currentPeriodKey,
+  lastPeriodKeys,
 } from "../mappers/payroll-dashboard.mapper.js";
 import { parseApiError } from "../../../utils/apiErrors.js";
 import { useAuthStore } from "../../../stores/authStore.js";
@@ -60,6 +61,14 @@ export function usePayrollDashboard() {
   const kpi = computed(() => computeDashboardKpi(records.value));
 
   const trend = computed(() => buildPaymentTrend(records.value, 6, bcp47.value));
+  const trendPeriods = new Set(lastPeriodKeys(6));
+  const trendRecords = computed(() =>
+    records.value.filter((record) => trendPeriods.has(record.periodKey))
+  );
+  const hasMixedCurrencies = computed(
+    () => new Set(trendRecords.value.map((record) => record.currency).filter(Boolean)).size > 1
+  );
+  const trendCurrency = computed(() => trendRecords.value[0]?.currency || "EUR");
 
   const statusSegments = computed(() => buildStatusSegments(records.value));
 
@@ -69,6 +78,8 @@ export function usePayrollDashboard() {
     records,
     kpi,
     trend,
+    hasMixedCurrencies,
+    trendCurrency,
     statusSegments,
     recentPayrolls,
     loading,

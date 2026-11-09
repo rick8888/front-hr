@@ -111,6 +111,7 @@ export default {
   "admin.payroll.dashboard.kpi.avgSalary": "Salaire moyen",
   "admin.payroll.dashboard.kpi.avgSalaryHint": "Par bulletin (période en cours)",
   "admin.payroll.dashboard.chart.trend": "Tendance des paiements mensuels",
+  "admin.payroll.dashboard.chart.multiCurrencyHint": "La tendance est masquée car les bulletins utilisent plusieurs devises. Consultez les montants par devise dans les lignes récentes.",
   "admin.payroll.dashboard.chart.statusDistribution": "Distribution du statut",
   "admin.payroll.dashboard.chart.statuses": "Statuts",
   "admin.payroll.dashboard.recent.title": "Paies récentes",

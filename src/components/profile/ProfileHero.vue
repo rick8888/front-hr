@@ -25,18 +25,25 @@
           <!-- Avatar overlap -->
           <div class="-mt-12 sm:-mt-14 flex flex-col items-center gap-2">
             <div
+              v-if="loading"
               :class="[
                 'w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-white flex items-center justify-center font-semibold text-2xl sm:text-3xl',
                 identity.avatarBg,
               ]"
             >
               <span
-                v-if="loading"
                 class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-white/70 border-t-secondary-600"
                 aria-hidden="true"
               />
-              <template v-else>{{ identity.initials }}</template>
             </div>
+            <EmployeeAvatar
+              v-else
+              :name="identity.name"
+              :avatar-url="identity.avatarUrl"
+              size-class="h-24 w-24 sm:h-28 sm:w-28 text-2xl sm:text-3xl"
+              :fallback-class="identity.avatarBg"
+              class="ring-4 ring-white"
+            />
             <button
               v-if="!loading"
               type="button"
@@ -98,6 +105,7 @@
 
 <script setup>
 import ProfileIcon from "./ProfileIcon.vue";
+import EmployeeAvatar from "../common/EmployeeAvatar.vue";
 import { useI18n } from "../../i18n/index.js";
 
 defineProps({

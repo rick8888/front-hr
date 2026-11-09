@@ -23,10 +23,13 @@ export function usePaymentMethods() {
     try {
       const rows = await paymentMethodsApiService.fetchPaymentMethods();
       methods.value = (rows ?? []).map(mapPaymentMethod);
+      if (methods.value.length === 0) {
+        error.value = "Aucun mode de paiement n'est actuellement disponible.";
+      }
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to load payment methods.";
+        "Impossible de charger les modes de paiement.";
       methods.value = [];
     } finally {
       loading.value = false;

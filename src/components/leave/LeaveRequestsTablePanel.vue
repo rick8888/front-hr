@@ -92,12 +92,11 @@
             >
             <td class="px-5 md:px-6 py-4">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-700"
-                  aria-hidden="true"
-                >
-                  {{ initials(row.employee) }}
-                </div>
+                <EmployeeAvatar
+                  :name="row.employee"
+                  :avatar-url="row.employeeAvatarUrl"
+                  size-class="h-9 w-9 text-xs"
+                />
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-neutral-900 truncate">
                     {{ row.employee }}
@@ -241,6 +240,7 @@ import { format } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import { getVisiblePages } from "../../composables/useLeaveRequestsTable.js";
 import { useI18n } from "../../i18n/index.js";
+import EmployeeAvatar from "../common/EmployeeAvatar.vue";
 import { catalogStatusClass } from "../../stores/entityStatusCatalog.store.js";
 
 const { t, locale, bcp47 } = useI18n();
@@ -287,13 +287,6 @@ const columns = computed(() => {
 const visiblePages = computed(() =>
   getVisiblePages(props.currentPage, props.pageCount),
 );
-
-function initials(name) {
-  if (!name) return "?";
-  const parts = String(name).trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDay(iso) {
   try {

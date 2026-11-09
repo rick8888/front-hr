@@ -1,27 +1,18 @@
 import { ref } from "vue";
 import { tenantInvoicesApiService } from "../pages/tenant/services/tenant-invoices.api.service.js";
+import { t } from "../i18n/index.js";
 
-const SHORT_MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-export function formatInvoiceDate(iso) {
+export function formatInvoiceDate(iso, locale = "en") {
   if (!iso) return "";
   const raw = String(iso).slice(0, 10);
-  const d = new Date(`${raw}T12:00:00`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return `${SHORT_MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2, "0")}, ${d.getFullYear()}`;
+  const date = new Date(`${raw}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 export function mapInvoice(row) {
@@ -95,7 +86,7 @@ export function useTenantInvoices() {
       rows.value = (Array.isArray(data) ? data : []).map(mapInvoice);
     } catch (e) {
       error.value =
-        e.response?.data?.message || "Unable to load invoices.";
+        e.response?.data?.message || t("tenant.invoices.loadError");
       rows.value = [];
     } finally {
       loading.value = false;
@@ -114,7 +105,7 @@ export function useTenantInvoices() {
       error.value =
         e.message ||
         e.response?.data?.message ||
-        "Unable to download invoice PDF.";
+        t("tenant.invoices.downloadError");
     } finally {
       downloadingId.value = null;
     }
@@ -146,7 +137,7 @@ export function useTenantInvoiceDetail() {
       invoice.value = mapInvoice(data);
     } catch (e) {
       error.value =
-        e.response?.data?.message || "Unable to load this invoice.";
+        e.response?.data?.message || t("tenant.invoices.detailLoadError");
       invoice.value = null;
     } finally {
       loading.value = false;
@@ -167,7 +158,7 @@ export function useTenantInvoiceDetail() {
       error.value =
         e.message ||
         e.response?.data?.message ||
-        "Unable to download invoice PDF.";
+        t("tenant.invoices.downloadError");
     } finally {
       downloading.value = false;
     }

@@ -1,8 +1,8 @@
 <template>
   <div class="rounded-lg border border-neutral-200 bg-neutral-50/60 p-4">
-    <h3 class="text-sm font-semibold text-neutral-900">Justificatif de virement</h3>
+    <h3 class="text-sm font-semibold text-neutral-900">Justificatif de paiement</h3>
     <p class="mt-1 text-xs text-neutral-500">
-      Effectuez le virement avec les coordonnées communiquées par notre équipe, puis joignez le reçu (PDF, JPG ou PNG). Le forfait sera activé après vérification.
+      Joignez le reçu ou la confirmation de paiement (PDF, JPG, PNG ou WEBP). Votre forfait sera activé après vérification par notre équipe.
     </p>
 
     <div
@@ -12,7 +12,7 @@
       <input
         ref="fileInput"
         type="file"
-        accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*"
+        accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
         class="hidden"
         @change="onFileChange"
       />
@@ -37,7 +37,7 @@
       >
         Choisir un fichier
       </button>
-      <p class="mt-2 text-xs text-neutral-400">Taille max. 5 Mo</p>
+      <p class="mt-2 text-xs text-neutral-400">Obligatoire — taille maximale : 5 Mo</p>
     </div>
 
     <div
@@ -61,7 +61,7 @@
 
     <div class="mt-4">
       <label class="mb-1.5 block text-sm font-semibold text-neutral-800">
-        Référence du virement (optionnel)
+        Référence de paiement (optionnel)
       </label>
       <input
         :value="modelReference"

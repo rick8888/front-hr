@@ -415,6 +415,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:open", "submit"]);
+const defaultCurrency = String(import.meta.env.VITE_DEFAULT_CURRENCY || "USD").toUpperCase();
 
 const tabs = [
   { id: "legal", label: "Identité légale" },
@@ -442,7 +443,10 @@ const industries = [
   "Autre",
 ];
 const headcountRanges = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
-const currencies = ["EUR", "MAD", "XOF", "CDF", "TND", "USD", "CAD"];
+const currencies = computed(() => [...new Set([
+  "EUR", "MAD", "XOF", "CDF", "TND", "USD", "CAD",
+  ...props.countries.map((country) => String(country.currency || "").toUpperCase()),
+].filter(Boolean))].sort());
 const timezones = [
   "Europe/Paris",
   "Africa/Casablanca",
@@ -484,7 +488,7 @@ const emptyForm = () => ({
   industry: "Services",
   founded_at: "",
   country_id: null,
-  currency: "EUR",
+  currency: defaultCurrency,
   language: "fr",
   timezone: "Europe/Paris",
   headcount_range: "11-50",
@@ -514,7 +518,7 @@ function mapCompanyToForm(company) {
     industry: company.industry ?? "Services",
     founded_at: company.founded_at ?? "",
     country_id: company.country_id ?? null,
-    currency: company.currency ?? "EUR",
+    currency: company.currency ?? defaultCurrency,
     language: company.language ?? "fr",
     timezone: company.timezone ?? "Europe/Paris",
     headcount_range: company.headcount_range ?? "11-50",
@@ -564,9 +568,7 @@ watch(
       form.primary_contact = emptyContact();
       form.login = emptyLogin();
       form.address = { street: "", city: "", postal_code: "", state: "" };
-      if (props.countries[0]?.currency) {
-        form.currency = props.countries[0].currency;
-      }
+      form.currency = props.countries[0]?.currency || defaultCurrency;
     }
   },
   { immediate: true }
@@ -574,9 +576,7 @@ watch(
 
 function onCountryChange() {
   const country = props.countries.find((c) => c.id === form.country_id);
-  if (country?.currency) {
-    form.currency = country.currency;
-  }
+  form.currency = country?.currency || defaultCurrency;
 }
 
 const tabErrorMap = {

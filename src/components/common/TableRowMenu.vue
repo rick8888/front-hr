@@ -55,23 +55,28 @@ function updatePosition() {
   const menu = menuRef.value;
   if (!trigger || !menu) return;
 
-  const r = trigger.getBoundingClientRect();
-  const mw = menu.offsetWidth;
-  const mh = menu.offsetHeight;
+  const triggerRect = trigger.getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  const scale = menuRect.width / menu.offsetWidth;
+  if (!Number.isFinite(scale) || scale <= 0) return;
+
   const gap = 4;
   const pad = 8;
+  const viewportWidth = window.innerWidth * scale;
+  const viewportHeight = window.innerHeight * scale;
 
-  let left = r.right - mw;
-  left = Math.min(Math.max(pad, left), window.innerWidth - mw - pad);
+  let left = triggerRect.right - menuRect.width;
+  left = Math.min(Math.max(pad * scale, left), viewportWidth - menuRect.width - pad * scale);
 
-  let top = r.bottom + gap;
-  if (top + mh > window.innerHeight - pad && r.top - mh - gap >= pad) {
-    top = r.top - mh - gap;
+  let top = triggerRect.bottom + gap * scale;
+  if (top + menuRect.height > viewportHeight - pad * scale
+    && triggerRect.top - menuRect.height - gap * scale >= pad * scale) {
+    top = triggerRect.top - menuRect.height - gap * scale;
   }
 
   menuStyle.value = {
-    top: `${top}px`,
-    left: `${left}px`,
+    top: `${top / scale}px`,
+    left: `${left / scale}px`,
   };
 }
 

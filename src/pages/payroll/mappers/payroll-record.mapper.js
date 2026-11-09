@@ -90,6 +90,7 @@ export function mapPayrollRecordFromApi(raw) {
     id: raw.id,
     employeeId: raw.employee_id,
     employeeName,
+    avatarUrl: emp.avatar_url ?? emp.avatarUrl ?? null,
     empCode: emp.matricule || `EMP-${raw.employee_id}`,
     email: emp.email || "",
     department: emp.department || null,
@@ -109,18 +110,31 @@ export function mapPayrollRecordFromApi(raw) {
 
 /**
  * @param {Array<object>} list
- * @returns {{ total: number, pending: number, approved: number, paid: number, totalPayout: number }}
+ * @returns {{ total: number, pending: number, approved: number, paid: number, totalPayoutByCurrency: Array<{currency: string, amount: number}> }}
  */
 export function computePayrollRecordsKpi(list) {
   const rows = Array.isArray(list) ? list : [];
   const pending = rows.filter((r) => r.status === "pending").length;
   const approved = rows.filter((r) => r.status === "approved").length;
   const paid = rows.filter((r) => r.status === "paid");
+  const payoutByCurrency = new Map();
+  for (const row of paid) {
+    const currency = row.currency || "EUR";
+    payoutByCurrency.set(
+      currency,
+      (payoutByCurrency.get(currency) || 0) + (Number(row.netSalary) || 0)
+    );
+  }
   return {
     total: rows.length,
     pending,
     approved,
     paid: paid.length,
-    totalPayout: paid.reduce((s, r) => s + (Number(r.netSalary) || 0), 0),
+    totalPayoutByCurrency: [...payoutByCurrency.entries()]
+      .sort(([currencyA], [currencyB]) => currencyA.localeCompare(currencyB))
+      .map(([currency, amount]) => ({
+        currency,
+        amount: Math.round(amount * 100) / 100,
+      })),
   };
 }

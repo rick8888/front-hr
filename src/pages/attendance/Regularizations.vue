@@ -332,65 +332,74 @@
     <Teleport to="body">
       <div
         v-if="createModalOpen"
-        class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+        class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-neutral-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
         @click.self="closeCreateModal"
       >
         <div
-          class="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-regularization-title"
+          class="my-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]"
           @click.stop
         >
-          <div class="px-5 py-3 border-b border-neutral-100 flex items-center justify-between">
-            <h3 class="text-base font-bold text-neutral-900">{{ t("admin.attendance.regularizations.modalAdd") }}</h3>
+          <div class="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-5 py-4 sm:px-7">
+            <h3 id="create-regularization-title" class="text-xl font-bold tracking-tight text-slate-900">
+              {{ t("admin.attendance.regularizations.modalAdd") }}
+            </h3>
             <button
               type="button"
-              class="text-neutral-400 hover:text-neutral-700 text-2xl leading-none"
+              class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
               :aria-label="t('common.close')"
               :disabled="saving"
               @click="closeCreateModal"
             >
-              ×
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
-          <form class="px-5 py-4 space-y-3 max-h-[min(90vh,620px)] overflow-y-auto" @submit.prevent="submitCreateRequest">
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
-                {{ t("common.employee") }} <span class="text-error-600">*</span>
-              </label>
-              <select
-                v-model="createForm.employeeId"
-                class="input-base text-sm w-full"
-                :class="{ 'ring-1 ring-error-500': createErrors.employeeId }"
-              >
-                <option value="">{{ t("admin.attendance.regularizations.selectEmployee") }}</option>
-                <option v-for="e in employeesList" :key="e.id" :value="String(e.id)">
-                  {{ e.name }}
-                </option>
-              </select>
-              <p v-if="createErrors.employeeId" class="text-xs text-error-600 mt-0.5">{{ createErrors.employeeId }}</p>
+          <form id="create-regularization-form" class="min-h-0 space-y-5 overflow-y-auto px-5 py-6 sm:px-7" @submit.prevent="submitCreateRequest">
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block text-sm font-semibold text-slate-700">
+                  {{ t("common.employee") }} <span class="text-error-600">*</span>
+                </label>
+                <select
+                  v-model="createForm.employeeId"
+                  class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                  :class="{ 'ring-1 ring-error-500': createErrors.employeeId }"
+                >
+                  <option value="">{{ t("admin.attendance.regularizations.selectEmployee") }}</option>
+                  <option v-for="e in employeesList" :key="e.id" :value="String(e.id)">
+                    {{ e.name }}
+                  </option>
+                </select>
+                <p v-if="createErrors.employeeId" class="mt-1 text-xs text-error-600">{{ createErrors.employeeId }}</p>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-semibold text-slate-700">
+                  {{ t("common.date") }} <span class="text-error-600">*</span>
+                </label>
+                <input
+                  v-model="createForm.date"
+                  type="date"
+                  class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                  :class="{ 'ring-1 ring-error-500': createErrors.date }"
+                />
+                <p v-if="createErrors.date" class="mt-1 text-xs text-error-600">{{ createErrors.date }}</p>
+              </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
-                {{ t("common.date") }} <span class="text-error-600">*</span>
-              </label>
-              <input
-                v-model="createForm.date"
-                type="date"
-                class="input-base text-sm w-full"
-                :class="{ 'ring-1 ring-error-500': createErrors.date }"
-              />
-              <p v-if="createErrors.date" class="text-xs text-error-600 mt-0.5">{{ createErrors.date }}</p>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">
                 {{ t("common.type") }} <span class="text-error-600">*</span>
               </label>
               <div class="relative">
                 <select
                   v-model="createForm.type"
-                  class="input-base text-sm w-full appearance-none pr-9"
+                  class="input-base w-full appearance-none rounded-lg border-slate-200 bg-white py-2.5 pr-9 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   :class="{ 'ring-1 ring-error-500': createErrors.type }"
                 >
                   <option value="">{{ t("admin.attendance.regularizations.selectType") }}</option>
@@ -399,7 +408,7 @@
                   </option>
                 </select>
                 <svg
-                  class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
+                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -415,86 +424,88 @@
               <p v-if="createErrors.type" class="text-xs text-error-600 mt-0.5">{{ createErrors.type }}</p>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
-                {{ t("admin.attendance.regularizations.checkIn") }}
-              </label>
-              <div class="relative">
-                <input
-                  v-model="createForm.checkIn"
-                  type="time"
-                  step="60"
-                  class="input-base text-sm w-full pr-9"
-                />
-                <svg
-                  class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block text-sm font-semibold text-slate-700">
+                  {{ t("admin.attendance.regularizations.checkIn") }}
+                </label>
+                <div class="relative">
+                  <input
+                    v-model="createForm.checkIn"
+                    type="time"
+                    step="60"
+                    class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 pr-9 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
-                </svg>
+                  <svg
+                    class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-semibold text-slate-700">
+                  {{ t("admin.attendance.regularizations.checkOut") }}
+                </label>
+                <div class="relative">
+                  <input
+                    v-model="createForm.checkOut"
+                    type="time"
+                    step="60"
+                    class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 pr-9 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                  />
+                  <svg
+                    class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
-                {{ t("admin.attendance.regularizations.checkOut") }}
-              </label>
-              <div class="relative">
-                <input
-                  v-model="createForm.checkOut"
-                  type="time"
-                  step="60"
-                  class="input-base text-sm w-full pr-9"
-                />
-                <svg
-                  class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">
                 {{ t("common.reason") }} <span class="text-error-600">*</span>
               </label>
               <textarea
                 v-model="createForm.reason"
                 maxlength="1000"
-                rows="3"
-                class="input-base text-sm w-full resize-none"
+                rows="4"
+                class="input-base w-full resize-y rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                 :class="{ 'ring-1 ring-error-500': createErrors.reason }"
                 :placeholder="t('admin.attendance.regularizations.reasonPlaceholder')"
               />
-              <div class="flex justify-between items-center mt-0.5">
+              <div class="mt-1 flex items-center justify-between gap-3">
                 <p v-if="createErrors.reason" class="text-xs text-error-600">{{ createErrors.reason }}</p>
-                <p v-else class="text-xs text-neutral-500">{{ t("admin.attendance.regularizations.maxChars") }}</p>
-                <span class="text-xs text-neutral-400">{{ createForm.reason.length }}/1000</span>
+                <p v-else class="text-xs text-slate-500">{{ t("admin.attendance.regularizations.maxChars") }}</p>
+                <span class="shrink-0 text-xs tabular-nums text-slate-400">{{ createForm.reason.length }}/1000</span>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("admin.attendance.regularizations.attachments") }}</label>
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">{{ t("admin.attendance.regularizations.attachments") }}</label>
               <div
-                class="flex items-center border border-neutral-300 rounded-md overflow-hidden bg-white"
+                class="flex min-h-12 items-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 px-2 py-2"
               >
                 <label
-                  class="px-3 py-2 text-sm font-medium text-neutral-700 bg-neutral-50 border-r border-neutral-200 cursor-pointer hover:bg-neutral-100 shrink-0"
+                  class="shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-200 hover:bg-violet-50"
                 >
                   {{ t("admin.attendance.regularizations.chooseFiles") }}
                   <input
@@ -506,36 +517,36 @@
                     @change="onAttachmentChange"
                   />
                 </label>
-                <span class="px-2 py-1.5 text-sm text-neutral-500 truncate min-w-0">
+                <span class="min-w-0 truncate px-2 text-sm text-slate-500">
                   {{ attachmentLabel }}
                 </span>
               </div>
               <p v-if="createErrors.files" class="text-xs text-error-600 mt-0.5">{{ createErrors.files }}</p>
-              <p class="text-xs text-neutral-500 mt-1">
+              <p class="mt-2 text-xs leading-relaxed text-slate-500">
                 {{ t("admin.attendance.regularizations.filesHint") }}
               </p>
             </div>
           </form>
 
-          <div class="px-5 py-3 border-t border-neutral-100 flex items-center justify-between gap-2 bg-neutral-50/60">
+          <div class="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7">
             <button
-              type="button"
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-secondary-500 hover:bg-secondary-600 shadow-sm disabled:opacity-50"
+              type="submit"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              form="create-regularization-form"
               :disabled="saving"
-              @click="submitCreateRequest"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7-7 7" />
               </svg>
               {{ saving ? t("common.submitting") : t("admin.attendance.regularizations.submit") }}
             </button>
             <button
               type="button"
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-neutral-700 bg-neutral-100 border border-neutral-200 hover:bg-neutral-200 disabled:opacity-50"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50"
               :disabled="saving"
               @click="closeCreateModal"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"

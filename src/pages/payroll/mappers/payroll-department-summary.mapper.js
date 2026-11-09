@@ -50,19 +50,21 @@ export function aggregateByDepartment(registerRows) {
         ? String(row.department).trim()
         : t("admin.payroll.noDepartment");
 
-    if (!byDept.has(department)) {
-      byDept.set(department, {
+    const currency = row.currency || "EUR";
+    const key = `${department}\u0000${currency}`;
+    if (!byDept.has(key)) {
+      byDept.set(key, {
         department,
         employeeIds: new Set(),
         totalGross: 0,
         totalDeductions: 0,
         totalNet: 0,
         cycles: new Set(),
-        currency: row.currency || "EUR",
+        currency,
       });
     }
 
-    const bucket = byDept.get(department);
+    const bucket = byDept.get(key);
     if (row.employeeId != null) bucket.employeeIds.add(Number(row.employeeId));
     bucket.totalGross += Number(row.grossSalary) || 0;
     bucket.totalDeductions += Number(row.deductions) || 0;
@@ -78,9 +80,10 @@ export function aggregateByDepartment(registerRows) {
       const totalDeductions = round2(b.totalDeductions);
       const totalNet = round2(b.totalNet);
       return {
-        id: deptId(b.department),
+        id: `${deptId(b.department)}-${b.currency.toLowerCase()}`,
         department: b.department,
         employees,
+        employeeIds: [...b.employeeIds],
         totalGross,
         totalDeductions,
         totalNet,
@@ -97,12 +100,30 @@ export function aggregateByDepartment(registerRows) {
  */
 export function computeDepartmentSummaryKpi(departmentRows) {
   const list = Array.isArray(departmentRows) ? departmentRows : [];
-  const totalEmployees = list.reduce((s, r) => s + (Number(r.employees) || 0), 0);
-  const totalPayroll = round2(list.reduce((s, r) => s + (Number(r.totalNet) || 0), 0));
+  const employeeIds = new Set(list.flatMap((row) => row.employeeIds || []));
+  const payrollByCurrency = new Map();
+  const employeesByCurrency = new Map();
+  for (const row of list) {
+    const currency = row.currency || "EUR";
+    payrollByCurrency.set(
+      currency,
+      (payrollByCurrency.get(currency) || 0) + (Number(row.totalNet) || 0)
+    );
+    const employees = employeesByCurrency.get(currency) || new Set();
+    for (const employeeId of row.employeeIds || []) employees.add(employeeId);
+    employeesByCurrency.set(currency, employees);
+  }
+  const payrollByCurrencyList = [...payrollByCurrency.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([currency, amount]) => ({ currency, amount: round2(amount) }));
+  const averageByCurrency = payrollByCurrencyList.map(({ currency, amount }) => {
+    const count = employeesByCurrency.get(currency)?.size || 0;
+    return { currency, amount: count > 0 ? round2(amount / count) : 0 };
+  });
   return {
-    totalDepartments: list.length,
-    totalEmployees,
-    totalPayroll,
-    averagePerEmployee: totalEmployees > 0 ? round2(totalPayroll / totalEmployees) : 0,
+    totalDepartments: new Set(list.map((row) => row.department)).size,
+    totalEmployees: employeeIds.size,
+    totalPayrollByCurrency: payrollByCurrencyList,
+    averagePerEmployeeByCurrency: averageByCurrency,
   };
 }

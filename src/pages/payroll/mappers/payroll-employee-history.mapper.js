@@ -50,7 +50,7 @@ export function mapHistoryEmployeeOption(raw) {
         : "—",
     designation,
     joinDate: formatJoinDate(joinRaw),
-    avatarUrl: null,
+    avatarUrl: base.avatarUrl || null,
   };
 }
 
@@ -112,24 +112,27 @@ export function formatPeriodLabelLong(periodKey) {
 export function computePayslipHistoryKpis(rows = []) {
   const list = Array.isArray(rows) ? rows : [];
   const total = list.length;
-  const totalEarned = round2(
-    list.reduce((s, r) => s + Number(r.grossSalary || 0), 0)
-  );
-  const totalDeductions = round2(
-    list.reduce(
-      (s, r) => s + Number(r.deductions || 0) + Number(r.tax || 0),
-      0
-    )
-  );
-  const avgNet =
-    total > 0
-      ? round2(list.reduce((s, r) => s + Number(r.netSalary || 0), 0) / total)
-      : 0;
+  const grouped = (selector, average = false) => {
+    const groups = new Map();
+    for (const row of list) {
+      const currency = row.currency || "EUR";
+      const group = groups.get(currency) || { amount: 0, count: 0 };
+      group.amount += Number(selector(row)) || 0;
+      group.count += 1;
+      groups.set(currency, group);
+    }
+    return [...groups.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([currency, group]) => ({
+        currency,
+        amount: round2(average && group.count ? group.amount / group.count : group.amount),
+      }));
+  };
   return {
     totalRecords: total,
-    totalEarned,
-    totalDeductions,
-    averageNetPay: avgNet,
+    totalEarnedByCurrency: grouped((row) => row.grossSalary),
+    totalDeductionsByCurrency: grouped((row) => Number(row.deductions || 0) + Number(row.tax || 0)),
+    averageNetPayByCurrency: grouped((row) => row.netSalary, true),
   };
 }
 

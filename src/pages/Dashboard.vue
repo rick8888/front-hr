@@ -205,14 +205,12 @@
                   >
                     <td class="px-4 py-4">
                       <div class="flex items-center gap-3">
-                        <div
-                          :class="[
-                            'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm',
-                            getAvatarColor(employee.name),
-                          ]"
-                        >
-                          {{ employee.initials }}
-                        </div>
+                        <EmployeeAvatar
+                          :name="employee.name"
+                          :avatar-url="employee.avatarUrl"
+                          size-class="h-10 w-10 text-sm font-semibold"
+                          :fallback-class="`${getAvatarColor(employee.name)} text-white`"
+                        />
                         <span class="text-sm font-medium text-neutral-900">{{
                           employee.name
                         }}</span>
@@ -253,7 +251,7 @@
     </div>
 
     <!-- Right Sidebar - My Schedule -->
-    <div class="w-full min-w-0 border-t border-neutral-200 bg-white p-4 sm:p-6 xl:w-80 xl:overflow-y-auto xl:border-l xl:border-t-0">
+    <div class="w-full min-w-0 border-t border-neutral-200 bg-white p-4 sm:p-6 xl:mb-6 xl:mr-6 xl:mt-6 xl:w-80 xl:overflow-y-auto xl:rounded-xl xl:border xl:border-neutral-200 xl:shadow-sm">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-bold text-neutral-900 flex items-center gap-2">
           <svg
@@ -800,6 +798,7 @@
 import { ref } from "vue";
 import { useAuthStore } from "../stores/authStore";
 import StatCard from "../components/common/StatCard.vue";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import { useAdminDashboard } from "./dashboard/composables/useAdminDashboard.js";
 import { useI18n } from "../i18n/index.js";
 

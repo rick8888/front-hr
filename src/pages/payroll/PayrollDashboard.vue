@@ -82,18 +82,20 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.dashboard.kpi.paymentThisMonth')"
-        :value="loading ? '…' : formatMoney(kpi.paymentThisMonth)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.paymentThisMonthByCurrency)"
         :sublabel="t('admin.payroll.dashboard.kpi.paymentThisMonthHint')"
         value-class="text-secondary-600"
         icon-class="bg-secondary-100 text-secondary-600"
       >
         <template #icon>
-          <span class="text-lg font-bold">$</span>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2m8-4a8 8 0 11-16 0 8 8 0 0116 0z" />
+          </svg>
         </template>
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.dashboard.kpi.avgSalary')"
-        :value="loading ? '…' : formatMoney(kpi.avgSalary)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.avgSalaryByCurrency)"
         :sublabel="t('admin.payroll.dashboard.kpi.avgSalaryHint')"
         value-class="text-primary-600"
         icon-class="bg-primary-100 text-primary-600"
@@ -115,12 +117,19 @@
     <div class="grid gap-4 lg:grid-cols-3">
       <div class="lg:col-span-2 rounded-xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-sm">
         <h2 class="text-base font-semibold text-neutral-900 mb-4">{{ t("admin.payroll.dashboard.chart.trend") }}</h2>
+        <p v-if="!hasMixedCurrencies" class="-mt-2 mb-3 text-xs text-neutral-500">{{ trendCurrency }}</p>
         <div
           v-if="loading"
           class="flex h-[220px] sm:h-[260px] items-center justify-center text-sm text-neutral-500"
         >
           {{ t("common.loading") }}
         </div>
+        <p
+          v-else-if="hasMixedCurrencies"
+          class="flex h-[220px] sm:h-[260px] items-center justify-center text-sm text-neutral-500 text-center"
+        >
+          {{ t("admin.payroll.dashboard.chart.multiCurrencyHint") }}
+        </p>
         <PayrollTrendChart
           v-else
           :title="t('admin.payroll.dashboard.chart.trend')"
@@ -204,12 +213,13 @@
             >
               <td class="pl-5 pr-3 py-3">
                 <div class="flex items-center gap-3">
-                  <span
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
+                  <EmployeeAvatar
+                    :name="row.name"
+                    :avatar-url="row.avatarUrl"
+                    size-class="h-10 w-10 text-xs font-semibold"
+                    fallback-class="text-white"
                     :style="{ backgroundColor: avatarColor(row.name) }"
-                  >
-                    {{ initials(row.name) }}
-                  </span>
+                  />
                   <div class="min-w-0">
                     <p class="font-semibold text-neutral-900 truncate">{{ row.name }}</p>
                     <p class="text-xs text-neutral-500">{{ row.code }}</p>
@@ -218,10 +228,10 @@
               </td>
               <td class="px-3 py-3 text-neutral-700">{{ row.period }}</td>
               <td class="px-3 py-3 font-medium text-primary-600 tabular-nums">
-                {{ formatMoney(row.gross) }}
+                {{ formatMoney(row.gross, row.currency) }}
               </td>
               <td class="px-3 py-3 font-medium text-success-700 tabular-nums">
-                {{ formatMoney(row.net) }}
+                {{ formatMoney(row.net, row.currency) }}
               </td>
               <td class="px-3 py-3">
                 <span
@@ -272,6 +282,7 @@ import { useI18n } from "../../i18n/index.js";
 import PayrollKpiCard from "../../components/payroll/PayrollKpiCard.vue";
 import PayrollTrendChart from "../../components/payroll/PayrollTrendChart.vue";
 import PayrollStatusDonut from "../../components/payroll/PayrollStatusDonut.vue";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
 import { usePayrollDashboard } from "./composables/usePayrollDashboard.js";
 import { PAYROLL_STATUS_UI } from "./mappers/payroll-record.mapper.js";
 
@@ -282,6 +293,8 @@ const {
   trend,
   statusSegments,
   recentPayrolls,
+  hasMixedCurrencies,
+  trendCurrency,
   loading,
   error,
   bootstrap,
@@ -304,19 +317,18 @@ onMounted(() => {
 
 onUnmounted(() => document.removeEventListener("click", onDocClick));
 
-function formatMoney(n) {
+function formatMoney(n, currency = "EUR") {
   return new Intl.NumberFormat(bcp47.value, {
     style: "currency",
-    currency: "USD",
+    currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
 }
 
-function initials(name) {
-  if (!name) return "??";
-  const p = name.split(/\s+/).filter(Boolean);
-  if (p.length >= 2) return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+function formatCurrencyGroups(groups = []) {
+  return groups.length
+    ? groups.map(({ currency, amount }) => formatMoney(amount, currency)).join(" · ")
+    : "—";
 }
 
 function avatarColor(name) {

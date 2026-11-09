@@ -295,15 +295,18 @@
 
     <div
       v-if="modalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-950/50 p-3 backdrop-blur-sm sm:items-center sm:p-6"
       @click.self="closeModal"
     >
       <div
-        class="w-full max-w-5xl flex flex-col rounded-xl bg-white shadow-xl overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="'holiday-modal-title'"
+        class="my-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 sm:max-h-[calc(100vh-3rem)]"
         @click.stop
       >
-        <div class="flex items-center justify-between px-5 py-2.5 border-b border-neutral-100 shrink-0">
-          <h2 class="text-base font-bold text-neutral-900">
+        <div class="flex shrink-0 items-center justify-between border-b border-neutral-100 px-5 py-4 sm:px-7">
+          <h2 id="holiday-modal-title" class="text-lg font-bold text-neutral-900">
             {{
               editingId
                 ? t("admin.attendance.holidays.modalEdit")
@@ -312,43 +315,45 @@
           </h2>
           <button
             type="button"
-            class="text-neutral-400 hover:text-neutral-700 text-2xl leading-none"
+            class="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-secondary-500"
             :aria-label="t('common.close')"
             :disabled="saving"
             @click="closeModal"
           >
-            ×
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <div class="px-5 py-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 shrink-0 overflow-hidden">
+        <div class="grid min-h-0 grid-cols-1 gap-x-8 gap-y-7 overflow-y-auto px-5 py-6 sm:px-7 md:grid-cols-2">
           <section>
-            <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">
+            <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
               {{ t("admin.attendance.holidays.basicInfo") }}
             </h3>
-            <div class="space-y-2">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">
                     {{ t("admin.attendance.holidays.holidayName") }} <span class="text-error-600">*</span>
                   </label>
                   <input
                     v-model="form.name"
                     type="text"
-                    class="input-base text-sm py-1.5"
+                    class="input-base py-2 text-sm"
                     :class="{ 'ring-1 ring-error-500': formErrors.name }"
                     :placeholder="t('admin.attendance.holidays.namePlaceholder')"
                   />
                   <p v-if="formErrors.name" class="text-xs text-error-600 mt-0.5">{{ formErrors.name }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">
                     {{ t("admin.attendance.holidays.holidayCode") }} <span class="text-error-600">*</span>
                   </label>
                   <input
                     v-model="form.code"
                     type="text"
-                    class="input-base text-sm font-mono uppercase py-1.5"
+                    class="input-base py-2 font-mono text-sm uppercase"
                     :class="{ 'ring-1 ring-error-500': formErrors.code }"
                     :placeholder="t('admin.attendance.holidays.codePlaceholder')"
                   />
@@ -357,30 +362,30 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">
                     {{ t("common.date") }} <span class="text-error-600">*</span>
                   </label>
                   <input
                     v-model="form.date"
                     type="date"
-                    class="input-base text-sm py-1.5"
+                    class="input-base py-2 text-sm"
                     :class="{ 'ring-1 ring-error-500': formErrors.date }"
                   />
                   <p v-if="formErrors.date" class="text-xs text-error-600 mt-0.5">{{ formErrors.date }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">{{ t("admin.attendance.holidays.color") }}</label>
-                  <div class="flex items-center gap-2 h-[34px]">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">{{ t("admin.attendance.holidays.color") }}</label>
+                  <div class="flex h-10 items-center gap-3">
                     <input
                       v-model="form.color"
                       type="color"
-                      class="h-8 w-14 cursor-pointer rounded border border-neutral-300 p-0.5 bg-white"
+                      class="h-9 w-16 cursor-pointer rounded-lg border border-neutral-300 bg-white p-1"
                       :title="t('admin.attendance.holidays.pickColor')"
                     />
                     <span
-                      class="inline-block h-7 w-7 rounded border border-neutral-200 shadow-inner"
+                      class="inline-block h-8 w-8 rounded-lg border border-neutral-200 shadow-sm"
                       :style="{ backgroundColor: form.color }"
                       aria-hidden="true"
                     />
@@ -388,14 +393,14 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">
                     {{ t("common.type") }} <span class="text-error-600">*</span>
                   </label>
                   <select
                     v-model="form.type"
-                    class="input-base text-sm py-1.5"
+                    class="input-base py-2 text-sm"
                     :class="{ 'ring-1 ring-error-500': formErrors.type }"
                   >
                     <option value="">{{ t("admin.attendance.holidays.selectType") }}</option>
@@ -407,8 +412,8 @@
                   <p v-if="formErrors.type" class="text-xs text-error-600 mt-0.5">{{ formErrors.type }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-neutral-700 mb-0.5">{{ t("common.category") }}</label>
-                  <select v-model="form.category" class="input-base text-sm py-1.5">
+                  <label class="mb-1.5 block text-sm font-medium text-neutral-700">{{ t("common.category") }}</label>
+                  <select v-model="form.category" class="input-base py-2 text-sm">
                     <option value="">{{ t("admin.attendance.holidays.selectCategory") }}</option>
                     <option value="national">{{ t("admin.attendance.holidays.cat.national") }}</option>
                     <option value="regional">{{ t("admin.attendance.holidays.cat.regional") }}</option>
@@ -420,27 +425,27 @@
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-neutral-700 mb-0.5">{{ t("common.description") }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-neutral-700">{{ t("common.description") }}</label>
                 <textarea
                   v-model="form.description"
-                  rows="2"
-                  class="input-base text-sm resize-none py-1.5"
+                  rows="3"
+                  class="input-base resize-y py-2 text-sm"
                   :placeholder="t('admin.attendance.holidays.descriptionPlaceholder')"
                 />
               </div>
             </div>
           </section>
 
-          <div class="flex flex-col gap-3 md:border-l md:border-neutral-100 md:pl-6">
+          <div class="flex flex-col gap-7 md:border-l md:border-neutral-100 md:pl-8">
             <section>
-              <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">{{ t("admin.attendance.holidays.applicability") }}</h3>
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">{{ t("admin.attendance.holidays.applicability") }}</h3>
               <div>
-                <label class="block text-xs font-medium text-neutral-700 mb-0.5">
+                <label class="mb-1.5 block text-sm font-medium text-neutral-700">
                   {{ t("admin.attendance.holidays.appliesTo") }} <span class="text-error-600">*</span>
                 </label>
                 <select
                   v-model="form.applicableTo"
-                  class="input-base text-sm py-1.5 w-full"
+                  class="input-base w-full py-2 text-sm"
                   :class="{ 'ring-1 ring-error-500': formErrors.applicableTo }"
                 >
                   <option value="all">{{ t("admin.attendance.holidays.applicableAll") }}</option>
@@ -454,16 +459,16 @@
             </section>
 
             <section>
-              <h3 class="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">{{ t("admin.attendance.holidays.options") }}</h3>
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">{{ t("admin.attendance.holidays.options") }}</h3>
               <div
-                class="rounded-lg border border-neutral-100 bg-neutral-50/80 p-2 space-y-1.5"
+                class="space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4"
               >
                 <div
-                  class="flex items-center justify-between gap-2 min-h-[32px] border-b border-neutral-100/80 pb-1.5"
+                  class="flex min-h-10 items-center justify-between gap-3 border-b border-neutral-200 pb-3"
                 >
                   <div class="min-w-0 pr-1">
-                    <p class="text-xs font-medium text-neutral-800">{{ t("admin.attendance.holidays.recurring") }}</p>
-                    <p class="text-[11px] text-neutral-500 leading-tight">{{ t("admin.attendance.holidays.recurringHint") }}</p>
+                    <p class="text-sm font-medium text-neutral-800">{{ t("admin.attendance.holidays.recurring") }}</p>
+                    <p class="text-xs leading-snug text-neutral-500">{{ t("admin.attendance.holidays.recurringHint") }}</p>
                   </div>
                   <button
                     type="button"
@@ -482,13 +487,13 @@
                   </button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
+                <div class="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2">
                   <div
                     v-for="opt in optionToggles"
                     :key="opt.key"
-                    class="flex items-center justify-between gap-1.5"
+                    class="flex min-h-8 items-center justify-between gap-2"
                   >
-                    <span class="text-xs font-medium text-neutral-800 truncate" :title="opt.label">{{
+                    <span class="truncate text-sm font-medium text-neutral-800" :title="opt.label">{{
                       opt.label
                     }}</span>
                     <button
@@ -514,15 +519,23 @@
         </div>
 
         <div
-          class="flex items-center justify-between gap-3 px-5 py-2.5 border-t border-neutral-100 bg-neutral-50/80 shrink-0"
+          class="flex shrink-0 flex-col-reverse gap-2 border-t border-neutral-100 bg-neutral-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7"
         >
           <button
             type="button"
-            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-white bg-info-600 hover:bg-info-700 shadow-sm transition-colors disabled:opacity-50"
+            class="rounded-lg border border-neutral-200 bg-white px-5 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+            :disabled="saving"
+            @click="closeModal"
+          >
+            {{ t("common.cancel") }}
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-info-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-info-700 disabled:opacity-50"
             :disabled="saving"
             @click="submitForm"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -531,14 +544,6 @@
               />
             </svg>
             {{ saving ? t("common.saving") : t("admin.attendance.holidays.save") }}
-          </button>
-          <button
-            type="button"
-            class="px-5 py-2.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
-            :disabled="saving"
-            @click="closeModal"
-          >
-            {{ t("common.cancel") }}
           </button>
         </div>
       </div>

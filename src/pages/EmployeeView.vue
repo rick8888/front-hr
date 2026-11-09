@@ -53,17 +53,38 @@
           rounded="rounded-full"
           box-class="h-24 w-24"
         />
-        <div
+        <EmployeeAvatar
           v-else
-          class="w-24 h-24 rounded-full bg-secondary-100 text-secondary-600 font-semibold text-2xl flex items-center justify-center"
+          :name="employee.name"
+          :avatar-url="employee.avatarUrl"
+          size-class="h-24 w-24 text-2xl font-semibold"
+          fallback-class="bg-secondary-100 text-secondary-600"
+        />
+        <input
+          ref="avatarInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+          :disabled="avatarUploading || profileLoading || !canManageEmployees"
+          @change="onAvatarSelected"
         >
-          {{ initials }}
-        </div>
-        <span
-          v-if="!profileLoading"
-          class="absolute bottom-0 right-0 w-7 h-7 rounded-full border border-secondary-200 bg-white text-secondary-500 flex items-center justify-center"
+        <button
+          v-if="!profileLoading && canManageEmployees"
+          type="button"
+          class="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-secondary-200 bg-white text-secondary-500 hover:bg-secondary-50 disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="avatarUploading"
+          :aria-label="t('admin.employees.view.changePhoto')"
+          :title="avatarUploading ? t('common.updating') : t('admin.employees.view.changePhoto')"
+          @click="avatarInput?.click()"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            v-if="!avatarUploading"
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -77,7 +98,11 @@
               d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-        </span>
+          <span
+            v-else
+            class="h-3 w-3 animate-spin rounded-full border-2 border-secondary-300 border-t-secondary-600"
+          />
+        </button>
       </div>
 
       <!-- Identité -->
@@ -1080,6 +1105,7 @@ import GenerateEmployeeDocumentModal from "../components/employee/GenerateEmploy
 import EmployeeProfileDocumentsPanel from "../components/employee/EmployeeProfileDocumentsPanel.vue";
 import ConfirmDialog from "../components/common/ConfirmDialog.vue";
 import Skeleton from "../components/common/Skeleton.vue";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import { employeesApiService } from "./employees/services/employees.api.service.js";
 import { normalizeEmployeeDetail } from "./employees/composables/useEmployees.js";
 import { useEditWorkInfo } from "./employees/composables/useEditWorkInfo.js";
@@ -1110,6 +1136,8 @@ const route = useRoute();
 const router = useRouter();
 
 const employee = ref(normalizeEmployeeDetail({}));
+const avatarInput = ref(null);
+const avatarUploading = ref(false);
 const profileLoading = ref(true);
 const pageError = ref("");
 const extrasLoading = ref(false);
@@ -1192,6 +1220,23 @@ async function loadEmployee() {
   } catch (e) {
     pageError.value = parseApiError(e) || t("admin.employees.view.loadError");
     profileLoading.value = false;
+  }
+}
+
+async function onAvatarSelected(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file || !employee.value?.id || avatarUploading.value) return;
+
+  avatarUploading.value = true;
+  pageError.value = "";
+  try {
+    const updated = await employeesApiService.updateAvatar(employee.value.id, file);
+    applyUpdatedEmployee(normalizeEmployeeDetail(updated));
+  } catch (e) {
+    pageError.value = parseApiError(e) || t("admin.employees.view.photoUploadError");
+  } finally {
+    avatarUploading.value = false;
   }
 }
 
@@ -1643,18 +1688,6 @@ watch(timelineFilter, () => {
 watch(filteredTimelineTotal, (total) => {
   const max = Math.max(1, Math.ceil(total / timelinePageSize));
   if (timelinePage.value > max) timelinePage.value = max;
-});
-
-// === Initiales ===
-const initials = computed(() => {
-  const e = employee.value;
-  const src = `${e.firstName || ""} ${e.lastName || ""}`.trim() || e.name || "?";
-  return src
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
 });
 
 // === Labels ===

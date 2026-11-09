@@ -5,6 +5,9 @@ export default {
 
   "admin.leave.compOff.title": "Compensatory Off Requests",
   "admin.leave.compOff.breadcrumb": "Compensatory Off",
+  "admin.leave.compOff.detailsTitle": "Compensatory Off Details",
+  "admin.leave.compOff.manager": "Manager",
+  "admin.leave.compOff.rejectReason": "Rejection reason",
   "admin.leave.compOff.kpi.earned": "Total Earned",
   "admin.leave.compOff.kpi.earnedSub": "All Time",
   "admin.leave.compOff.kpi.available": "Available",

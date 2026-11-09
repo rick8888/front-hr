@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { tenantDashboardApiService } from "../pages/tenant/services/tenant-dashboard.api.service.js";
+import { t } from "../i18n/index.js";
 
 function emptyDashboard() {
   return {
@@ -53,8 +54,7 @@ export function useTenantDashboard() {
       const data = await tenantDashboardApiService.fetchDashboard();
       dashboard.value = mapDashboard(data);
     } catch (e) {
-      error.value =
-        e.response?.data?.message || "Unable to load dashboard.";
+      error.value = e.response?.data?.message || t("tenant.dashboard.loadError");
       dashboard.value = emptyDashboard();
     } finally {
       loading.value = false;

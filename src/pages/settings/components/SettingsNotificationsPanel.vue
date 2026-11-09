@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-xl space-y-4">
+  <div class="space-y-5">
     <div
       v-if="feedback"
       class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
@@ -7,23 +7,25 @@
       {{ feedback }}
     </div>
 
-    <label
-      v-for="item in items"
-      :key="item.key"
-      class="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50/80"
-    >
-      <span>
-        <span class="block text-sm font-medium text-neutral-900">{{ item.label }}</span>
-        <span class="mt-0.5 block text-xs text-neutral-500">{{ item.hint }}</span>
-      </span>
-      <input
-        v-model="form[item.key]"
-        type="checkbox"
-        class="mt-0.5 h-4 w-4 rounded border-neutral-300 text-secondary-600 focus:ring-secondary-500"
-      />
-    </label>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <label
+        v-for="item in items"
+        :key="item.key"
+        class="flex min-h-28 cursor-pointer items-start justify-between gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-secondary-200 hover:bg-neutral-50/70 hover:shadow-md"
+      >
+        <span>
+          <span class="block text-sm font-semibold text-neutral-900">{{ item.label }}</span>
+          <span class="mt-1.5 block text-sm leading-5 text-neutral-500">{{ item.hint }}</span>
+        </span>
+        <input
+          v-model="form[item.key]"
+          type="checkbox"
+          class="mt-0.5 h-5 w-5 shrink-0 rounded border-neutral-300 text-secondary-600 focus:ring-secondary-500"
+        />
+      </label>
+    </div>
 
-    <div class="flex justify-end pt-2">
+    <div class="flex justify-end border-t border-neutral-100 pt-4">
       <button type="button" class="btn-primary text-sm" @click="save">
         {{ t("settings.notifications.save") }}
       </button>

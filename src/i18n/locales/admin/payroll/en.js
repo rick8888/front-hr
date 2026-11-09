@@ -111,6 +111,7 @@ export default {
   "admin.payroll.dashboard.kpi.avgSalary": "Average salary",
   "admin.payroll.dashboard.kpi.avgSalaryHint": "Per payslip (current period)",
   "admin.payroll.dashboard.chart.trend": "Monthly payment trend",
+  "admin.payroll.dashboard.chart.multiCurrencyHint": "The trend is hidden because payslips use multiple currencies. See recent rows for amounts by currency.",
   "admin.payroll.dashboard.chart.statusDistribution": "Status distribution",
   "admin.payroll.dashboard.chart.statuses": "Statuses",
   "admin.payroll.dashboard.recent.title": "Recent payrolls",

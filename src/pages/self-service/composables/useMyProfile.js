@@ -129,6 +129,7 @@ function mapProfile(raw, t, locale) {
   return {
     identity: {
       initials: initialsFromName(name),
+      avatarUrl: raw?.avatar_url ?? raw?.employee?.avatar_url ?? null,
       name,
       email,
       joinedLabel: formatDisplayDate(joined, locale),

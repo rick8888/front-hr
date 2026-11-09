@@ -1,5 +1,5 @@
 <template>
-  <div class="premium-shell flex min-h-screen flex-col overflow-x-hidden bg-neutral-50 lg:flex-row lg:items-start">
+  <div class="premium-shell premium-shell--sup-admin flex min-h-screen flex-col overflow-x-hidden bg-neutral-50 lg:flex-row lg:items-start">
     <header
       class="sticky top-0 z-50 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 lg:hidden"
     >
@@ -49,18 +49,26 @@
         </div>
       </div>
 
-      <nav class="flex-1 overflow-y-auto px-4 py-6">
+      <nav class="flex-1 overflow-y-auto px-3.5 py-5">
         <SuperAdminSidebarNav />
       </nav>
 
-      <div class="space-y-3 border-t border-neutral-200 px-4 py-4">
-        <div class="min-w-0">
-          <p class="truncate text-xs text-neutral-500">{{ authStore.user?.name }}</p>
-          <p class="truncate text-xs text-neutral-400">{{ authStore.user?.email }}</p>
+      <div class="border-t border-neutral-200 px-3.5 py-4">
+        <div class="mb-3 flex min-w-0 items-center gap-3">
+          <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-neutral-200"
+            aria-hidden="true"
+          >
+            {{ userInitial }}
+          </div>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-medium text-neutral-100">{{ authStore.user?.name }}</p>
+            <p class="truncate text-xs text-neutral-400">{{ authStore.user?.email }}</p>
+          </div>
         </div>
         <button
           type="button"
-          class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+          class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/10 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
           @click="handleLogout"
         >
           <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -76,9 +84,11 @@
       </div>
     </aside>
 
-    <main class="min-w-0 w-full flex-1 overflow-x-auto">
-      <RouterView />
-    </main>
+    <div class="min-w-0 flex-1">
+      <main class="min-w-0 w-full overflow-x-auto">
+        <RouterView />
+      </main>
+    </div>
   </div>
 </template>
 
@@ -95,6 +105,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { t } = useI18n();
 const { sidebarOpen, closeSidebar, toggleSidebar } = useAppShell();
+const userInitial = authStore.user?.name?.trim()?.charAt(0)?.toUpperCase() || "S";
 
 watch(
   () => route.path,

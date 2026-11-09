@@ -39,12 +39,13 @@
       >
         <div class="flex items-center gap-3">
           <!-- Avatar -->
-          <div
-            class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
+          <EmployeeAvatar
+            :name="member.name"
+            :avatar-url="member.avatar_url || member.avatarUrl"
+            size-class="h-12 w-12 text-sm font-semibold"
+            fallback-class="text-white"
             :style="{ backgroundColor: getAvatarColor(member.name) }"
-          >
-            {{ getInitials(member.name) }}
-          </div>
+          />
 
           <!-- Member Info -->
           <div class="flex-1 min-w-0">
@@ -78,21 +79,12 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "../i18n/index.js";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 
 const { t } = useI18n();
 
 const route = useRoute();
 const router = useRouter();
-
-// Get initials from name
-const getInitials = (name) => {
-  if (!name) return "??";
-  const parts = name.split(" ");
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
 
 // Get color for avatar based on name
 const getAvatarColor = (name) => {
@@ -259,4 +251,3 @@ onMounted(() => {
 <style scoped>
 /* Additional custom styles if needed */
 </style>
-

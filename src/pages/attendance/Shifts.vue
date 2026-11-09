@@ -277,62 +277,75 @@
 
     <div
       v-if="modalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
       @click.self="closeModal"
     >
-      <div class="w-full max-w-md rounded-xl bg-white shadow-xl">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-          <h3 class="text-lg font-semibold text-neutral-900">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shift-modal-title"
+        class="my-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]"
+      >
+        <div class="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-5 py-4 sm:px-7">
+          <h3 id="shift-modal-title" class="text-xl font-bold tracking-tight text-slate-900">
             {{ editingId ? t("admin.attendance.shifts.modalEdit") : t("admin.attendance.shifts.modalAdd") }}
           </h3>
           <button
             type="button"
-            class="text-neutral-400 hover:text-neutral-700 text-2xl leading-none"
+            class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            :aria-label="t('common.close')"
+            :disabled="saving"
             @click="closeModal"
           >
-            ×
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
-        <div class="px-6 py-5 space-y-4 max-h-[min(80vh,520px)] overflow-y-auto">
-          <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("admin.attendance.shifts.col.name") }}</label>
+        <div class="min-h-0 space-y-5 overflow-y-auto px-5 py-6 sm:px-7">
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">{{ t("admin.attendance.shifts.col.name") }}</label>
             <input
               v-model="form.name"
               type="text"
-              class="input-base text-sm"
+              class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
               :placeholder="t('admin.attendance.shifts.namePlaceholder')"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("common.code") }}</label>
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">{{ t("common.code") }}</label>
             <input
               v-model="form.code"
               type="text"
-              class="input-base text-sm font-mono uppercase"
+              class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 font-mono text-sm uppercase shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
               placeholder="SH-001"
             />
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("admin.attendance.shifts.start") }}</label>
-              <input v-model="form.start" type="time" class="input-base text-sm" step="60" />
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">{{ t("admin.attendance.shifts.start") }}</label>
+              <input v-model="form.start" type="time" class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100" step="60" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ t("admin.attendance.shifts.end") }}</label>
-              <input v-model="form.end" type="time" class="input-base text-sm" step="60" />
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">{{ t("admin.attendance.shifts.end") }}</label>
+              <input v-model="form.end" type="time" class="input-base w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100" step="60" />
             </div>
           </div>
-          <div>
-            <p class="text-sm font-medium text-neutral-700 mb-2">{{ t("admin.attendance.shifts.col.days") }}</p>
+
+          <div class="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-violet-50/40 p-4">
+            <p class="mb-3 text-sm font-semibold text-slate-700">{{ t("admin.attendance.shifts.col.days") }}</p>
             <div class="flex flex-wrap gap-2">
               <label
                 v-for="d in ALL_DAYS"
                 :key="d"
-                class="inline-flex items-center gap-1.5 text-sm text-neutral-700"
+                class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white bg-white/80 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-violet-200"
               >
                 <input
                   type="checkbox"
-                  class="rounded border-neutral-300"
+                  class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                   :checked="isDaySelected(d)"
                   @change="toggleDay(d, $event.target.checked)"
                 />
@@ -341,26 +354,26 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-1">
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">
               {{ t("admin.attendance.shifts.noteOptional") }} <span class="text-neutral-400 font-normal">({{ t("common.optional") }})</span>
             </label>
             <textarea
               v-model="form.note"
               rows="3"
-              class="input-base text-sm resize-y min-h-[4rem] placeholder:text-neutral-400"
+              class="input-base min-h-[4rem] w-full resize-y rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
               :placeholder="t('admin.attendance.shifts.notePlaceholder')"
             />
           </div>
-          <label class="inline-flex items-center gap-2 text-sm text-neutral-700">
-            <input v-model="form.active" type="checkbox" class="rounded border-neutral-300" />
+          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-violet-200">
+            <input v-model="form.active" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" />
             {{ t("common.active") }}
           </label>
         </div>
-        <div class="flex justify-end gap-2 px-6 py-4 border-t border-neutral-100">
-          <button type="button" class="btn-outline" :disabled="saving" @click="closeModal">
+        <div class="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7">
+          <button type="button" class="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50" :disabled="saving" @click="closeModal">
             {{ t("common.cancel") }}
           </button>
-          <button type="button" class="btn-secondary" :disabled="saving" @click="submitForm">
+          <button type="button" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" :disabled="saving" @click="submitForm">
             {{ saving ? t("common.saving") : editingId ? t("common.update") : t("common.create") }}
           </button>
         </div>

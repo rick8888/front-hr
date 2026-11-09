@@ -3,10 +3,10 @@
     <div class="max-w-7xl mx-auto space-y-6">
       <header class="text-center">
         <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">
-          Usage Overview
+          {{ t("tenant.usage.title") }}
         </h1>
         <p class="mt-2 text-sm text-neutral-500">
-          Monitor your resource usage and limits
+          {{ t("tenant.usage.subtitle") }}
         </p>
       </header>
 
@@ -48,12 +48,14 @@ import { onMounted } from "vue";
 import TenantUsagePlanCard from "../../components/tenant/TenantUsagePlanCard.vue";
 import TenantUsageMetricCard from "../../components/tenant/TenantUsageMetricCard.vue";
 import { useTenantUsage } from "../../composables/useTenantUsage.js";
+import { useI18n } from "../../i18n/index.js";
 
 const { loading, error, plan, metrics, load } = useTenantUsage();
+const { t } = useI18n();
 
 const skeletonMetric = {
   id: "skeleton",
-  label: "…",
+  label: t("common.loading"),
   icon: "user",
   used: 0,
   limit: 1,

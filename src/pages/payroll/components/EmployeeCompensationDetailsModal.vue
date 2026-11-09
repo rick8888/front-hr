@@ -53,11 +53,12 @@
             class="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
           >
             <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div
-                class="w-12 h-12 rounded-full flex items-center justify-center text-secondary-700 font-semibold text-sm flex-shrink-0 bg-secondary-100"
-              >
-                {{ profile.initials }}
-              </div>
+              <EmployeeAvatar
+                :name="profile.name"
+                :avatar-url="profile.avatarUrl"
+                size-class="h-12 w-12 text-sm font-semibold"
+                fallback-class="bg-secondary-100 text-secondary-700"
+              />
               <div class="min-w-0">
                 <p class="font-semibold text-neutral-900 truncate">{{ profile.name }}</p>
                 <p class="text-sm text-neutral-500 truncate">{{ profile.email }}</p>
@@ -269,6 +270,7 @@
 </template>
 
 <script setup>
+import EmployeeAvatar from "../../../components/common/EmployeeAvatar.vue";
 import { useI18n } from "../../../i18n/index.js";
 
 const { t } = useI18n();

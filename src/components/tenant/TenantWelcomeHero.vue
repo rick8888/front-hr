@@ -3,10 +3,10 @@
     class="rounded-xl border border-neutral-200 bg-white px-6 py-10 text-center shadow-sm md:px-10 md:py-12"
   >
     <h2 class="text-2xl font-bold text-neutral-900 md:text-3xl">
-      Welcome to {{ productName }}, {{ firstName }}!
+      {{ t("tenant.dashboard.welcome", { product: productName, name: firstName }) }}
     </h2>
     <p class="mx-auto mt-3 max-w-2xl text-sm text-neutral-500 md:text-base">
-      Manage your subscription, billing, and company settings from this dashboard.
+      {{ t("tenant.dashboard.welcomeDescription") }}
     </p>
 
     <div
@@ -40,7 +40,7 @@
             d="M2 10h20"
           />
         </svg>
-        Manage Subscription
+        {{ t("tenant.dashboard.manageSubscription") }}
       </RouterLink>
       <RouterLink
         :to="paths.company"
@@ -60,7 +60,7 @@
             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
           />
         </svg>
-        Company Profile
+        {{ t("tenant.dashboard.companyProfile") }}
       </RouterLink>
       <RouterLink
         :to="paths.support"
@@ -80,13 +80,17 @@
             d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        Get Support
+        {{ t("tenant.dashboard.getSupport") }}
       </RouterLink>
     </div>
   </section>
 </template>
 
 <script setup>
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
+
 defineProps({
   productName: { type: String, required: true },
   firstName: { type: String, required: true },

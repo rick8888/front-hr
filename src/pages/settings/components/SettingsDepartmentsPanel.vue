@@ -111,27 +111,44 @@
                 </span>
               </td>
               <td class="px-5 py-3.5 text-right" @click.stop>
-                <button
-                  type="button"
-                  class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3"
-                  @click="editDepartment(dept)"
-                >
-                  {{ t('settings.departments.edit') }}
-                </button>
-                <button
-                  type="button"
-                  class="text-neutral-600 hover:text-neutral-800 text-sm font-medium mr-3"
-                  @click="toggleActive(dept)"
-                >
-                  {{ dept.active ? t('settings.departments.deactivate') : t('settings.departments.activate') }}
-                </button>
-                <button
-                  type="button"
-                  class="text-error-600 hover:text-error-700 text-sm font-medium"
-                  @click="requestDelete(dept)"
-                >
-                  {{ t('settings.departments.delete') }}
-                </button>
+                <div class="inline-flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    :title="t('settings.departments.edit')"
+                    :aria-label="t('settings.departments.edit')"
+                    @click="editDepartment(dept)"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                    :title="dept.active ? t('settings.departments.deactivate') : t('settings.departments.activate')"
+                    :aria-label="dept.active ? t('settings.departments.deactivate') : t('settings.departments.activate')"
+                    @click="toggleActive(dept)"
+                  >
+                    <svg v-if="dept.active" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.868v4.264a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-error-600 transition-colors hover:bg-error-50 hover:text-error-700 focus:outline-none focus:ring-2 focus:ring-error-500"
+                    :title="t('settings.departments.delete')"
+                    :aria-label="t('settings.departments.delete')"
+                    @click="requestDelete(dept)"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
             <tr v-if="!paginatedDepartments.length">

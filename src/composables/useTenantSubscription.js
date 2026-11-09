@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { tenantSubscriptionApiService } from "../pages/tenant/services/tenant-subscription.api.service.js";
+import { t } from "../i18n/index.js";
 
 function mapCurrent(apiCurrent) {
   if (!apiCurrent) return null;
@@ -7,7 +8,9 @@ function mapCurrent(apiCurrent) {
   return {
     planName: apiCurrent.plan_name,
     planCode: apiCurrent.plan_code,
+    currency: apiCurrent.currency,
     status: apiCurrent.status,
+    hasActiveSubscription: apiCurrent.has_active_subscription ?? false,
     price: apiCurrent.price,
     startedDate: apiCurrent.started_date,
     applicationUrl: apiCurrent.application_url,
@@ -30,6 +33,8 @@ function mapPlans(apiPlans) {
     code: plan.code,
     name: plan.name,
     price: plan.price,
+    currency: plan.currency,
+    priceAvailable: plan.price_available !== false,
     cadence: plan.cadence,
     tagline: plan.tagline,
     badge: plan.badge,
@@ -72,7 +77,7 @@ export function useTenantSubscription() {
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to load subscription data.";
+        t("tenant.subscription.loadError");
       current.value = null;
       plans.value = [];
       history.value = [];
@@ -89,11 +94,11 @@ export function useTenantSubscription() {
     try {
       const data = await tenantSubscriptionApiService.cancelSubscription();
       applySubscriptionData(data, state);
-      successMessage.value = "Your subscription has been cancelled.";
+      successMessage.value = t("tenant.subscription.cancelledSuccess");
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to cancel subscription.";
+        t("tenant.subscription.cancelError");
       throw e;
     } finally {
       cancelling.value = false;
@@ -113,7 +118,7 @@ export function useTenantSubscription() {
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to process plan change.";
+        t("tenant.subscription.changeError");
       throw e;
     }
   }

@@ -5,6 +5,9 @@ export default {
 
   "admin.leave.compOff.title": "Demandes de repos compensateur",
   "admin.leave.compOff.breadcrumb": "Repos / RTT",
+  "admin.leave.compOff.detailsTitle": "Détails du repos compensateur",
+  "admin.leave.compOff.manager": "Responsable",
+  "admin.leave.compOff.rejectReason": "Motif du rejet",
   "admin.leave.compOff.kpi.earned": "Total acquis",
   "admin.leave.compOff.kpi.earnedSub": "Depuis le début",
   "admin.leave.compOff.kpi.available": "Disponible",

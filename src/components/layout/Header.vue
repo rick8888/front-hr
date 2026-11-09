@@ -66,12 +66,13 @@
           @click="toggleProfileDropdown"
           class="flex items-center gap-3 cursor-pointer hover:bg-neutral-50 px-1 py-1 rounded-lg transition-colors sm:px-2"
         >
-          <div
-            class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+          <EmployeeAvatar
+            :name="authStore.user?.name || 'User'"
+            :avatar-url="authStore.user?.avatar_url || authStore.user?.avatarUrl"
+            size-class="h-10 w-10 text-sm font-semibold"
+            fallback-class="text-white"
             :style="{ backgroundColor: getUserInitialsColor() }"
-          >
-            {{ getUserInitials() }}
-          </div>
+          />
           <div class="hidden md:block">
             <p class="text-sm font-medium text-neutral-900">{{ authStore.user?.name || 'User' }}</p>
             <p class="text-xs text-neutral-500">{{ authStore.user?.company || authStore.user?.designation || authStore.user?.role || 'User' }}</p>
@@ -202,6 +203,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useI18n } from "../../i18n/index.js";
 import { useAppShell } from "../../composables/useAppShell.js";
 import CircularNotification from "../common/CircularNotification.vue";
+import EmployeeAvatar from "../common/EmployeeAvatar.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();

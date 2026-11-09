@@ -177,12 +177,11 @@
           >
             <td class="px-5 py-4 md:px-6">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-700"
-                  aria-hidden="true"
-                >
-                  {{ initials(row.employee) }}
-                </div>
+                <EmployeeAvatar
+                  :name="row.employee"
+                  :avatar-url="row.employeeAvatarUrl"
+                  size-class="h-9 w-9 text-xs"
+                />
                 <div class="min-w-0">
                   <p class="truncate text-sm font-semibold text-neutral-900">
                     {{ row.employee }}
@@ -268,7 +267,7 @@
                   type="button"
                   role="menuitem"
                   class="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50"
-                  @click="closeMenu()"
+                  @click="viewRow(row)"
                 >
                   {{ t("common.view") }}
                 </button>
@@ -278,6 +277,94 @@
         </template>
       </tbody>
     </ListingTableShell>
+
+    <Modal
+      v-model="detailsOpen"
+      :title="t('admin.leave.compOff.detailsTitle')"
+      size="md"
+      backdrop-class="bg-neutral-950/60 backdrop-blur-sm"
+      panel-class="overflow-hidden rounded-2xl border border-white/60 shadow-2xl"
+      header-class="border-neutral-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-6 py-4"
+      title-class="text-lg tracking-tight"
+      close-button-class="rounded-lg p-2 transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-400"
+      :close-label="t('common.close')"
+      body-class="px-6 py-5"
+      hide-footer
+    >
+      <div v-if="selectedRow" class="space-y-4">
+        <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+          <EmployeeAvatar
+            :name="selectedRow.employee"
+            :avatar-url="selectedRow.employeeAvatarUrl"
+            size-class="h-11 w-11 text-sm"
+          />
+          <div class="min-w-0">
+            <p class="truncate font-semibold text-slate-900">{{ selectedRow.employee }}</p>
+            <p class="text-sm text-slate-500">{{ selectedRow.employeeCode || "—" }}</p>
+          </div>
+        </div>
+
+        <dl class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.col.workedDate") }}</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ formatDay(selectedRow.workedDate) || "—" }}</dd>
+          </div>
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.col.hoursWorked") }}</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ t("admin.leave.compOff.hours", { n: selectedRow.hoursWorked.toFixed(2) }) }}</dd>
+          </div>
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.col.days") }}</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ t("admin.leave.compOff.daysCount", { n: selectedRow.compOffDays.toFixed(2) }) }}</dd>
+          </div>
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.col.expiry") }}</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ formatDay(selectedRow.expiryDate) || "—" }}</dd>
+          </div>
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("common.status") }}</dt>
+            <dd class="mt-1">
+              <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset" :class="statusClass(selectedRow.statusValue)">
+                {{ selectedRow.status }}
+              </span>
+            </dd>
+          </div>
+          <div class="rounded-lg border border-slate-100 p-3">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.col.usage") }}</dt>
+            <dd class="mt-1">
+              <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset" :class="usageClass(selectedRow.usageStatusValue)">
+                {{ selectedRow.usageStatus }}
+              </span>
+            </dd>
+          </div>
+          <div v-if="selectedRow.managerName" class="rounded-lg border border-slate-100 p-3 sm:col-span-2">
+            <dt class="text-xs font-medium text-slate-500">{{ t("admin.leave.compOff.manager") }}</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-800">{{ selectedRow.managerName }}</dd>
+          </div>
+        </dl>
+
+        <div class="rounded-lg border border-slate-100 p-3">
+          <p class="text-xs font-medium text-slate-500">{{ t("common.reason") }}</p>
+          <p class="mt-1 whitespace-pre-wrap text-sm text-slate-800">{{ selectedRow.reason || "—" }}</p>
+        </div>
+        <div v-if="selectedRow.rejectReason" class="rounded-lg border border-rose-100 bg-rose-50/60 p-3">
+          <p class="text-xs font-medium text-rose-600">{{ t("admin.leave.compOff.rejectReason") }}</p>
+          <p class="mt-1 whitespace-pre-wrap text-sm text-rose-800">{{ selectedRow.rejectReason }}</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end border-t border-slate-100 bg-slate-50 px-6 py-4">
+          <button
+            type="button"
+            class="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            @click="detailsOpen = false"
+          >
+            {{ t("common.close") }}
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -293,12 +380,16 @@ import MonthlyBarChart from "../../components/common/MonthlyBarChart.vue";
 import CompensatoryOffsFiltersPanel from "../../components/leave-management/CompensatoryOffsFiltersPanel.vue";
 import { useCompensatoryOffs } from "../leave/composables/useCompensatoryOffs.js";
 import { useI18n } from "../../i18n/index.js";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
+import Modal from "../../components/common/Modal.vue";
 import { catalogStatusClass } from "../../stores/entityStatusCatalog.store.js";
 
 const { t, locale } = useI18n();
 
 const todayIso = new Date().toISOString().slice(0, 10);
 const actionMenuOpen = ref(null);
+const detailsOpen = ref(false);
+const selectedRow = ref(null);
 
 const {
   loading,
@@ -352,13 +443,6 @@ function formatDay(iso) {
   }
 }
 
-function initials(name) {
-  if (!name) return "?";
-  const parts = String(name).trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 function statusClass(status) {
   return catalogStatusClass("compensatory_offs", status);
 }
@@ -374,6 +458,12 @@ function toggleMenu(id) {
 
 function closeMenu() {
   actionMenuOpen.value = null;
+}
+
+function viewRow(row) {
+  selectedRow.value = row;
+  detailsOpen.value = true;
+  closeMenu();
 }
 
 async function onApprove(row) {

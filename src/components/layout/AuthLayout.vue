@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex min-h-screen min-h-[100dvh] bg-gradient-to-br from-neutral-50 via-white to-neutral-50"
+    class="auth-layout flex min-h-screen min-h-[100dvh] bg-gradient-to-br from-neutral-50 via-white to-neutral-50"
   >
     <!-- Left Side - Illustration/Info -->
     <div
@@ -188,6 +188,11 @@ const maxWidthClass = computed(
 </script>
 
 <style scoped>
+.auth-layout {
+  min-height: 125vh;
+  min-height: 125dvh;
+}
+
 /* Smooth animations */
 @keyframes float {
   0%,

@@ -95,7 +95,7 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.reports.dept.kpi.payroll')"
-        :value="loading ? '…' : formatMoney(kpi.totalPayroll)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.totalPayrollByCurrency)"
         :sublabel="t('admin.payroll.reports.dept.kpi.payrollHint')"
         value-class="text-success-600"
         icon-class="bg-success-50 text-success-600"
@@ -113,7 +113,7 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.reports.dept.kpi.avg')"
-        :value="loading ? '…' : formatMoney(kpi.averagePerEmployee)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.averagePerEmployeeByCurrency)"
         :sublabel="t('admin.payroll.reports.dept.kpi.avgHint')"
         value-class="text-amber-600"
         icon-class="bg-amber-100 text-amber-700"
@@ -250,6 +250,12 @@
           class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-secondary-600"
         />
       </div>
+      <p
+        v-else-if="hasMixedCurrencies"
+        class="py-12 text-center text-sm text-neutral-500"
+      >
+        {{ t("admin.payroll.dashboard.chart.multiCurrencyHint") }}
+      </p>
       <PayrollDepartmentBarChart
         v-else
         :title="t('admin.payroll.reports.dept.chartTitle')"
@@ -456,6 +462,7 @@ const {
   departmentOptions,
   cycleOptions,
   kpi,
+  hasMixedCurrencies,
   chartLabels,
   chartGross,
   chartNet,
@@ -485,6 +492,12 @@ function formatMoney(n, currency = "EUR") {
     currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
+}
+
+function formatCurrencyGroups(groups = []) {
+  return groups.length
+    ? groups.map(({ currency, amount }) => formatMoney(amount, currency)).join(" · ")
+    : "—";
 }
 
 function syncDepartmentQuery(department) {

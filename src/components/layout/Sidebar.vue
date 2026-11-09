@@ -72,7 +72,7 @@
         <li v-if="authStore.can('employees.view', 'employees.manage')">
           <button
             type="button"
-            :class="parentClass(isEmployeeManagementSectionActive)"
+            :class="parentClass(isSectionOpen('employees'))"
             :aria-expanded="isSectionOpen('employees')"
             @click="toggleSection('employees')"
           >
@@ -99,7 +99,7 @@
         <li v-if="authStore.can('organization.manage')">
           <button
             type="button"
-            :class="parentClass(isOrganizationSectionActive)"
+            :class="parentClass(isSectionOpen('organization'))"
             :aria-expanded="isSectionOpen('organization')"
             @click="toggleSection('organization')"
           >
@@ -123,7 +123,7 @@
         <li v-if="authStore.can('attendance.manage')">
           <button
             type="button"
-            :class="parentClass(isAttendanceSectionActive)"
+            :class="parentClass(isSectionOpen('attendance'))"
             :aria-expanded="isSectionOpen('attendance')"
             @click="toggleSection('attendance')"
           >
@@ -147,7 +147,7 @@
         <li v-if="authStore.can('leave.manage')">
           <button
             type="button"
-            :class="parentClass(isLeaveManagementSectionActive)"
+            :class="parentClass(isSectionOpen('leave'))"
             :aria-expanded="isSectionOpen('leave')"
             @click="toggleSection('leave')"
           >
@@ -174,7 +174,7 @@
         <li v-if="authStore.can('payroll.view', 'payroll.manage')">
           <button
             type="button"
-            :class="parentClass(isPayrollSectionActive)"
+            :class="parentClass(isSectionOpen('payroll'))"
             :aria-expanded="isSectionOpen('payroll')"
             @click="toggleSection('payroll')"
           >
@@ -309,6 +309,10 @@ const ICONS = {
     "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
   payroll:
     "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z",
+  receipt:
+    "M9 14h6m-6-4h6m2 10H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z M14 4v5h5",
+  document:
+    "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
   training:
     "M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z",
   laptop:
@@ -480,8 +484,6 @@ const leaveManagementSubItems = computed(() => {
       labelKey: "nav.leave.compOff",
       path: "/leave-management/compensatory-offs",
     },
-    { id: "l-exp", labelKey: "nav.leave.expenses", path: "/expenses" },
-    { id: "l-doc", labelKey: "nav.leave.documents", path: "/employee-documents" },
     {
       id: "l-cal",
       labelKey: "nav.leave.teamCalendar",
@@ -537,7 +539,6 @@ const payrollSubItems = computed(() => {
   return withLabels([
     { id: "pd", labelKey: "nav.payroll.dashboard", path: "/payroll/dashboard" },
     { id: "pr", labelKey: "nav.payroll.records", path: "/payroll/records" },
-    { id: "pe", labelKey: "nav.payroll.expenses", path: "/expenses" },
     { type: "group", labelKey: "nav.payroll.setup", id: "pg-setup" },
     { id: "pc", labelKey: "nav.payroll.components", path: "/payroll/components" },
     { id: "pm", labelKey: "nav.payroll.modifiers", path: "/payroll/modifiers" },
@@ -571,6 +572,22 @@ const payrollSubItems = computed(() => {
 const adminNavSecondary = computed(() => {
   void locale.value;
   const items = [
+    authStore.can("leave.manage", "payroll.view")
+      ? {
+          id: 14,
+          labelKey: "nav.leave.expenses",
+          path: "/expenses",
+          icon: "receipt",
+        }
+      : null,
+    authStore.can("leave.manage", "employees.manage")
+      ? {
+          id: 15,
+          labelKey: "nav.leave.documents",
+          path: "/employee-documents",
+          icon: "document",
+        }
+      : null,
     authStore.can("organization.manage", "employees.manage")
       ? {
           id: 6,
@@ -624,13 +641,9 @@ const employeeNavigationExtras = computed(() => {
 });
 
 /* ——— Active states ——— */
-const isOrganizationSectionActive = computed(() => route.path.startsWith("/organization"));
-
 function isOrganizationSubActive(path) {
   return route.path === path || route.path.startsWith(path + "/");
 }
-
-const isEmployeeManagementSectionActive = computed(() => route.path.startsWith("/employees"));
 
 function isEmployeeManagementSubActive(path) {
   if (path === "/employees") {
@@ -644,39 +657,15 @@ function isEmployeeManagementSubActive(path) {
   return route.path === path || route.path.startsWith(path + "/");
 }
 
-const isAttendanceSectionActive = computed(
-  () =>
-    route.path === "/attendance" ||
-    route.path.startsWith("/attendance/") ||
-    route.path.startsWith("/holidays")
-);
-
 function isAttendanceSubActive(path) {
   if (path === "/attendance") return route.path === "/attendance";
   if (path === "/holidays") return route.path.startsWith("/holidays");
   return route.path === path || route.path.startsWith(path + "/");
 }
 
-const isLeaveManagementSectionActive = computed(() => {
-  if (route.path.startsWith("/leave-management")) return true;
-  if (route.path === "/leave-requests" || route.path.startsWith("/leave-requests/")) return true;
-  if (route.path === "/expenses" || route.path.startsWith("/expenses/")) return true;
-  if (route.path === "/employee-documents" || route.path.startsWith("/employee-documents/")) {
-    return true;
-  }
-  return false;
-});
-
 function isLeaveManagementSubActive(path) {
   return route.path === path || route.path.startsWith(path + "/");
 }
-
-const isPayrollSectionActive = computed(
-  () =>
-    route.path.startsWith("/payroll") ||
-    route.path === "/expenses" ||
-    route.path.startsWith("/expenses/")
-);
 
 function isPayrollSubActive(path) {
   if (!path) return false;
@@ -712,18 +701,16 @@ function sectionFromPath(path) {
   if (
     path.startsWith("/leave-management") ||
     path === "/leave-requests" ||
-    path.startsWith("/leave-requests/") ||
-    path === "/employee-documents" ||
-    path.startsWith("/employee-documents/")
+    path.startsWith("/leave-requests/")
   ) {
     return "leave";
   }
-  if (path === "/expenses" || path.startsWith("/expenses/")) {
-    if (openSection.value === "payroll" || openSection.value === "leave") {
-      return openSection.value;
-    }
-    return "leave";
-  }
+  if (
+    path === "/expenses" ||
+    path.startsWith("/expenses/") ||
+    path === "/employee-documents" ||
+    path.startsWith("/employee-documents/")
+  ) return null;
   if (pathMatchesSelfServiceMenu(path)) return "self-service";
   return null;
 }
@@ -732,7 +719,7 @@ watch(
   () => route.path,
   (path) => {
     const next = sectionFromPath(path);
-    if (next) openSection.value = next;
+    openSection.value = next;
   },
   { immediate: true }
 );

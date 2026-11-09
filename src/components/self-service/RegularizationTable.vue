@@ -53,14 +53,12 @@
       </td>
       <td class="px-5 py-4 md:px-6 align-top">
         <div v-if="row.approvedBy" class="flex items-center gap-2.5">
-          <span
-            :class="[
-              'inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold flex-shrink-0',
-              row.approvedBy.avatarBg || 'bg-neutral-100 text-neutral-600',
-            ]"
-          >
-            {{ row.approvedBy.initials }}
-          </span>
+          <EmployeeAvatar
+            :name="row.approvedBy.name"
+            :avatar-url="row.approvedBy.avatarUrl"
+            size-class="h-8 w-8 text-xs font-semibold"
+            :fallback-class="row.approvedBy.avatarBg || 'bg-neutral-100 text-neutral-600'"
+          />
           <div class="min-w-0">
             <p class="text-sm font-medium text-neutral-800 truncate">
               {{ row.approvedBy.name }}
@@ -116,6 +114,7 @@
 </template>
 
 <script setup>
+import EmployeeAvatar from "../common/EmployeeAvatar.vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "../../i18n/index.js";
 import TableRowMenu from "../common/TableRowMenu.vue";

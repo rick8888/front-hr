@@ -59,6 +59,7 @@ export function normalizeExpense(raw = {}, catalog = []) {
     id: raw.id,
     employeeId: raw.employee_id ?? raw.employeeId ?? null,
     employee: raw.employee_name ?? raw.employee ?? "—",
+    employeeAvatarUrl: raw.employee_avatar_url ?? raw.avatar_url ?? null,
     employeeCode: raw.employee_code ?? raw.employeeCode ?? "",
     typeValue,
     type: expenseTypeLabel(typeValue, catalog),

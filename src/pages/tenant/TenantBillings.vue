@@ -3,10 +3,10 @@
     <div class="max-w-7xl mx-auto space-y-6">
       <header class="text-center">
         <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">
-          Billing &amp; Payments
+          {{ t("tenant.billings.title") }}
         </h1>
         <p class="mt-2 text-sm text-neutral-500">
-          View your payment history and manage pending transactions
+          {{ t("tenant.billings.subtitle") }}
         </p>
         <div class="mt-4 flex justify-center">
           <RouterLink
@@ -27,7 +27,7 @@
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            View Invoices
+            {{ t("tenant.billings.viewInvoices") }}
           </RouterLink>
         </div>
       </header>
@@ -41,21 +41,21 @@
 
       <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <TenantBillingsKpiCard
-          label="Total Paid"
+          :label="t('tenant.billings.totalPaid')"
           :value="kpis.paid"
           :loading="loading"
           tone="success"
           icon="check"
         />
         <TenantBillingsKpiCard
-          label="Pending Payments"
+          :label="t('tenant.billings.pendingPayments')"
           :value="kpis.pending"
           :loading="loading"
           tone="warning"
           icon="clock"
         />
         <TenantBillingsKpiCard
-          label="Total Payments"
+          :label="t('tenant.billings.totalPayments')"
           :value="String(kpis.count)"
           :loading="loading"
           tone="info"
@@ -79,8 +79,10 @@ import { useRouter } from "vue-router";
 import TenantBillingsKpiCard from "../../components/tenant/TenantBillingsKpiCard.vue";
 import TenantPaymentHistoryCard from "../../components/tenant/TenantPaymentHistoryCard.vue";
 import { useTenantBillings } from "../../composables/useTenantBillings.js";
+import { useI18n } from "../../i18n/index.js";
 
 const router = useRouter();
+const { t } = useI18n();
 const { loading, error, kpis, rows, load } = useTenantBillings();
 const searchQuery = ref("");
 
@@ -92,7 +94,7 @@ const filteredRows = computed(() => {
       r.paymentId,
       r.description,
       r.amount,
-      r.status,
+      r.statusCode || r.status,
       r.date,
       r.invoiceNumber,
     ]

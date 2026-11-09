@@ -3,10 +3,10 @@
     <div class="mx-auto max-w-3xl space-y-6">
       <header class="text-center">
         <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">
-          Change Subscription Plan
+          Changer de forfait
         </h1>
         <p class="mt-2 text-sm text-neutral-500">
-          Review the changes and select your payment method
+          Vérifiez les changements et choisissez votre mode de paiement.
         </p>
       </header>
 
@@ -19,40 +19,60 @@
 
       <div
         v-if="paymentSuccess"
-        class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+        class="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-5 text-sm text-emerald-800"
       >
-        {{ paymentSuccess }}
+        <h2 class="font-semibold">Demande envoyée</h2>
+        <p class="mt-1">{{ paymentSuccess }}</p>
+        <p v-if="submittedInvoiceNumber" class="mt-2">
+          Référence de facture : <span class="font-mono font-semibold">{{ submittedInvoiceNumber }}</span>
+        </p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800"
+            @click="router.push('/tenant/invoices')"
+          >
+            Voir mes factures
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border border-emerald-700 px-4 py-2 font-semibold text-emerald-800 hover:bg-emerald-100"
+            @click="onCancel"
+          >
+            Retour aux abonnements
+          </button>
+        </div>
       </div>
 
       <div
-        v-if="!loading && isInvalidSelection"
+        v-if="!paymentSuccess && !loading && isInvalidSelection"
         class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
       >
-        Selected plan is not available.
+        Le forfait sélectionné n'est pas disponible.
         <button
           type="button"
           class="ml-2 font-semibold text-[#7c7cf8] hover:underline"
           @click="onCancel"
         >
-          Back to subscription
+          Retour aux abonnements
         </button>
       </div>
 
       <div
-        v-else-if="!loading && !error && !isReady && !isInvalidSelection"
+        v-else-if="!paymentSuccess && !loading && !error && !isReady && !isInvalidSelection"
         class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
       >
-        Unable to load plan change details.
+        Impossible de charger les détails du changement de forfait.
         <button
           type="button"
           class="ml-2 font-semibold text-[#7c7cf8] hover:underline"
           @click="onCancel"
         >
-          Back to subscription
+          Retour aux abonnements
         </button>
       </div>
 
-      <template v-else>
+      <template v-else-if="!paymentSuccess">
         <section
           class="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
         >
@@ -64,7 +84,7 @@
               class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500"
               aria-hidden="true"
             />
-            <span class="ml-2 text-sm text-neutral-500">Loading plan details…</span>
+            <span class="ml-2 text-sm text-neutral-500">Chargement du forfait…</span>
           </div>
           <template v-else-if="isReady && flow">
             <TenantChangePlanComparison
@@ -87,14 +107,23 @@
           class="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
         >
           <div
-            v-if="loading"
+            v-if="loading || paymentMethodsLoading"
             class="flex min-h-[10rem] items-center justify-center"
           >
             <span
               class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500"
               aria-hidden="true"
             />
-            <span class="ml-2 text-sm text-neutral-500">Loading payment methods…</span>
+            <span class="ml-2 text-sm text-neutral-500">Chargement des modes de paiement…</span>
+          </div>
+          <div
+            v-else-if="paymentMethodsError"
+            class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          >
+            {{ paymentMethodsError }}
+            <button type="button" class="ml-2 font-semibold underline" @click="loadPaymentMethods">
+              Réessayer
+            </button>
           </div>
           <TenantChangePaymentMethod
             v-else-if="isReady && flow"
@@ -125,8 +154,14 @@ const router = useRouter();
 const subscription = useTenantSubscription();
 const { loading, error, load, changePlan } = subscription;
 const { flow, isReady, isInvalidSelection, planId } = useTenantPlanChangeFlow(subscription);
-const { methods: paymentMethods, load: loadPaymentMethods } = usePaymentMethods();
+const {
+  methods: paymentMethods,
+  loading: paymentMethodsLoading,
+  error: paymentMethodsError,
+  load: loadPaymentMethods,
+} = usePaymentMethods();
 const paymentSuccess = ref("");
+const submittedInvoiceNumber = ref("");
 const submitting = ref(false);
 
 onMounted(async () => {
@@ -140,6 +175,7 @@ function onCancel() {
 async function onProceed(payload) {
   submitting.value = true;
   paymentSuccess.value = "";
+  submittedInvoiceNumber.value = "";
   error.value = "";
 
   try {
@@ -154,12 +190,8 @@ async function onProceed(payload) {
 
     paymentSuccess.value =
       result.message ||
-      (result.status === "completed"
-        ? "Plan updated successfully."
-        : "Payment request submitted.");
-
-    const delay = result.status === "completed" ? 1800 : 2500;
-    setTimeout(() => router.push("/tenant/subscription"), delay);
+      "Votre demande a été envoyée. Le forfait sera activé après vérification du paiement.";
+    submittedInvoiceNumber.value = result.invoice_number || "";
   } catch {
     // error handled in composable
   } finally {

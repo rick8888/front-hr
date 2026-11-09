@@ -7,12 +7,13 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-6">
           <!-- Avatar -->
-          <div
-            class="w-24 h-24 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+          <EmployeeAvatar
+            :name="employee.name"
+            :avatar-url="employee.avatar_url || employee.avatarUrl"
+            size-class="h-24 w-24 text-2xl font-bold"
+            fallback-class="text-white"
             :style="{ backgroundColor: getAvatarColor(employee.name) }"
-          >
-            {{ getInitials(employee.name) }}
-          </div>
+          />
 
           <!-- Employee Info -->
           <div>
@@ -1179,6 +1180,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "../i18n/index.js";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -1423,15 +1425,6 @@ const remuneration = ref({
   netPay: 4478,
   paymentMethod: "Direct Deposit",
 });
-
-const getInitials = (name) => {
-  if (!name) return "BS";
-  const parts = name.split(" ");
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
 
 const getAvatarColor = (name) => {
   // Use the blue color from the image for the employee profile

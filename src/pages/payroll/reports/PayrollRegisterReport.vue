@@ -67,16 +67,16 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.reports.register.kpi.gross')"
-        :value="loading ? '…' : formatMoney(kpi.totalGross)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.totalGrossByCurrency)"
         icon-class="bg-cyan-100 text-cyan-700"
       >
         <template #icon>
-          <span class="text-lg font-bold">$</span>
+          <span class="text-lg font-bold">¤</span>
         </template>
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.reports.register.kpi.deductions')"
-        :value="loading ? '…' : formatMoney(kpi.totalDeductions)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.totalDeductionsByCurrency)"
         value-class="text-error-600"
         icon-class="bg-error-100 text-error-600"
       >
@@ -93,7 +93,7 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.reports.register.kpi.net')"
-        :value="loading ? '…' : formatMoney(kpi.totalNet)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.totalNetByCurrency)"
         value-class="text-green-700"
         icon-class="bg-green-100 text-green-700"
       >
@@ -318,12 +318,13 @@
               </td>
               <td class="px-3 py-3">
                 <div class="flex items-center gap-3">
-                  <span
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
+                  <EmployeeAvatar
+                    :name="row.employeeName"
+                    :avatar-url="row.avatarUrl"
+                    size-class="h-10 w-10 text-xs font-semibold"
+                    fallback-class="text-white"
                     :style="{ backgroundColor: avatarColor(row.employeeName) }"
-                  >
-                    {{ initials(row.employeeName) }}
-                  </span>
+                  />
                   <span class="min-w-0">
                     <span class="block font-semibold text-neutral-900">{{ row.employeeName }}</span>
                     <span class="block text-xs text-neutral-500">{{ row.empCode }}</span>
@@ -432,8 +433,9 @@ import { useI18n } from "../../../i18n/index.js";
 import PayrollKpiCard from "../../../components/payroll/PayrollKpiCard.vue";
 import PayrollFilterField from "../../../components/payroll/PayrollFilterField.vue";
 import TableRowMenu from "../../../components/common/TableRowMenu.vue";
+import EmployeeAvatar from "../../../components/common/EmployeeAvatar.vue";
 import { usePayrollRegister } from "../composables/usePayrollRegister.js";
-import { avatarColor, initialsFromName } from "../utils/payroll-http.js";
+import { avatarColor } from "../utils/payroll-http.js";
 
 const { t, bcp47 } = useI18n();
 const router = useRouter();
@@ -492,16 +494,18 @@ const openMenuId = ref(null);
 
 let searchDebounce = null;
 
-function initials(name) {
-  return initialsFromName(name);
-}
-
 function formatMoney(n, currency = "EUR") {
   return new Intl.NumberFormat(bcp47.value, {
     style: "currency",
     currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(Number(n) || 0);
+}
+
+function formatCurrencyGroups(groups = []) {
+  return groups.length
+    ? groups.map(({ currency, amount }) => formatMoney(amount, currency)).join(" · ")
+    : "—";
 }
 
 function statusLabel(key) {

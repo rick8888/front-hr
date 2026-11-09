@@ -105,12 +105,11 @@
           >
             <td class="px-5 py-4 md:px-6">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-700"
-                  aria-hidden="true"
-                >
-                  {{ initials(row.employee) }}
-                </div>
+                <EmployeeAvatar
+                  :name="row.employee"
+                  :avatar-url="row.employeeAvatarUrl"
+                  size-class="h-9 w-9 text-xs"
+                />
                 <div class="min-w-0">
                   <p class="truncate text-sm font-semibold text-neutral-900">
                     {{ row.employee }}
@@ -153,37 +152,54 @@
               <div class="inline-flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
-                  class="inline-flex items-center rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-secondary-700 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                  :title="t('common.view')"
+                  :aria-label="t('common.view')"
                   @click="onView(row)"
                 >
-                  {{ t("common.view") }}
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
                 </button>
                 <template v-if="row.statusValue === 'pending'">
                   <button
                     type="button"
-                    class="inline-flex items-center rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="actionBusy"
+                    :title="t('common.approve')"
+                    :aria-label="t('common.approve')"
                     @click="askConfirm(row, 'approve')"
                   >
-                    {{ t("common.approve") }}
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
                   </button>
                   <button
                     type="button"
-                    class="inline-flex items-center rounded-md bg-rose-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-600 text-white transition-colors hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="actionBusy"
+                    :title="t('common.reject')"
+                    :aria-label="t('common.reject')"
                     @click="askConfirm(row, 'reject')"
                   >
-                    {{ t("common.reject") }}
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </template>
                 <button
                   v-else-if="row.statusValue === 'approved'"
                   type="button"
-                  class="inline-flex items-center rounded-md bg-sky-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-sky-600 text-white transition-colors hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   :disabled="actionBusy"
+                  :title="t('admin.leave.expenses.reimburse')"
+                  :aria-label="t('admin.leave.expenses.reimburse')"
                   @click="askConfirm(row, 'reimburse')"
                 >
-                  {{ t("admin.leave.expenses.reimburse") }}
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2m8-4a8 8 0 11-16 0 8 8 0 0116 0z" />
+                  </svg>
                 </button>
               </div>
             </td>
@@ -224,6 +240,7 @@ import ExpenseDetailsModal from "../../components/expenses/ExpenseDetailsModal.v
 import ExpensesFiltersPanel from "../../components/expenses/ExpensesFiltersPanel.vue";
 import { useExpenses } from "./composables/useExpenses.js";
 import { useI18n } from "../../i18n/index.js";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
 
 const { t, locale } = useI18n();
 
@@ -282,16 +299,6 @@ const columns = computed(() => {
     { key: "actions", label: t("common.actions"), thClass: "text-right" },
   ];
 });
-
-function initials(name) {
-  const parts = String(name || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDate(iso) {
   if (!iso) return "—";

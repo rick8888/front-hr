@@ -67,11 +67,26 @@
             <td v-if="showActions" class="px-4 py-3 text-right">
               <button
                 type="button"
-                class="text-sm text-red-600 hover:text-red-800"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="`Supprimer le paiement de ${payment.invoice_number}`"
+                :title="`Supprimer le paiement de ${payment.invoice_number}`"
                 :disabled="disabled"
                 @click="$emit('delete', payment)"
               >
-                Suppr.
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M3 6h18m-2 0-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6m4 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-6 4v6m4-6v6"
+                  />
+                </svg>
               </button>
             </td>
           </tr>
@@ -107,4 +122,3 @@ const invoiceFilter = computed(() => {
   return inv?.invoice_number ?? "";
 });
 </script>
-

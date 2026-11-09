@@ -2,7 +2,7 @@
   <section
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
-    <h2 class="text-base font-bold text-neutral-900">Payment History</h2>
+    <h2 class="text-base font-bold text-neutral-900">{{ t("tenant.billings.paymentHistory") }}</h2>
 
     <div
       class="mt-4 flex items-start gap-3 rounded-lg border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-sky-700"
@@ -23,14 +23,13 @@
         />
       </svg>
       <p>
-        Pending payments will generate invoices once approved by the
-        administrator. You can upload payment proof to expedite approval.
+        {{ t("tenant.billings.pendingInfo") }}
       </p>
     </div>
 
     <div class="mt-4 flex justify-end">
       <label class="inline-flex items-center gap-2 text-sm text-neutral-500">
-        Search:
+        {{ t("tenant.billings.search") }}
         <input
           type="search"
           :value="searchQuery"
@@ -53,7 +52,7 @@
                 col.align === 'center' ? 'text-center' : 'text-left',
               ]"
             >
-              {{ col.label }}
+              {{ t(col.label) }}
             </th>
           </tr>
         </thead>
@@ -67,7 +66,7 @@
                 class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500 align-middle"
                 aria-hidden="true"
               />
-              <span class="ml-2 align-middle">Loading payments…</span>
+              <span class="ml-2 align-middle">{{ t("tenant.billings.loadingPayments") }}</span>
             </td>
           </tr>
           <tr v-else-if="!rows.length">
@@ -75,7 +74,7 @@
               :colspan="COLUMNS.length"
               class="px-4 py-6 text-center text-sm text-neutral-400"
             >
-              No payments found.
+              {{ t("tenant.billings.noPayments") }}
             </td>
           </tr>
           <tr
@@ -85,7 +84,7 @@
             class="border-b border-neutral-100 last:border-0"
           >
             <td class="px-4 py-4 text-sm text-neutral-700">
-              {{ formatBillingDate(row.date) }}
+              {{ formatBillingDate(row.date, locale) }}
             </td>
             <td class="px-4 py-4 text-sm text-neutral-700">{{ row.paymentId }}</td>
             <td class="px-4 py-4 text-sm text-neutral-700">{{ row.description }}</td>
@@ -94,17 +93,18 @@
               <span
                 :class="[
                   'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold',
-                  statusClass(row.status),
+                  statusClass(row.statusCode || row.status),
                 ]"
               >
-                {{ row.status }}
+                {{ statusLabel(row.statusCode || row.status) }}
               </span>
             </td>
             <td class="px-4 py-4 text-center">
               <button
                 type="button"
                 class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-                aria-label="View invoice"
+                :aria-label="t('tenant.billings.viewInvoice')"
+                :title="t('tenant.billings.viewInvoice')"
                 @click="$emit('action', row)"
               >
                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
@@ -123,6 +123,9 @@
 
 <script setup>
 import { formatBillingDate } from "../../composables/useTenantBillings.js";
+import { useI18n } from "../../i18n/index.js";
+
+const { t, locale } = useI18n();
 
 defineProps({
   rows: { type: Array, required: true },
@@ -133,20 +136,36 @@ defineProps({
 defineEmits(["update:searchQuery", "action"]);
 
 const COLUMNS = [
-  { key: "date", label: "Date" },
-  { key: "paymentId", label: "Payment ID" },
-  { key: "description", label: "Description" },
-  { key: "amount", label: "Amount" },
-  { key: "status", label: "Status" },
-  { key: "actions", label: "Actions", align: "center" },
+  { key: "date", label: "tenant.billings.date" },
+  { key: "paymentId", label: "tenant.billings.paymentId" },
+  { key: "description", label: "tenant.billings.description" },
+  { key: "amount", label: "tenant.billings.amount" },
+  { key: "status", label: "tenant.billings.status" },
+  { key: "actions", label: "tenant.billings.actions", align: "center" },
 ];
 
 function statusClass(status) {
   const key = String(status || "").toLowerCase();
-  if (key === "paid") return "bg-emerald-50 text-emerald-700";
-  if (key === "pending") return "bg-amber-50 text-amber-700";
-  if (key === "overdue" || key === "failed") return "bg-rose-50 text-rose-700";
-  if (key === "refunded") return "bg-sky-50 text-sky-700";
+  if (key === "paid" || key === "payé" || key === "payée") return "bg-emerald-50 text-emerald-700";
+  if (key === "pending" || key === "en attente") return "bg-amber-50 text-amber-700";
+  if (key === "overdue" || key === "en retard" || key === "failed" || key === "échoué") return "bg-rose-50 text-rose-700";
+  if (key === "refunded" || key === "remboursé") return "bg-sky-50 text-sky-700";
   return "bg-neutral-100 text-neutral-600";
+}
+
+function statusLabel(status) {
+  const keys = {
+    paid: "tenant.billings.status.paid",
+    pending: "tenant.billings.status.pending",
+    overdue: "tenant.billings.status.overdue",
+    failed: "tenant.billings.status.failed",
+    refunded: "tenant.billings.status.refunded",
+    partial: "tenant.billings.status.partial",
+    cancelled: "tenant.billings.status.cancelled",
+    canceled: "tenant.billings.status.cancelled",
+    draft: "tenant.billings.status.draft",
+  };
+  const key = keys[String(status || "").toLowerCase()];
+  return key ? t(key) : status;
 }
 </script>

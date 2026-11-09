@@ -77,11 +77,12 @@
             <td class="px-6 py-4 text-neutral-700">{{ employee.id }}</td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex items-center justify-center w-10 h-10 text-sm font-bold rounded-full bg-secondary-100 text-secondary-700"
-                >
-                  {{ getInitials(employee.name) }}
-                </div>
+                <EmployeeAvatar
+                  :name="employee.name"
+                  :avatar-url="employee.avatarUrl"
+                  size-class="h-10 w-10 text-sm font-bold"
+                  fallback-class="bg-secondary-100 text-secondary-700"
+                />
                 <div>
                   <div class="font-semibold text-neutral-900">{{ employee.name }}</div>
                   <div class="text-xs text-neutral-500">{{ employee.uid }}</div>
@@ -176,6 +177,7 @@
 
 <script setup>
 import { useI18n } from "../../../i18n/index.js";
+import EmployeeAvatar from "../../../components/common/EmployeeAvatar.vue";
 
 const { t } = useI18n();
 
@@ -193,7 +195,6 @@ defineProps({
   paginationTo: { type: Number, default: 0 },
   totalEntries: { type: Number, default: 0 },
   pageNumbers: { type: Array, default: () => [] },
-  getInitials: { type: Function, required: true },
 });
 
 defineEmits(["update:searchQuery", "update:itemsPerPage", "page", "view"]);

@@ -32,6 +32,7 @@ export function mapModifierFromApi(raw) {
         name: raw.employee.name,
         empCode: raw.employee.matricule || `EMP-${raw.employee.id}`,
         initials: initialsFromName(raw.employee.name),
+        avatarUrl: raw.employee.avatar_url ?? raw.employee.avatarUrl ?? null,
       }
     : null;
 

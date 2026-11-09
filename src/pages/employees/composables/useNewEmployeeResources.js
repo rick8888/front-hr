@@ -143,7 +143,7 @@ export function useNewEmployeeResources() {
         (role) =>
           role.isActive &&
           role.slug &&
-          !["super_admin", "tenant"].includes(role.slug)
+          !["admin", "super_admin", "tenant"].includes(role.slug.toLowerCase())
       )
       .sort((a, b) => a.name.localeCompare(b.name))
   );

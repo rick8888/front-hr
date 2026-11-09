@@ -1,4 +1,5 @@
 import apiClient from "../../../services/api.js";
+import { t } from "../../../i18n/index.js";
 
 function filenameFromDisposition(header, fallback) {
   if (!header) return fallback;
@@ -27,12 +28,12 @@ async function messageFromBlob(blob, fallback) {
 async function savePdfBlob(response, fallbackName) {
   const blob = response.data;
   if (!(blob instanceof Blob)) {
-    throw new Error("Invalid PDF response.");
+    throw new Error(t("tenant.invoices.invalidPdf"));
   }
 
   if (blob.type && blob.type.includes("application/json")) {
     throw new Error(
-      await messageFromBlob(blob, "Unable to download invoice PDF."),
+      await messageFromBlob(blob, t("tenant.invoices.downloadError")),
     );
   }
 
@@ -73,13 +74,13 @@ export const tenantInvoicesApiService = {
         throw new Error(
           await messageFromBlob(
             e.response.data,
-            "Unable to download invoice PDF.",
+            t("tenant.invoices.downloadError"),
           ),
         );
       }
       throw e instanceof Error
         ? e
-        : new Error("Unable to download invoice PDF.");
+        : new Error(t("tenant.invoices.downloadError"));
     }
   },
 };

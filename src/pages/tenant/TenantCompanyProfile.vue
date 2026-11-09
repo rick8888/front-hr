@@ -3,10 +3,10 @@
     <div class="mx-auto max-w-3xl">
       <header class="mb-6 text-center">
         <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">
-          Company Profile
+          {{ t("tenant.profile.title") }}
         </h1>
         <p class="mt-2 text-sm text-neutral-500">
-          Manage your company information and settings
+          {{ t("tenant.profile.subtitle") }}
         </p>
       </header>
 
@@ -35,12 +35,12 @@
             class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500"
             aria-hidden="true"
           />
-          <span class="ml-2 text-sm text-neutral-500">Loading profile…</span>
+          <span class="ml-2 text-sm text-neutral-500">{{ t("tenant.profile.loading") }}</span>
         </div>
 
         <template v-else>
         <TenantProfileFormSection
-          title="Company Information"
+          :title="t('tenant.profile.companyInformation')"
           :show-divider="false"
         >
           <div class="space-y-4">
@@ -49,7 +49,7 @@
                 for="tenant-company-name"
                 class="mb-1.5 block text-xs font-semibold text-neutral-600"
               >
-                Company Name
+                {{ t("tenant.profile.companyName") }}
                 <span class="text-rose-500" aria-hidden="true">*</span>
               </label>
               <input
@@ -66,7 +66,7 @@
                   for="tenant-company-email"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Email
+                  {{ t("tenant.profile.email") }}
                 </label>
                 <input
                   id="tenant-company-email"
@@ -76,7 +76,7 @@
                   class="w-full cursor-not-allowed rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm text-neutral-600"
                 />
                 <p class="mt-1 text-xs text-neutral-400">
-                  Contact support to change your email address
+                  {{ t("tenant.profile.emailHelp") }}
                 </p>
               </div>
               <div>
@@ -84,7 +84,7 @@
                   for="tenant-company-phone"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Phone
+                  {{ t("tenant.profile.phone") }}
                 </label>
                 <input
                   id="tenant-company-phone"
@@ -100,7 +100,7 @@
                   for="tenant-company-website"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Website
+                  {{ t("tenant.profile.website") }}
                 </label>
                 <input
                   id="tenant-company-website"
@@ -114,7 +114,7 @@
                   for="tenant-company-tax"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Tax ID / VAT Number
+                  {{ t("tenant.profile.taxId") }}
                 </label>
                 <input
                   id="tenant-company-tax"
@@ -127,14 +127,14 @@
           </div>
         </TenantProfileFormSection>
 
-        <TenantProfileFormSection title="Address Information">
+        <TenantProfileFormSection :title="t('tenant.profile.addressInformation')">
           <div class="space-y-4">
             <div>
               <label
                 for="tenant-address-street"
                 class="mb-1.5 block text-xs font-semibold text-neutral-600"
               >
-                Street Address
+                {{ t("tenant.profile.streetAddress") }}
               </label>
               <textarea
                 id="tenant-address-street"
@@ -149,7 +149,7 @@
                   for="tenant-address-city"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  City
+                  {{ t("tenant.profile.city") }}
                 </label>
                 <input
                   id="tenant-address-city"
@@ -163,7 +163,7 @@
                   for="tenant-address-state"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  State / Province
+                  {{ t("tenant.profile.stateProvince") }}
                 </label>
                 <input
                   id="tenant-address-state"
@@ -179,7 +179,7 @@
                   for="tenant-address-country"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Country
+                  {{ t("tenant.profile.country") }}
                 </label>
                 <input
                   id="tenant-address-country"
@@ -194,7 +194,7 @@
                   for="tenant-address-postal"
                   class="mb-1.5 block text-xs font-semibold text-neutral-600"
                 >
-                  Postal Code
+                  {{ t("tenant.profile.postalCode") }}
                 </label>
                 <input
                   id="tenant-address-postal"
@@ -207,27 +207,27 @@
           </div>
         </TenantProfileFormSection>
 
-        <TenantProfileFormSection title="Account Information">
+        <TenantProfileFormSection :title="t('tenant.profile.accountInformation')">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>
-              <p class="text-xs font-semibold text-neutral-600">Account Status</p>
+              <p class="text-xs font-semibold text-neutral-600">{{ t("tenant.profile.accountStatus") }}</p>
               <span
                 :class="[
                   'mt-2 inline-flex rounded-md px-2.5 py-1 text-xs font-semibold',
-                  form.accountStatus === 'Active'
+                  String(form.accountStatus).toLowerCase() === 'active'
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'bg-rose-50 text-rose-700',
                 ]"
               >
-                {{ form.accountStatus }}
+                {{ localizedStatus }}
               </span>
             </div>
             <div>
-              <p class="text-xs font-semibold text-neutral-600">Member Since</p>
-              <p class="mt-2 text-sm text-neutral-600">{{ form.memberSince }}</p>
+              <p class="text-xs font-semibold text-neutral-600">{{ t("tenant.profile.memberSince") }}</p>
+              <p class="mt-2 text-sm text-neutral-600">{{ formatDate(form.memberSince) }}</p>
             </div>
             <div>
-              <p class="text-xs font-semibold text-neutral-600">Your Subdomain</p>
+              <p class="text-xs font-semibold text-neutral-600">{{ t("tenant.profile.subdomain") }}</p>
               <a
                 :href="subdomainHref"
                 target="_blank"
@@ -261,7 +261,7 @@
                 d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zM9 9h6v6H9V9z"
               />
             </svg>
-            {{ saving ? "Saving…" : "Save Changes" }}
+            {{ saving ? t("tenant.profile.saving") : t("tenant.profile.save") }}
           </button>
         </div>
         </template>
@@ -274,7 +274,9 @@
 import { computed, onMounted, reactive, watch } from "vue";
 import TenantProfileFormSection from "../../components/tenant/TenantProfileFormSection.vue";
 import { useTenantCompanyProfile } from "../../composables/useTenantCompanyProfile.js";
+import { useI18n } from "../../i18n/index.js";
 
+const { t, locale } = useI18n();
 const {
   profile,
   loading,
@@ -305,11 +307,35 @@ const subdomainHref = computed(() => {
   return `https://${s}`;
 });
 
+const localizedStatus = computed(() => {
+  const key = String(form.accountStatus || "").toLowerCase() === "active"
+    ? "tenant.profile.status.active"
+    : String(form.accountStatus || "").toLowerCase() === "suspended"
+      ? "tenant.profile.status.suspended"
+      : "";
+  return key ? t(key) : form.accountStatus;
+});
+
+function formatDate(value) {
+  if (!value) return "—";
+  const raw = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}/.test(raw)
+    ? new Date(`${raw.slice(0, 10)}T12:00:00`)
+    : new Date(raw);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(locale.value === "fr" ? "fr-FR" : "en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 onMounted(load);
 
 async function onSave() {
   if (!form.companyName.trim()) {
-    error.value = "Company name is required.";
+    error.value = t("tenant.profile.companyNameRequired");
     return;
   }
 

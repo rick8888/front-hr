@@ -78,6 +78,7 @@ function toSelfServiceRow(raw, catalog = []) {
       ? {
           initials: initialsFromName(managerName),
           name: managerName,
+          avatarUrl: raw.manager_avatar_url ?? raw.manager?.avatar_url ?? null,
           email: "",
           avatarBg: "bg-secondary-200 text-secondary-700",
         }

@@ -824,7 +824,15 @@ const {
   loadResources,
 } = useNewEmployeeResources();
 
-onMounted(loadResources);
+onMounted(async () => {
+  await loadResources();
+  const employeeRole = roleOptions.value.find((role) =>
+    ["employee", "employe"].includes(role.slug.toLowerCase())
+  );
+  if (employeeRole && !form.value.role) {
+    form.value.role = employeeRole.slug;
+  }
+});
 
 const step = ref(1);
 const saving = ref(false);
@@ -1081,7 +1089,12 @@ async function createEmployee() {
   };
 
   try {
-    await employeesApiService.create(payload);
+    const created = await employeesApiService.create(payload);
+
+    if (profilePhoto.value && created?.id) {
+      await employeesApiService.updateAvatar(created.id, profilePhoto.value);
+    }
+
     router.push("/employees");
   } catch (e) {
     submitError.value = parseApiError(e) || t("admin.employees.create.error.submit");

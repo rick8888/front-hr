@@ -21,6 +21,7 @@ export function mapEmployeeBase(emp) {
     baseSalaryContract: emp.base_salary != null ? Number(emp.base_salary) : null,
     currency: emp.currency || null,
     initials: initialsFromName(name),
+    avatarUrl: emp.avatar_url ?? emp.avatarUrl ?? null,
     is_active: emp.is_active !== false && emp.active !== false,
   };
 }
@@ -136,6 +137,7 @@ export function enrichEmployeeWithStructure(base, structure, catalogByCode = {})
 
   return {
     ...base,
+    currency: structure?.currency || base.currency,
     structure,
     structureId: structure?.id ?? null,
     structureLines: lines,

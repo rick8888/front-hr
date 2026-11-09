@@ -7,6 +7,7 @@ import Dashboard from "../pages/Dashboard.vue";
 import Dashboard2 from "../pages/Dashboard2.vue";
 import Employees from "../pages/Employees.vue";
 import EmployeeShow from "../pages/EmployeeShow.vue";
+import EmployeeOnboarding from "../pages/EmployeeOnboarding.vue";
 import EmployeeView from "../pages/EmployeeView.vue";
 import NewEmployee from "../pages/NewEmployee.vue";
 import EditEmployee from "../pages/EditEmployee.vue";
@@ -315,6 +316,12 @@ const routes = [
     name: "EmployeeView",
     component: EmployeeView,
     meta: { titleKey: "admin.employees.view.title" },
+  },
+  {
+    path: "/employees/:id/onboarding",
+    name: "EmployeeOnboarding",
+    component: EmployeeOnboarding,
+    meta: { titleKey: "admin.employees.onboarding.title" },
   },
   {
     path: "/employees/:id",

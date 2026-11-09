@@ -19,6 +19,7 @@ export function useSalaryStructureDetail(options = {}) {
       email: e.email || "—",
       empCode: e.empCode || `EMP-${e.id}`,
       initials: e.initials || "?",
+      avatarUrl: e.avatarUrl || null,
       avatarBg: avatarColor(e.name),
       baseSalary: e.baseSalary,
       currency: e.currency || "EUR",

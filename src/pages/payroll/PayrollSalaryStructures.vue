@@ -360,12 +360,13 @@
             >
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0"
+                  <EmployeeAvatar
+                    :name="row.name"
+                    :avatar-url="row.avatarUrl"
+                    size-class="h-10 w-10 text-sm font-semibold"
+                    fallback-class="text-white"
                     :style="{ backgroundColor: avatarColor(row.name) }"
-                  >
-                    {{ row.initials }}
-                  </div>
+                  />
                   <div class="min-w-0">
                     <p class="font-medium text-neutral-900 truncate">{{ row.name }}</p>
                     <p class="text-xs text-neutral-500">{{ row.empCode }}</p>
@@ -428,13 +429,13 @@
                   v-if="row.baseSalary != null"
                   class="font-semibold text-green-700 whitespace-nowrap"
                 >
-                  {{ formatUsd(row.baseSalary) }}
+                  {{ formatMoney(row.baseSalary, row.currency) }}
                 </span>
                 <span v-else class="text-neutral-400">—</span>
               </td>
               <td class="px-4 py-4 font-medium text-neutral-900 whitespace-nowrap">
                 <template v-if="row.totalFixed != null">
-                  {{ formatUsd(row.totalFixed) }}
+                  {{ formatMoney(row.totalFixed, row.currency) }}
                   <span v-if="row.hasVariablePercent" class="text-neutral-500 font-normal">
                     + %
                   </span>
@@ -588,6 +589,7 @@ import {
   useSalaryStructureStore,
 } from "./stores/salary-structure.store.js";
 import { avatarColor } from "./utils/payroll-http.js";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
 import { useSalaryStructureDetail } from "./composables/useSalaryStructureDetail.js";
 import EmployeeCompensationDetailsModal from "./components/EmployeeCompensationDetailsModal.vue";
 
@@ -598,10 +600,10 @@ const { employees, departmentOptions, loading, error } = storeToRefs(salaryStore
 
 const departments = departmentOptions;
 
-function formatUsd(n) {
+function formatMoney(n, currency = "EUR") {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "EUR",
+    currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(n);
 }
@@ -660,15 +662,21 @@ const kpi = computed(() => {
   ).length;
   const notConfigured = list.filter((e) => e.structureStatus === "none").length;
   const withBase = list.filter((e) => e.baseSalary != null && e.baseSalary > 0);
-  const avg =
-    withBase.length > 0
-      ? withBase.reduce((s, e) => s + e.baseSalary, 0) / withBase.length
-      : 0;
+  const averagesByCurrency = [...withBase.reduce((groups, employee) => {
+    const currency = employee.currency || "EUR";
+    const group = groups.get(currency) || { total: 0, count: 0 };
+    group.total += employee.baseSalary;
+    group.count += 1;
+    groups.set(currency, group);
+    return groups;
+  }, new Map())];
   return {
     complete,
     incomplete,
     notConfigured,
-    avgBaseFormatted: formatUsd(avg),
+    avgBaseFormatted: averagesByCurrency.length
+      ? averagesByCurrency.map(([currency, group]) => formatMoney(group.total / group.count, currency)).join(" · ")
+      : formatMoney(0),
   };
 });
 

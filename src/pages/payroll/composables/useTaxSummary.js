@@ -163,6 +163,9 @@ export function useTaxSummary() {
   });
 
   const kpi = computed(() => computeTaxSummaryKpi(filteredRows.value));
+  const hasMixedCurrencies = computed(
+    () => new Set(records.value.map((row) => row.currency).filter(Boolean)).size > 1
+  );
 
   /** Tendance 6 mois : basée sur tout le jeu chargé (pas seulement page) */
   const trend = computed(() => buildTaxTrendFromRows(records.value, 6));
@@ -204,6 +207,7 @@ export function useTaxSummary() {
     departmentOptions,
     cycleOptions,
     kpi,
+    hasMixedCurrencies,
     trend,
     loading,
     error,

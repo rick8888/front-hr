@@ -212,12 +212,13 @@
             {{ selectedEmployee.empCode }}
           </span>
           <div class="flex items-start gap-4 pr-24">
-            <div
-              class="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-semibold flex-shrink-0"
+            <EmployeeAvatar
+              :name="selectedEmployee.name"
+              :avatar-url="selectedEmployee.avatarUrl"
+              size-class="h-14 w-14 text-lg font-semibold"
+              fallback-class="text-white"
               :style="{ backgroundColor: avatarColor(selectedEmployee.name) }"
-            >
-              {{ selectedEmployee.initials }}
-            </div>
+            />
             <div>
               <h3 class="text-lg font-bold text-neutral-900">{{ selectedEmployee.name }}</h3>
               <p class="text-sm text-neutral-600">{{ selectedEmployee.email || "—" }}</p>
@@ -269,7 +270,7 @@
                 {{ t("admin.payroll.builder.total") }}
                 {{
                   selectedEmployee.totalFixed != null
-                    ? formatUsd(selectedEmployee.totalFixed)
+                    ? formatMoney(selectedEmployee.totalFixed, selectedEmployee.currency)
                     : "—"
                 }}
               </span>
@@ -535,12 +536,13 @@
       </div>
       <div class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm space-y-4">
         <div class="flex items-center gap-3">
-          <div
-            class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+          <EmployeeAvatar
+            :name="selectedEmployee?.name"
+            :avatar-url="selectedEmployee?.avatarUrl"
+            size-class="h-12 w-12 font-semibold"
+            fallback-class="text-white"
             :style="{ backgroundColor: avatarColor(selectedEmployee?.name) }"
-          >
-            {{ selectedEmployee?.initials }}
-          </div>
+          />
           <div>
             <p class="font-bold text-neutral-900">{{ selectedEmployee?.name }}</p>
             <p class="text-sm text-neutral-500">{{ selectedEmployee?.empCode }}</p>
@@ -664,6 +666,7 @@ import {
 } from "./stores/salary-structure.store.js";
 import { useSalaryComponentStore } from "./stores/salary-component.store.js";
 import { avatarColor } from "./utils/payroll-http.js";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
 import { useI18n } from "../../i18n/index.js";
 
 const route = useRoute();
@@ -821,10 +824,10 @@ watch(
   }
 );
 
-function formatUsd(n) {
+function formatMoney(n, currency = "EUR") {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "EUR",
+    currency: currency || "EUR",
     minimumFractionDigits: 2,
   }).format(n);
 }
@@ -839,7 +842,7 @@ function formatLineValue(line) {
   if (line.valueKind === "percent") {
     return `${Number(line.value).toLocaleString("fr-FR", { maximumFractionDigits: 2 })}%`;
   }
-  return formatUsd(line.value);
+  return formatMoney(line.value, selectedEmployee.value?.currency);
 }
 
 function formatPeriod(line) {

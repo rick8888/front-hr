@@ -34,6 +34,7 @@
       <input
         :value="modelPhone"
         type="tel"
+        maxlength="40"
         class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         :placeholder="selectedOperator?.phonePlaceholder || '+212 6 00 00 00 00'"
         @input="$emit('update:modelPhone', $event.target.value)"

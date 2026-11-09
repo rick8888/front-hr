@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-base font-bold text-neutral-900">Select Payment Method</h2>
+    <h2 class="text-base font-bold text-neutral-900">Choisir un mode de paiement</h2>
 
     <div class="mt-4">
       <TenantPaymentMethodSelector
@@ -10,7 +10,7 @@
       />
     </div>
 
-    <div v-if="isBankTransfer" class="mt-4">
+    <div v-if="selectedMethodCode" class="mt-4">
       <TenantPaymentBankTransferForm
         :file="receiptFile"
         :model-reference="bankReference"
@@ -21,7 +21,7 @@
       />
     </div>
 
-    <div v-else-if="isMobileMoney" class="mt-4">
+    <div v-if="isMobileMoney" class="mt-4">
       <TenantPaymentMobileMoneyForm
         :operators="operators"
         :model-operator="mobileOperator"
@@ -33,7 +33,7 @@
       />
     </div>
 
-    <div v-else-if="isCash" class="mt-4">
+    <div v-if="isCash" class="mt-4">
       <TenantPaymentCashForm
         :model-reference="cashReference"
         @update:model-reference="cashReference = $event"
@@ -47,7 +47,7 @@
         :disabled="isBusy"
         @click="$emit('cancel')"
       >
-        Cancel
+        Annuler
       </button>
       <button
         type="button"
@@ -75,7 +75,7 @@
             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
           />
         </svg>
-        {{ isBusy ? "Processing…" : "Proceed to Payment" }}
+        {{ isBusy ? "Envoi en cours…" : "Envoyer la demande" }}
       </button>
     </div>
   </div>
@@ -109,7 +109,6 @@ const {
   errors,
   submitting,
   operators,
-  isBankTransfer,
   isMobileMoney,
   isCash,
   setReceiptFile,

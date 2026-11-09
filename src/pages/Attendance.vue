@@ -91,8 +91,30 @@
                 <td class="px-4 py-3">{{ formatMinutes(record.overtimeMinutes) }}</td>
                 <td class="px-4 py-3">{{ formatMinutes(record.breakMinutes) }}</td>
                 <td class="px-4 py-3 text-right">
-                  <button class="text-secondary-600 hover:underline mr-3" @click="openEdit(record)">{{ t("admin.attendance.edit") }}</button>
-                  <button class="text-error-600 hover:underline" @click="requestDelete(record)">{{ t("admin.attendance.delete") }}</button>
+                  <div class="inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      class="rounded-md p-1.5 text-secondary-600 transition-colors hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                      :title="t('admin.attendance.edit')"
+                      :aria-label="t('admin.attendance.edit')"
+                      @click="openEdit(record)"
+                    >
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-md p-1.5 text-error-600 transition-colors hover:bg-error-50 focus:outline-none focus:ring-2 focus:ring-error-500"
+                      :title="t('admin.attendance.delete')"
+                      :aria-label="t('admin.attendance.delete')"
+                      @click="requestDelete(record)"
+                    >
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </template>
@@ -109,33 +131,65 @@
       </div>
     </div>
 
-    <Modal v-model="modalOpen" :title="editingId ? t('admin.attendance.modal.edit') : t('admin.attendance.modal.add')" @confirm="submit">
-      <div class="space-y-4">
-        <label class="block text-sm font-medium">{{ t("admin.attendance.modal.date") }}<input v-model="form.date" type="date" class="input-base w-full mt-1" /></label>
-        <label class="block text-sm font-medium">{{ t("admin.attendance.modal.employee") }}
-          <select v-model="form.employeeId" class="input-base w-full mt-1">
-            <option value="">{{ t("admin.attendance.modal.selectEmployee") }}</option>
-            <option v-for="employee in employees" :key="employee.id" :value="employee.id">{{ employee.name || employee.full_name }}</option>
-          </select>
-        </label>
-        <label class="block text-sm font-medium">{{ t("admin.attendance.col.shift") }}
-          <select v-model="form.shiftId" class="input-base w-full mt-1">
-            <option value="">{{ t("admin.attendance.modal.none") }}</option>
-            <option v-for="shift in shifts" :key="shift.id" :value="shift.id">{{ shift.name }}</option>
-          </select>
-        </label>
-        <label class="block text-sm font-medium">{{ t("admin.attendance.modal.location") }}
-          <select v-model="form.siteId" class="input-base w-full mt-1">
-            <option value="">{{ t("admin.attendance.modal.noLocation") }}</option>
-            <option v-for="site in sites" :key="site.id" :value="site.id">{{ site.name }}</option>
-          </select>
-        </label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="text-sm font-medium">{{ t("admin.attendance.modal.checkIn") }}<input v-model="form.checkIn" type="time" class="input-base w-full mt-1" /></label>
-          <label class="text-sm font-medium">{{ t("admin.attendance.modal.checkOut") }}<input v-model="form.checkOut" type="time" class="input-base w-full mt-1" /></label>
+    <Modal
+      v-model="modalOpen"
+      :title="editingId ? t('admin.attendance.modal.edit') : t('admin.attendance.modal.add')"
+      size="lg"
+      backdrop-class="bg-neutral-950/60 backdrop-blur-sm"
+      panel-class="overflow-hidden rounded-2xl border border-white/60 shadow-2xl"
+      header-class="border-neutral-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-7 py-5"
+      title-class="text-xl tracking-tight"
+      close-button-class="rounded-lg p-2 transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-400"
+      :close-label="t('common.close')"
+      body-class="px-5 py-6 sm:px-7"
+      hide-footer
+    >
+      <form id="attendance-record-form" class="space-y-5" @submit.prevent="submit">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.modal.date") }}
+            <input v-model="form.date" type="date" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+          </label>
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.modal.employee") }}
+            <select v-model="form.employeeId" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+              <option value="">{{ t("admin.attendance.modal.selectEmployee") }}</option>
+              <option v-for="employee in employees" :key="employee.id" :value="employee.id">{{ employee.name || employee.full_name }}</option>
+            </select>
+          </label>
         </div>
-        <label class="block text-sm font-medium">{{ t("admin.attendance.modal.status") }}
-          <select v-model="form.status" class="input-base w-full mt-1">
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.col.shift") }}
+            <select v-model="form.shiftId" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+              <option value="">{{ t("admin.attendance.modal.none") }}</option>
+              <option v-for="shift in shifts" :key="shift.id" :value="shift.id">{{ shift.name }}</option>
+            </select>
+          </label>
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.modal.location") }}
+            <select v-model="form.siteId" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
+              <option value="">{{ t("admin.attendance.modal.noLocation") }}</option>
+              <option v-for="site in sites" :key="site.id" :value="site.id">{{ site.name }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.modal.checkIn") }}
+            <input v-model="form.checkIn" type="time" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+          </label>
+          <label class="block text-sm font-semibold text-slate-700">
+            {{ t("admin.attendance.modal.checkOut") }}
+            <input v-model="form.checkOut" type="time" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100" />
+          </label>
+        </div>
+
+        <label class="block text-sm font-semibold text-slate-700">
+          {{ t("admin.attendance.modal.status") }}
+          <select v-model="form.status" class="input-base mt-1.5 w-full rounded-lg border-slate-200 bg-white py-2.5 text-sm shadow-sm transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100">
             <option value="on_time">{{ t("admin.attendance.status.onTime") }}</option>
             <option value="late">{{ t("admin.attendance.status.late") }}</option>
             <option value="half_day">{{ t("admin.attendance.status.halfDay") }}</option>
@@ -143,7 +197,26 @@
             <option value="absent">{{ t("admin.attendance.status.absent") }}</option>
           </select>
         </label>
-      </div>
+      </form>
+
+      <template #footer>
+        <div class="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7">
+          <button
+            type="button"
+            class="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            @click="modalOpen = false"
+          >
+            {{ t("common.cancel") }}
+          </button>
+          <button
+            type="submit"
+            form="attendance-record-form"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+          >
+            {{ t("common.confirm") }}
+          </button>
+        </div>
+      </template>
     </Modal>
 
     <ConfirmDialog

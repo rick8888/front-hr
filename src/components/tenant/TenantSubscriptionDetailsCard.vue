@@ -3,7 +3,7 @@
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
     <div class="mb-5 flex items-start justify-between gap-3">
-      <h3 class="text-base font-bold text-neutral-900">Subscription Details</h3>
+      <h3 class="text-base font-bold text-neutral-900">{{ t("tenant.dashboard.subscriptionDetails") }}</h3>
       <span
         v-if="loading"
         class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500"
@@ -38,19 +38,19 @@
     <template v-else>
       <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         <div>
-          <dt class="text-xs font-medium text-neutral-500">Plan</dt>
+          <dt class="text-xs font-medium text-neutral-500">{{ t("tenant.dashboard.plan") }}</dt>
           <dd class="mt-0.5 text-sm font-semibold text-neutral-900">{{ plan }}</dd>
         </div>
         <div>
-          <dt class="text-xs font-medium text-neutral-500">Price</dt>
+          <dt class="text-xs font-medium text-neutral-500">{{ t("tenant.dashboard.price") }}</dt>
           <dd class="mt-0.5 text-sm font-semibold text-neutral-900">{{ price }}</dd>
         </div>
         <div>
-          <dt class="text-xs font-medium text-neutral-500">Started</dt>
+          <dt class="text-xs font-medium text-neutral-500">{{ t("tenant.dashboard.started") }}</dt>
           <dd class="mt-0.5 text-sm font-semibold text-neutral-900">{{ started }}</dd>
         </div>
         <div>
-          <dt class="text-xs font-medium text-neutral-500">Next Billing</dt>
+          <dt class="text-xs font-medium text-neutral-500">{{ t("tenant.dashboard.nextBilling") }}</dt>
           <dd class="mt-0.5 text-sm font-semibold text-neutral-900">{{ nextBilling }}</dd>
         </div>
       </dl>
@@ -60,7 +60,7 @@
           :to="manageTo"
           class="inline-flex items-center justify-center rounded-lg bg-[#7c7cf8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#6b6be8]"
         >
-          Manage Subscription
+          {{ t("tenant.dashboard.manageSubscription") }}
         </RouterLink>
       </div>
     </template>
@@ -68,8 +68,12 @@
 </template>
 
 <script setup>
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
+
 defineProps({
-  status: { type: String, default: "Active" },
+  status: { type: String, default: "" },
   plan: { type: String, default: "—" },
   price: { type: String, default: "—" },
   started: { type: String, default: "—" },

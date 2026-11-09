@@ -2,7 +2,7 @@
   <section
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
-    <h2 class="text-base font-bold text-neutral-900">Subscription History</h2>
+    <h2 class="text-base font-bold text-neutral-900">{{ t("tenant.subscription.historyTitle") }}</h2>
 
     <div class="mt-4 overflow-x-auto">
       <table class="min-w-full">
@@ -16,7 +16,7 @@
                 col.align === 'right' ? 'text-right' : 'text-left',
               ]"
             >
-              {{ col.label }}
+              {{ t(col.label) }}
             </th>
           </tr>
         </thead>
@@ -30,7 +30,7 @@
                 class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500 align-middle"
                 aria-hidden="true"
               />
-              <span class="ml-2 align-middle">Loading history…</span>
+              <span class="ml-2 align-middle">{{ t("tenant.subscription.loadingHistory") }}</span>
             </td>
           </tr>
           <tr v-else-if="!rows.length">
@@ -38,7 +38,7 @@
               :colspan="COLUMNS.length"
               class="px-4 py-6 text-center text-sm text-neutral-400"
             >
-              No subscription history yet.
+              {{ t("tenant.subscription.emptyHistory") }}
             </td>
           </tr>
           <tr
@@ -57,7 +57,7 @@
                   statusClass(row.status),
                 ]"
               >
-                {{ row.status }}
+                {{ row.statusLabel || row.status }}
               </span>
             </td>
             <td class="px-4 py-4 text-sm text-neutral-700">{{ row.period }}</td>
@@ -72,16 +72,20 @@
 </template>
 
 <script setup>
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
+
 defineProps({
   rows: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
 });
 
 const COLUMNS = [
-  { key: "plan", label: "Plan" },
-  { key: "status", label: "Status" },
-  { key: "period", label: "Period" },
-  { key: "amount", label: "Amount", align: "right" },
+  { key: "plan", label: "tenant.subscription.plan" },
+  { key: "status", label: "tenant.subscription.statusLabel" },
+  { key: "period", label: "tenant.subscription.period" },
+  { key: "amount", label: "tenant.subscription.amount", align: "right" },
 ];
 
 function statusClass(status) {

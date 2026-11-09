@@ -118,22 +118,32 @@
               </span>
             </td>
             <td class="px-6 py-4 text-right">
+              <div class="inline-flex items-center justify-end gap-1">
               <button
                 type="button"
-                class="text-primary-600 hover:text-primary-700 text-sm font-medium mr-3"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                 :disabled="saving"
+                title="Modifier"
+                aria-label="Modifier"
                 @click="editTraining(training)"
               >
-                Modifier
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
               </button>
               <button
                 type="button"
-                class="text-error-600 hover:text-error-700 text-sm font-medium"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-error-600 transition-colors hover:bg-error-50 hover:text-error-700 focus:outline-none focus:ring-2 focus:ring-error-500 disabled:opacity-50"
                 :disabled="saving"
+                title="Supprimer"
+                aria-label="Supprimer"
                 @click="deleteTraining(training.id)"
               >
-                Supprimer
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
+              </div>
             </td>
           </tr>
           <tr v-if="!loading && filteredTrainings.length === 0">
@@ -147,32 +157,49 @@
 
     <div
       v-if="isModalOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-6"
       @click.self="closeModal"
     >
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-xl mx-4" @click.stop>
-        <div class="px-6 py-4 border-b border-neutral-200">
-          <h2 class="text-lg font-bold text-neutral-900">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="training-modal-title"
+        class="my-auto flex max-h-[calc(100vh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]"
+        @click.stop
+      >
+        <div class="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-5 py-4 sm:px-7">
+          <h2 id="training-modal-title" class="text-xl font-bold tracking-tight text-slate-900">
             {{ editingTraining ? "Modifier la formation" : "Nouvelle formation" }}
           </h2>
+          <button
+            type="button"
+            class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            aria-label="Fermer"
+            :disabled="saving"
+            @click="closeModal"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div class="px-6 py-5 space-y-4">
+        <div class="min-h-0 space-y-5 overflow-y-auto px-5 py-6 sm:px-7">
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">
               Nom <span class="text-error-600">*</span>
             </label>
             <input
               v-model="form.name"
               type="text"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
             />
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Catégorie</label>
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">Catégorie</label>
               <select
                 v-model="form.category"
-                class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
               >
                 <option
                   v-for="opt in categoryOptions"
@@ -184,27 +211,27 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Durée</label>
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">Durée</label>
               <input
                 v-model="form.duration"
                 type="text"
                 placeholder="6 semaines"
-                class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Date de début</label>
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">Date de début</label>
               <input
                 v-model="form.startDate"
                 type="date"
-                class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-2">Statut</label>
+              <label class="mb-1.5 block text-sm font-semibold text-slate-700">Statut</label>
               <select
                 v-model="form.status"
-                class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
               >
                 <option value="published">Active (publiée)</option>
                 <option value="draft">Draft</option>
@@ -212,19 +239,19 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-neutral-700 mb-2">Description</label>
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
             <textarea
               v-model="form.description"
-              rows="3"
-              class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-sm"
+              rows="4"
+              class="w-full resize-y rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
               placeholder="Objectifs et contenu de la formation..."
             />
           </div>
         </div>
-        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
+        <div class="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-7">
           <button
             type="button"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            class="w-full rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50 sm:w-auto"
             :disabled="saving"
             @click="closeModal"
           >
@@ -232,7 +259,7 @@
           </button>
           <button
             type="button"
-            class="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+            class="w-full rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             :disabled="saving"
             @click="saveTraining"
           >

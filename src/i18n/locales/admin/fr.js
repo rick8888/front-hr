@@ -80,6 +80,7 @@ export default {
   "admin.employees.bulkStatusPartial": "{updated} mis à jour, {skipped} ignoré(s) (terminé / retraite).",
   "admin.employees.bulkStatusSuccess": "Statut mis à jour pour {n} employé(s).",
   "admin.employees.status.active": "Actif",
+  "admin.employees.status.onboarding": "En intégration",
   "admin.employees.status.inactive": "Inactif",
   "admin.employees.status.onLeave": "En congé",
   "admin.employees.status.terminated": "Terminé",

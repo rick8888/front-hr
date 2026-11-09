@@ -1,16 +1,20 @@
 <template>
-  <div class="px-6 py-6 max-w-7xl mx-auto">
+  <div class="mx-auto max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7">
     <PageHero
       title="Statuts"
       :breadcrumbs="[{ label: 'Super Admin' }, { label: 'Statuts' }]"
       home-to="/sup-admin/entreprises"
     />
 
-    <p class="mb-6 text-sm text-neutral-500">
-      Chaque catalogue est branché sur un module de l’application : libellés, filtres, badges
-      et validations utilisent ces statuts. Les codes système ne peuvent pas être
-      supprimés ni désactivés.
-    </p>
+    <div class="mb-6 rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-4 sm:px-5">
+      <p class="max-w-4xl text-[15px] leading-6 text-neutral-700">
+        Gérez les statuts utilisés dans les différents modules. Ils alimentent les libellés,
+        filtres et validations de l’application.
+        <span class="font-semibold text-neutral-900">
+          Les statuts système ne peuvent pas être supprimés ni désactivés.
+        </span>
+      </p>
+    </div>
 
     <div
       v-if="error"
@@ -19,49 +23,62 @@
       {{ error }}
     </div>
 
-    <div class="mb-6 overflow-x-auto">
-      <div class="flex flex-wrap gap-2 border-b border-neutral-200">
+    <section class="mb-6" aria-label="Catalogues de statuts">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-base font-semibold text-neutral-900">Catalogue à gérer</h2>
+        <p class="text-sm text-neutral-500">Sélectionnez un module pour afficher ses statuts.</p>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         <button
           v-for="catalog in catalogs"
           :key="catalog.type"
           type="button"
           :class="[
-            'px-3 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors',
+            'flex min-h-12 items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
             activeType === catalog.type
-              ? 'border-secondary-500 text-secondary-600'
-              : 'border-transparent text-neutral-500 hover:text-neutral-800',
+              ? 'border-primary-200 bg-primary-50 text-primary-800 shadow-xs'
+              : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50',
           ]"
           @click="activeType = catalog.type"
         >
-          {{ catalog.label }}
-          <span class="ml-1 text-xs text-neutral-400">{{ catalog.total }}</span>
+          <span class="min-w-0">{{ catalog.label }}</span>
+          <span
+            :class="[
+              'inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-semibold',
+              activeType === catalog.type
+                ? 'bg-primary-100 text-primary-800'
+                : 'bg-neutral-100 text-neutral-600',
+            ]"
+          >
+            {{ catalog.total }}
+          </span>
         </button>
       </div>
-    </div>
+    </section>
 
     <div
       v-if="currentCatalog"
-      class="mb-6 rounded-xl border border-neutral-200 bg-white px-4 py-3"
+      class="mb-6 rounded-xl border border-neutral-200 bg-white px-4 py-4 shadow-sm sm:px-5"
     >
-      <p class="text-sm font-medium text-neutral-800">
-        Entité applicative :
-        <span class="text-secondary-700">{{ currentCatalog.label }}</span>
-        <code class="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600">{{ currentCatalog.type }}</code>
-      </p>
-      <p class="mt-1 text-xs text-neutral-500">
-        Ces statuts s’appliquent dans l’application :
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <p class="text-sm font-medium text-neutral-600">Module sélectionné</p>
+        <p class="text-base font-semibold text-neutral-900">{{ currentCatalog.label }}</p>
+        <code class="rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600">{{ currentCatalog.type }}</code>
+      </div>
+      <p class="mt-3 text-sm font-medium text-neutral-700">
+        Écrans concernés
       </p>
       <ul v-if="currentScreens.length" class="mt-2 flex flex-wrap gap-2">
         <li
           v-for="screen in currentScreens"
           :key="screen.path"
-          class="inline-flex items-center gap-1.5 rounded-full bg-neutral-50 px-2.5 py-1 text-xs text-neutral-700 ring-1 ring-neutral-200"
+          class="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-800 ring-1 ring-neutral-200"
         >
-          <span>{{ screen.name }}</span>
-          <span class="font-mono text-[10px] text-neutral-400">{{ screen.path }}</span>
+          <span class="font-medium">{{ screen.name }}</span>
+          <span class="font-mono text-xs text-neutral-500">{{ screen.path }}</span>
         </li>
       </ul>
-      <p v-else class="mt-2 text-xs text-neutral-400">Aucun écran associé.</p>
+      <p v-else class="mt-2 text-sm text-neutral-500">Aucun écran associé à ce module.</p>
     </div>
 
     <div class="mb-6 grid gap-4 sm:grid-cols-3">
@@ -106,12 +123,12 @@
     >
       <thead>
         <tr class="border-b border-neutral-200 bg-neutral-50/80">
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Libellé</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Code</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Couleur</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Ordre</th>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">État</th>
-          <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-neutral-500">Actions</th>
+          <th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600">Libellé</th>
+          <th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600">Code</th>
+          <th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600">Couleur</th>
+          <th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600">Ordre</th>
+          <th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600">État</th>
+          <th class="px-4 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-neutral-600">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-neutral-100">
@@ -132,28 +149,28 @@
         </tr>
         <template v-else>
           <tr v-for="row in paginatedStatuses" :key="row.id" class="hover:bg-neutral-50/60">
-            <td class="px-4 py-3">
-              <div class="font-medium text-neutral-900">{{ row.name }}</div>
-              <div class="text-xs text-neutral-500 line-clamp-1">
+            <td class="px-4 py-4">
+              <div class="text-[15px] font-semibold text-neutral-900">{{ row.name }}</div>
+              <div class="mt-0.5 text-sm text-neutral-600 line-clamp-1">
                 {{ row.nameEn || row.description || "—" }}
               </div>
             </td>
-            <td class="px-4 py-3 font-mono text-sm text-neutral-700">{{ row.code }}</td>
+            <td class="px-4 py-4 font-mono text-sm font-medium text-neutral-700">{{ row.code }}</td>
             <td class="px-4 py-3">
               <span
                 :class="[
-                  'inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium',
+                  'inline-flex rounded-full px-3 py-1 text-sm font-medium',
                   TONE_CLASSES[row.tone] || TONE_CLASSES.neutral,
                 ]"
               >
                 {{ toneLabel(row.tone) }}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm text-neutral-600">{{ row.sortOrder }}</td>
+            <td class="px-4 py-4 text-sm font-medium text-neutral-700">{{ row.sortOrder }}</td>
             <td class="px-4 py-3">
               <span
                 :class="[
-                  'inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium',
+                  'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
                   row.isActive ? 'bg-green-50 text-green-700' : 'bg-neutral-100 text-neutral-600',
                 ]"
               >
@@ -161,7 +178,7 @@
               </span>
               <span
                 v-if="row.isSystem"
-                class="ml-2 inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                class="ml-2 inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700"
               >
                 Système
               </span>
@@ -170,8 +187,9 @@
               <div class="inline-flex items-center gap-1">
                 <button
                   type="button"
-                  class="rounded p-1.5 text-neutral-500 hover:bg-neutral-100"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   title="Modifier"
+                  :aria-label="`Modifier le statut ${row.name}`"
                   @click="openEdit(row)"
                 >
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,9 +198,10 @@
                 </button>
                 <button
                   type="button"
-                  class="rounded p-1.5 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
                   :disabled="row.isSystem && row.isActive"
                   :title="row.isSystem ? 'Un statut système ne peut pas être désactivé' : (row.isActive ? 'Désactiver' : 'Activer')"
+                  :aria-label="row.isSystem && row.isActive ? 'Un statut système ne peut pas être désactivé' : (row.isActive ? `Désactiver ${row.name}` : `Activer ${row.name}`)"
                   @click="toggleActive(row)"
                 >
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,8 +211,9 @@
                 <button
                   v-if="!row.isSystem"
                   type="button"
-                  class="rounded p-1.5 text-red-500 hover:bg-red-50"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                   title="Supprimer"
+                  :aria-label="`Supprimer le statut ${row.name}`"
                   @click="requestDelete(row)"
                 >
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

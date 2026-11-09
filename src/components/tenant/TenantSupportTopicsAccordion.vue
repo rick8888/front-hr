@@ -2,7 +2,7 @@
   <section
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
-    <h2 class="text-base font-bold text-neutral-900">Common Support Topics</h2>
+    <h2 class="text-base font-bold text-neutral-900">{{ t("tenant.support.topicsTitle") }}</h2>
 
     <ul class="mt-4 divide-y divide-neutral-200">
       <li v-for="topic in topics" :key="topic.id">
@@ -59,7 +59,9 @@
 
 <script setup>
 import { ref, h } from "vue";
+import { useI18n } from "../../i18n/index.js";
 
+const { t } = useI18n();
 const props = defineProps({
   topics: { type: Array, required: true },
 });

@@ -2,30 +2,47 @@
   <Teleport to="body">
     <div
       v-if="modelValue"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      :class="[
+        'fixed inset-0 flex items-center justify-center z-50',
+        backdropClass || 'bg-black bg-opacity-50',
+      ]"
       @click.self="close"
     >
       <div
         :class="[
           'bg-white rounded-xl shadow-xl w-full mx-4',
           sizeClass,
+          panelClass,
         ]"
       >
         <!-- Header -->
         <div
-          class="flex items-center justify-between px-6 py-4 border-b border-neutral-200"
+          :class="[
+            'flex items-center justify-between px-6 py-4 border-b border-neutral-200',
+            headerClass,
+          ]"
         >
-          <h2 class="text-lg font-bold text-neutral-900">{{ title }}</h2>
+          <h2 :class="['text-lg font-bold text-neutral-900', titleClass]">{{ title }}</h2>
           <button
+            type="button"
             @click="close"
-            class="text-neutral-500 hover:text-neutral-700 text-2xl leading-none"
+            :class="[
+              'text-neutral-500 hover:text-neutral-700 text-2xl leading-none',
+              closeButtonClass,
+            ]"
+            :aria-label="closeLabel"
           >
             ×
           </button>
         </div>
 
         <!-- Body -->
-        <div class="px-6 py-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <div
+          :class="[
+            'px-6 py-4 max-h-[calc(100vh-8rem)] overflow-y-auto',
+            bodyClass,
+          ]"
+        >
           <slot></slot>
         </div>
 
@@ -52,6 +69,13 @@ const props = defineProps({
   title: String,
   /** Taille de la modale : sm, md (medium), lg, xl */
   size: { type: String, default: "default" },
+  backdropClass: { type: String, default: "" },
+  panelClass: { type: String, default: "" },
+  headerClass: { type: String, default: "" },
+  titleClass: { type: String, default: "" },
+  closeButtonClass: { type: String, default: "" },
+  closeLabel: { type: String, default: "Close dialog" },
+  bodyClass: { type: String, default: "" },
   /** Masque le footer par défaut (utile quand on utilise son propre footer
    * custom ou quand la modale n'a pas d'action). */
   hideFooter: { type: Boolean, default: false },

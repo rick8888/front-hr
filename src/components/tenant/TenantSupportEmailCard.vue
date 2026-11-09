@@ -15,8 +15,8 @@
         />
       </svg>
     </div>
-    <h2 class="mt-4 text-base font-bold text-neutral-900">Email Support</h2>
-    <p class="mt-1 text-sm text-neutral-500">Get help via email</p>
+    <h2 class="mt-4 text-base font-bold text-neutral-900">{{ t("tenant.support.emailTitle") }}</h2>
+    <p class="mt-1 text-sm text-neutral-500">{{ t("tenant.support.emailDescription") }}</p>
     <a
       :href="`mailto:${email}`"
       class="mt-3 inline-block text-sm font-semibold text-[#7c7cf8] hover:underline"
@@ -28,6 +28,10 @@
 </template>
 
 <script setup>
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
+
 defineProps({
   email: { type: String, required: true },
   responseTime: { type: String, required: true },

@@ -25,7 +25,7 @@
         <p class="text-sm font-bold text-neutral-900">{{ method.title }}</p>
         <p class="mt-0.5 text-xs text-neutral-500">{{ method.description }}</p>
         <p v-if="method.disabled" class="mt-1 text-xs font-semibold text-amber-700">
-          Temporarily unavailable
+          Temporairement indisponible
         </p>
       </div>
     </label>

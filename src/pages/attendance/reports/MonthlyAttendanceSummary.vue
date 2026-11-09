@@ -73,7 +73,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
             </svg>
-            {{ t("common.applyFilters") }}
+            {{ t("admin.attendance.reports.monthly.apply") }}
           </button>
           <button
             type="button"
@@ -146,9 +146,12 @@
               <tr v-for="row in paginated" :key="row.employeeId" class="hover:bg-neutral-50">
                 <td class="px-6 py-3">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 text-secondary-800 bg-secondary-100">
-                      {{ initials(row.name) }}
-                    </span>
+                    <EmployeeAvatar
+                      :name="row.name"
+                      :avatar-url="row.avatarUrl"
+                      size-class="h-9 w-9 text-xs font-semibold"
+                      fallback-class="text-secondary-800 bg-secondary-100"
+                    />
                     <div class="min-w-0">
                       <p class="font-semibold text-neutral-900 truncate">{{ row.name }}</p>
                       <p class="text-xs text-neutral-500">{{ row.code }}</p>
@@ -254,6 +257,7 @@ import {
   useMonthlyAttendanceSummary,
 } from "../composables/useMonthlyAttendanceSummary.js";
 import { useI18n } from "../../../i18n/index.js";
+import EmployeeAvatar from "../../../components/common/EmployeeAvatar.vue";
 
 const { t, locale } = useI18n();
 
@@ -319,13 +323,6 @@ const kpiCards = computed(() => {
     },
   ];
 });
-
-function initials(name) {
-  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "—";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function closeMenus() {
   openMenuId.value = null;

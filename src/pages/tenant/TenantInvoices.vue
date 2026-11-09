@@ -2,9 +2,9 @@
   <div class="px-4 py-4 sm:px-6 sm:py-6">
     <div class="max-w-7xl mx-auto space-y-6">
       <header class="text-center">
-        <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">Invoices</h1>
+        <h1 class="text-2xl font-bold text-neutral-900 md:text-3xl">{{ t("tenant.invoices.title") }}</h1>
         <p class="mt-2 text-sm text-neutral-500">
-          Download invoices for completed payments
+          {{ t("tenant.invoices.subtitle") }}
         </p>
         <div class="mt-4 flex justify-center">
           <RouterLink
@@ -25,7 +25,7 @@
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            View All Payments
+            {{ t("tenant.invoices.viewPayments") }}
           </RouterLink>
         </div>
       </header>
@@ -54,8 +54,10 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import TenantInvoicesTableCard from "../../components/tenant/TenantInvoicesTableCard.vue";
 import { useTenantInvoices } from "../../composables/useTenantInvoices.js";
+import { useI18n } from "../../i18n/index.js";
 
 const router = useRouter();
+const { t } = useI18n();
 const { loading, downloadingId, error, rows, load, downloadPdf } =
   useTenantInvoices();
 const searchQuery = ref("");
@@ -64,7 +66,7 @@ const filteredRows = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return rows.value;
   return rows.value.filter((r) =>
-    [r.invoiceNumber, r.description, r.amount, r.status, r.date]
+    [r.invoiceNumber, r.description, r.amount, r.status, r.statusCode, r.date]
       .filter(Boolean)
       .join(" ")
       .toLowerCase()

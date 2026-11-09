@@ -1,27 +1,18 @@
 import { ref } from "vue";
 import { tenantBillingsApiService } from "../pages/tenant/services/tenant-billings.api.service.js";
+import { t } from "../i18n/index.js";
 
-const SHORT_MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-export function formatBillingDate(iso) {
+export function formatBillingDate(iso, locale = "en") {
   if (!iso) return "";
   const raw = String(iso).slice(0, 10);
-  const d = new Date(`${raw}T12:00:00`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return `${SHORT_MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2, "0")}, ${d.getFullYear()}`;
+  const date = new Date(`${raw}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 function mapKpis(apiKpis) {
@@ -67,7 +58,7 @@ export function useTenantBillings() {
       rows.value = (data.payments ?? []).map(mapPayment);
     } catch (e) {
       error.value =
-        e.response?.data?.message || "Unable to load billing data.";
+        e.response?.data?.message || t("tenant.billings.loadError");
       kpis.value = mapKpis(null);
       rows.value = [];
     } finally {

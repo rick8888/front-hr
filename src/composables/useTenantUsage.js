@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { tenantUsageApiService } from "../pages/tenant/services/tenant-usage.api.service.js";
+import { t } from "../i18n/index.js";
 
 function mapPlan(apiPlan) {
   if (!apiPlan) {
@@ -57,7 +58,7 @@ export function useTenantUsage() {
       metrics.value = (data.metrics ?? []).map(mapMetric);
     } catch (e) {
       error.value =
-        e.response?.data?.message || "Unable to load usage data.";
+        e.response?.data?.message || t("tenant.usage.loadError");
       plan.value = mapPlan(null);
       metrics.value = [];
     } finally {

@@ -27,9 +27,49 @@
           <label class="mb-1 block text-sm font-medium text-neutral-800">Accroche</label>
           <input v-model="form.tagline" type="text" class="input-base w-full text-sm" />
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium text-neutral-800">Prix mensuel ({{ currency }})</label>
-          <input v-model.number="form.price_monthly" type="number" min="0" step="1" class="input-base w-full text-sm" />
+        <div class="sm:col-span-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-semibold text-neutral-900">Tarifs mensuels par devise</h3>
+              <p class="mt-1 text-xs text-neutral-500">
+                Configurez un tarif pour chaque devise utilisée par vos entreprises. Aucune conversion automatique n’est appliquée.
+              </p>
+            </div>
+            <button type="button" class="btn-outline text-sm" @click="addPriceRow">
+              Ajouter une devise
+            </button>
+          </div>
+          <div class="mt-3 space-y-2">
+            <div v-for="(row, index) in priceRows" :key="index" class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] gap-2">
+              <input
+                v-model="row.currency"
+                type="text"
+                maxlength="3"
+                class="input-base w-full text-sm uppercase"
+                aria-label="Code devise ISO"
+                placeholder="MAD"
+                @input="row.currency = row.currency.toUpperCase()"
+              />
+              <input
+                v-model.number="row.price"
+                type="number"
+                min="0"
+                step="0.01"
+                class="input-base w-full text-sm"
+                :aria-label="`Prix mensuel en ${row.currency || 'devise'}`"
+              />
+              <button
+                v-if="priceRows.length > 1"
+                type="button"
+                class="btn-outline px-3 text-sm text-red-600"
+                :aria-label="`Supprimer le tarif ${row.currency}`"
+                @click="removePriceRow(index)"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+          <p v-if="errors.currency_prices" class="mt-2 text-xs text-red-600">{{ errors.currency_prices }}</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-neutral-800">Stockage (Go)</label>
@@ -133,7 +173,6 @@ const props = defineProps({
 const emit = defineEmits(["update:open", "save"]);
 
 const isCreate = computed(() => !props.plan?.id);
-const currency = computed(() => props.plan?.currency ?? "EUR");
 const modalTitle = computed(() =>
   isCreate.value ? "Nouveau plan d'abonnement" : `Configurer — ${props.plan.name}`
 );
@@ -145,6 +184,7 @@ const serviceList = computed(() =>
 const groupedServices = computed(() => groupServicesByCategory(serviceList.value));
 const selectedServices = ref([]);
 const errors = ref({});
+const priceRows = ref([]);
 
 const form = reactive({
   name: "",
@@ -169,6 +209,16 @@ watch(
       form.code = props.plan.code ?? "";
       form.tagline = props.plan.tagline ?? "";
       form.price_monthly = props.plan.price_monthly ?? 0;
+      priceRows.value = Object.entries(props.plan.currency_prices ?? {}).map(([currency, price]) => ({
+        currency,
+        price: Number(price),
+      }));
+      if (!priceRows.value.length) {
+        priceRows.value = [{
+          currency: props.plan.currency ?? "EUR",
+          price: Number(props.plan.price_monthly ?? 0),
+        }];
+      }
       form.is_active = props.plan.is_active ?? true;
       form.is_highlighted = props.plan.is_highlighted ?? false;
       selectedServices.value = [...(props.plan.included_services ?? [])];
@@ -180,6 +230,7 @@ watch(
       form.code = "";
       form.tagline = "";
       form.price_monthly = 0;
+      priceRows.value = [{ currency: "EUR", price: 0 }];
       form.is_active = true;
       form.is_highlighted = false;
       selectedServices.value = ["employees", "attendance", "self_service"];
@@ -209,9 +260,28 @@ function toggleService(id, checked) {
   }
 }
 
+function addPriceRow() {
+  const existing = new Set(priceRows.value.map((row) => row.currency.trim().toUpperCase()));
+  const currency = ["MAD", "USD", "EUR", "XOF", "XAF", "CDF", "TND", "GBP"]
+    .find((code) => !existing.has(code)) ?? "";
+  priceRows.value.push({ currency, price: 0 });
+}
+
+function removePriceRow(index) {
+  priceRows.value.splice(index, 1);
+}
+
 function validate() {
   const e = {};
   if (isCreate.value && !form.name?.trim()) e.name = "Le nom du plan est requis.";
+  const currencies = priceRows.value.map((row) => row.currency.trim().toUpperCase());
+  if (!priceRows.value.length || currencies.some((code) => !/^[A-Z]{3}$/.test(code))) {
+    e.currency_prices = "Chaque tarif doit avoir un code devise ISO de 3 lettres.";
+  } else if (new Set(currencies).size !== currencies.length) {
+    e.currency_prices = "Chaque devise ne peut apparaître qu’une seule fois.";
+  } else if (priceRows.value.some((row) => row.price === "" || Number(row.price) < 0)) {
+    e.currency_prices = "Saisissez un prix positif ou nul pour chaque devise.";
+  }
   errors.value = e;
   return Object.keys(e).length === 0;
 }
@@ -220,7 +290,12 @@ function submit() {
   if (!validate()) return;
   const payload = {
     tagline: form.tagline.trim(),
-    price_monthly: form.price_monthly,
+    price_monthly: Number(priceRows.value[0].price),
+    currency: priceRows.value[0].currency.trim().toUpperCase(),
+    currency_prices: Object.fromEntries(priceRows.value.map((row) => [
+      row.currency.trim().toUpperCase(),
+      Number(row.price),
+    ])),
     max_users: parseLimit(usersInput.value),
     max_employees: parseLimit(employeesInput.value),
     storage_gb: parseLimit(storageInput.value),
@@ -231,7 +306,6 @@ function submit() {
   if (isCreate.value) {
     payload.name = form.name.trim();
     payload.code = form.code.trim();
-    payload.currency = "EUR";
   }
   emit("save", payload);
   emit("update:open", false);

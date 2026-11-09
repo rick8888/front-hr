@@ -14,7 +14,7 @@
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to invoices
+          {{ t("tenant.invoices.backToList") }}
         </RouterLink>
 
         <div class="flex items-center gap-2">
@@ -32,7 +32,7 @@
                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
               />
             </svg>
-            Print
+            {{ t("tenant.invoices.print") }}
           </button>
           <button
             type="button"
@@ -48,7 +48,7 @@
                 d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
               />
             </svg>
-            {{ downloading ? "Downloading…" : "Download PDF" }}
+            {{ downloading ? t("tenant.invoices.downloading") : t("tenant.invoices.downloadPdf") }}
           </button>
         </div>
       </div>
@@ -68,7 +68,7 @@
           class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500"
           aria-hidden="true"
         />
-        <span class="ml-3 text-sm text-neutral-500">Loading invoice…</span>
+        <span class="ml-3 text-sm text-neutral-500">{{ t("tenant.invoices.loadingDetail") }}</span>
       </div>
 
       <article
@@ -90,7 +90,7 @@
           <div class="relative flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Invoice
+                {{ t("tenant.invoices.invoice") }}
               </p>
               <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
                 {{ invoice.invoiceNumber }}
@@ -107,13 +107,13 @@
                   statusBadgeClass,
                 ]"
               >
-                {{ invoice.status }}
+                {{ localizedStatus }}
               </span>
               <p class="mt-3 text-sm text-white/80">
-                Issued {{ formatInvoiceDate(invoice.date) || "—" }}
+                {{ t("tenant.invoices.issuedOn", { date: formatDate(invoice.date) || "—" }) }}
               </p>
               <p v-if="invoice.dueDate" class="mt-1 text-sm text-white/80">
-                Due {{ formatInvoiceDate(invoice.dueDate) }}
+                {{ t("tenant.invoices.dueOn", { date: formatDate(invoice.dueDate) }) }}
               </p>
             </div>
           </div>
@@ -123,7 +123,7 @@
           <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
             <section>
               <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                From
+                {{ t("tenant.invoices.from") }}
               </h2>
               <p class="mt-2 text-base font-semibold text-neutral-900">
                 {{ invoice.issuer?.name || "OpenCore Business Suite" }}
@@ -138,7 +138,7 @@
 
             <section>
               <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Bill to
+                {{ t("tenant.invoices.billTo") }}
               </h2>
               <p class="mt-2 text-base font-semibold text-neutral-900">
                 {{ invoice.billTo?.name || "—" }}
@@ -159,7 +159,7 @@
                 {{ invoice.billTo.phone }}
               </p>
               <p v-if="invoice.billTo?.taxId" class="mt-1 text-sm text-neutral-600">
-                Tax ID: {{ invoice.billTo.taxId }}
+                {{ t("tenant.invoices.taxId") }}: {{ invoice.billTo.taxId }}
               </p>
             </section>
           </div>
@@ -167,7 +167,7 @@
           <dl class="mt-8 grid grid-cols-2 gap-4 rounded-xl bg-neutral-50 p-4 sm:grid-cols-4">
             <div>
               <dt class="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Invoice #
+                {{ t("tenant.invoices.number") }}
               </dt>
               <dd class="mt-1 text-sm font-semibold text-neutral-900">
                 {{ invoice.invoiceNumber }}
@@ -178,23 +178,23 @@
                 Issue date
               </dt>
               <dd class="mt-1 text-sm font-semibold text-neutral-900">
-                {{ formatInvoiceDate(invoice.date) || "—" }}
+                {{ formatDate(invoice.date) || "—" }}
               </dd>
             </div>
             <div>
               <dt class="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Period
+                {{ t("tenant.invoices.period") }}
               </dt>
               <dd class="mt-1 text-sm font-semibold text-neutral-900">
-                {{ invoice.period || "—" }}
+                {{ formatPeriod(invoice.period) || "—" }}
               </dd>
             </div>
             <div>
               <dt class="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Paid on
+                {{ t("tenant.invoices.paidOn") }}
               </dt>
               <dd class="mt-1 text-sm font-semibold text-neutral-900">
-                {{ formatInvoiceDate(invoice.paidAt) || "—" }}
+                {{ formatDate(invoice.paidAt) || "—" }}
               </dd>
             </div>
           </dl>
@@ -204,16 +204,16 @@
               <thead class="bg-neutral-50">
                 <tr class="text-left">
                   <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                    Description
+                    {{ t("tenant.invoices.description") }}
                   </th>
                   <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 text-right">
-                    Qty
+                    {{ t("tenant.invoices.quantity") }}
                   </th>
                   <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 text-right">
-                    Unit price
+                    {{ t("tenant.invoices.unitPrice") }}
                   </th>
                   <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 text-right">
-                    Amount
+                    {{ t("tenant.invoices.amount") }}
                   </th>
                 </tr>
               </thead>
@@ -224,9 +224,9 @@
                   class="border-t border-neutral-100"
                 >
                   <td class="px-4 py-4 text-sm text-neutral-800">
-                    <p class="font-medium">{{ item.description }}</p>
+                    <p class="font-medium">{{ localizeDescription(item.description) }}</p>
                     <p v-if="invoice.planName" class="mt-1 text-xs text-neutral-500">
-                      Plan: {{ invoice.planName }}
+                      {{ t("tenant.invoices.plan") }} : {{ invoice.planName }}
                     </p>
                   </td>
                   <td class="px-4 py-4 text-sm text-neutral-700 text-right">
@@ -246,11 +246,11 @@
           <div class="mt-6 flex justify-end">
             <div class="w-full max-w-xs space-y-2">
               <div class="flex items-center justify-between text-sm">
-                <span class="text-neutral-500">Subtotal</span>
+                <span class="text-neutral-500">{{ t("tenant.invoices.subtotal") }}</span>
                 <span class="font-medium text-neutral-800">{{ invoice.amount }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-neutral-500">Amount paid</span>
+                <span class="text-neutral-500">{{ t("tenant.invoices.amountPaid") }}</span>
                 <span class="font-medium text-neutral-800">
                   {{ invoice.amountPaid || "—" }}
                 </span>
@@ -258,7 +258,7 @@
               <div
                 class="flex items-center justify-between border-t border-neutral-200 pt-3"
               >
-                <span class="text-sm font-semibold text-neutral-900">Balance due</span>
+                <span class="text-sm font-semibold text-neutral-900">{{ t("tenant.invoices.balanceDue") }}</span>
                 <span class="text-xl font-bold text-neutral-900">
                   {{ invoice.balance || invoice.amount }}
                 </span>
@@ -271,17 +271,17 @@
             class="mt-8 rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm text-amber-900"
           >
             <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">
-              Notes
+              {{ t("tenant.invoices.notes") }}
             </p>
             <p class="mt-1 whitespace-pre-line">{{ invoice.notes }}</p>
           </div>
 
           <footer class="mt-10 border-t border-neutral-100 pt-6 text-center">
             <p class="text-sm text-neutral-500">
-              Thank you for your business.
+              {{ t("tenant.invoices.thankYou") }}
             </p>
             <p class="mt-1 text-xs text-neutral-400">
-              This invoice was generated automatically for your subscription payment.
+              {{ t("tenant.invoices.generatedNotice") }}
             </p>
           </footer>
         </div>
@@ -293,14 +293,29 @@
 <script setup>
 import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import {
-  formatInvoiceDate,
-  useTenantInvoiceDetail,
-} from "../../composables/useTenantInvoices.js";
+import { useTenantInvoiceDetail } from "../../composables/useTenantInvoices.js";
+import { useI18n } from "../../i18n/index.js";
 
 const route = useRoute();
+const { t, locale } = useI18n();
 const { loading, downloading, error, invoice, load, downloadPdf } =
   useTenantInvoiceDetail();
+
+const localizedStatus = computed(() => {
+  const keys = {
+    paid: "tenant.invoices.status.paid",
+    pending: "tenant.invoices.status.pending",
+    partial: "tenant.invoices.status.partial",
+    overdue: "tenant.invoices.status.overdue",
+    failed: "tenant.invoices.status.failed",
+    cancelled: "tenant.invoices.status.cancelled",
+    canceled: "tenant.invoices.status.cancelled",
+    refunded: "tenant.invoices.status.refunded",
+    draft: "tenant.invoices.status.draft",
+  };
+  const key = keys[String(invoice.value?.statusCode || invoice.value?.status || "").toLowerCase()];
+  return key ? t(key) : invoice.value?.status;
+});
 
 const billToAddress = computed(() => {
   const bill = invoice.value?.billTo;
@@ -314,7 +329,7 @@ const billToAddress = computed(() => {
 });
 
 const statusBadgeClass = computed(() => {
-  const key = String(invoice.value?.status || "").toLowerCase();
+  const key = String(invoice.value?.statusCode || invoice.value?.status || "").toLowerCase();
   if (key === "paid") return "bg-emerald-400/20 text-emerald-100 ring-1 ring-emerald-300/40";
   if (key === "pending" || key === "partial") {
     return "bg-amber-400/20 text-amber-100 ring-1 ring-amber-300/40";
@@ -325,6 +340,38 @@ const statusBadgeClass = computed(() => {
   return "bg-white/15 text-white ring-1 ring-white/25";
 });
 
+function formatDate(value) {
+  if (!value || value === "—") return value || "—";
+  const raw = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}/.test(raw)
+    ? new Date(`${raw.slice(0, 10)}T12:00:00`)
+    : new Date(raw);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(locale.value === "fr" ? "fr-FR" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatPeriod(value) {
+  if (!value || value === "—") return value || "—";
+  const dates = value.split(/\s+[–-]\s+/);
+  return dates.length === 2
+    ? `${formatDate(dates[0])} – ${formatDate(dates[1])}`
+    : value;
+}
+
+function localizeDescription(value) {
+  const description = String(value || "");
+  const paymentMatch = description.match(/^Payment for (.+) plan$/i);
+  if (paymentMatch) {
+    return t("tenant.invoices.paymentForPlan", { plan: paymentMatch[1] });
+  }
+  return description;
+}
+
 function printInvoice() {
   window.print();
 }
@@ -332,7 +379,7 @@ function printInvoice() {
 async function loadCurrent() {
   const id = Number(route.params.id);
   if (!Number.isFinite(id) || id <= 0) {
-    error.value = "Invalid invoice.";
+    error.value = t("tenant.invoices.invalid");
     return;
   }
   await load(id);

@@ -102,11 +102,11 @@
       </PayrollKpiCard>
       <PayrollKpiCard
         :label="t('admin.payroll.kpi.totalPayout')"
-        :value="loading ? '…' : formatMoney(kpi.totalPayout)"
+        :value="loading ? '…' : formatCurrencyGroups(kpi.totalPayoutByCurrency)"
         icon-class="bg-primary-100 text-primary-700"
       >
         <template #icon>
-          <span class="text-lg font-bold">$</span>
+          <span class="text-lg font-bold">¤</span>
         </template>
       </PayrollKpiCard>
     </div>
@@ -347,12 +347,13 @@
                   class="flex items-center gap-3 text-left w-full group"
                   @click="$router.push(`/employees/${row.employeeId}`)"
                 >
-                  <span
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
+                  <EmployeeAvatar
+                    :name="row.employeeName"
+                    :avatar-url="row.avatarUrl"
+                    size-class="h-10 w-10 text-xs font-semibold"
+                    fallback-class="text-white"
                     :style="{ backgroundColor: avatarColor(row.employeeName) }"
-                  >
-                    {{ initials(row.employeeName) }}
-                  </span>
+                  />
                   <span class="min-w-0">
                     <span class="block font-semibold text-neutral-900 group-hover:text-secondary-700">
                       {{ row.employeeName }}
@@ -656,8 +657,9 @@ import { useI18n } from "../i18n/index.js";
 import PayrollKpiCard from "../components/payroll/PayrollKpiCard.vue";
 import PayrollFilterField from "../components/payroll/PayrollFilterField.vue";
 import TableRowMenu from "../components/common/TableRowMenu.vue";
+import EmployeeAvatar from "../components/common/EmployeeAvatar.vue";
 import { usePayrollRecords } from "./payroll/composables/usePayrollRecords.js";
-import { avatarColor, initialsFromName } from "./payroll/utils/payroll-http.js";
+import { avatarColor } from "./payroll/utils/payroll-http.js";
 
 const { t, bcp47 } = useI18n();
 
@@ -724,8 +726,10 @@ function formatMoney(n, currency = "EUR") {
   }).format(Number(n) || 0);
 }
 
-function initials(name) {
-  return initialsFromName(name);
+function formatCurrencyGroups(groups = []) {
+  return groups.length
+    ? groups.map(({ currency, amount }) => formatMoney(amount, currency)).join(" · ")
+    : "—";
 }
 
 function openGenerateModal() {

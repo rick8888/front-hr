@@ -67,7 +67,7 @@
           ]"
           @click="onCtaClick"
         >
-          {{ plan.cta?.label || "Choose Plan" }}
+          {{ plan.cta?.label || t("tenant.subscription.choosePlan") }}
         </button>
       </div>
     </div>
@@ -76,6 +76,9 @@
 
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
 
 const props = defineProps({
   plan: { type: Object, default: () => ({}) },

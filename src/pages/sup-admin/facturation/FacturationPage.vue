@@ -175,36 +175,96 @@
               <button
                 v-if="isInvoicePayable(inv)"
                 type="button"
-                class="mr-2 text-sm font-medium text-primary-600 hover:text-primary-800"
+                class="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="`Enregistrer un paiement pour ${inv.invoice_number}`"
+                :title="`Enregistrer un paiement pour ${inv.invoice_number}`"
                 :disabled="billingStore.saving"
                 @click="openPayment(inv)"
               >
-                Paiement
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M2.25 8.25h19.5m-18 0A2.25 2.25 0 0 0 1.5 10.5v9A2.25 2.25 0 0 0 3.75 21.75h16.5A2.25 2.25 0 0 0 22.5 19.5v-9a2.25 2.25 0 0 0-2.25-2.25m-18 0V6A2.25 2.25 0 0 1 4.5 3.75h15A2.25 2.25 0 0 1 21.75 6v2.25M16.5 15h2.25"
+                  />
+                </svg>
               </button>
               <button
                 type="button"
-                class="mr-2 text-sm font-medium text-primary-600 hover:text-primary-800"
+                class="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="`Modifier la facture ${inv.invoice_number}`"
+                :title="`Modifier la facture ${inv.invoice_number}`"
                 :disabled="billingStore.saving"
                 @click="openEdit(inv)"
               >
-                Modifier
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="m16.862 4.487 2.651 2.651M8 16l8.862-8.862a1.875 1.875 0 0 1 2.652 2.652L10.65 18.65 6 20l1.35-4.65A2 2 0 0 1 8 16Z"
+                  />
+                </svg>
               </button>
               <button
                 v-if="isInvoicePayable(inv)"
                 type="button"
-                class="mr-2 text-sm text-emerald-600 hover:text-emerald-800"
+                class="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="`Régler le solde de ${inv.invoice_number}`"
+                :title="`Régler le solde de ${inv.invoice_number}`"
                 :disabled="billingStore.saving"
                 @click="billingStore.markAsPaid(inv.id)"
               >
-                Solde
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M9 12.75 11.25 15 15 9.75m6.75 2.25a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z"
+                  />
+                </svg>
               </button>
               <button
                 type="button"
-                class="text-sm text-red-600"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="`Supprimer la facture ${inv.invoice_number}`"
+                :title="`Supprimer la facture ${inv.invoice_number}`"
                 :disabled="billingStore.saving"
                 @click="requestDelete(inv)"
               >
-                Suppr.
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M3 6h18m-2 0-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6m4 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-6 4v6m4-6v6"
+                  />
+                </svg>
               </button>
             </td>
           </tr>

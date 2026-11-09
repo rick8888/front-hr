@@ -63,7 +63,6 @@
       :pagination-to="paginationTo"
       :total-entries="filteredEmployees.length"
       :page-numbers="pageNumbers"
-      :get-initials="getInitials"
       @page="goToPage"
       @view="viewEmployee"
     />
@@ -117,7 +116,6 @@ const {
   loadPageData,
   clearFilters,
   goToPage,
-  getInitials,
   viewEmployee,
 } = useEmployeeCategoryPage(toRef(props, "category"));
 

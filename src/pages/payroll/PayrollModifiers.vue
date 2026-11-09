@@ -294,12 +294,13 @@
                 </template>
                 <template v-else-if="row.employee">
                   <div class="flex items-center gap-2">
-                    <div
-                      class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
+                    <EmployeeAvatar
+                      :name="row.employee.name"
+                      :avatar-url="row.employee.avatarUrl"
+                      size-class="h-9 w-9 text-xs font-semibold"
+                      fallback-class="text-white"
                       :style="{ backgroundColor: avatarColor(row.employee.name) }"
-                    >
-                      {{ row.employee.initials }}
-                    </div>
+                    />
                     <div class="min-w-0">
                       <p class="font-medium text-neutral-900 truncate">
                         {{ row.employee.name }}
@@ -532,6 +533,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useI18n } from "../../i18n/index.js";
 import TableRowMenu from "../../components/common/TableRowMenu.vue";
+import EmployeeAvatar from "../../components/common/EmployeeAvatar.vue";
 import { usePayrollModifierStore } from "./stores/payroll-modifier.store.js";
 import { avatarColor } from "./utils/payroll-http.js";
 

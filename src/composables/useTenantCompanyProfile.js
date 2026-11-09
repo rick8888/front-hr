@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { tenantProfileApiService } from "../pages/tenant/services/tenant-profile.api.service.js";
+import { t } from "../i18n/index.js";
 
 export function emptyProfileForm() {
   return {
@@ -76,7 +77,7 @@ export function useTenantCompanyProfile() {
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to load company profile.";
+        t("tenant.profile.loadError");
       profile.value = null;
     } finally {
       loading.value = false;
@@ -91,11 +92,11 @@ export function useTenantCompanyProfile() {
     try {
       const data = await tenantProfileApiService.updateProfile(mapFormToPayload(form));
       applyProfile(data);
-      successMessage.value = "Profile updated successfully.";
+      successMessage.value = t("tenant.profile.saved");
     } catch (e) {
       error.value =
         e.response?.data?.message ||
-        "Unable to save company profile.";
+        t("tenant.profile.saveError");
       throw e;
     } finally {
       saving.value = false;

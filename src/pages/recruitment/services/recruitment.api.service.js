@@ -11,6 +11,11 @@ export const jobOpeningsApiService = {
     return Array.isArray(list) ? list : [];
   },
 
+  async fetchById(id) {
+    const { data } = await apiClient.get(`/candidates/${id}`);
+    return unwrap(data);
+  },
+
   async create(payload) {
     const { data } = await apiClient.post("/job-openings", payload);
     return unwrap(data);
@@ -45,6 +50,11 @@ export const candidatesApiService = {
 
   async updateStage(id, stage) {
     const { data } = await apiClient.patch(`/candidates/${id}/stage`, { stage });
+    return unwrap(data);
+  },
+
+  async hire(id, payload) {
+    const { data } = await apiClient.post(`/candidates/${id}/hire`, payload);
     return unwrap(data);
   },
 

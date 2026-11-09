@@ -40,6 +40,7 @@ export function mapPayrollRegisterFromApi(raw) {
     id: base.id,
     employeeId: base.employeeId,
     employeeName: base.employeeName,
+    avatarUrl: base.avatarUrl,
     empCode: base.empCode,
     department: base.department || "—",
     period: base.period, // libellé affichage (ex. "Apr 2026")
@@ -60,11 +61,21 @@ export function mapPayrollRegisterFromApi(raw) {
  */
 export function computePayrollRegisterKpi(list) {
   const rows = Array.isArray(list) ? list : [];
+  const totalsByCurrency = (selector) => {
+    const totals = new Map();
+    for (const row of rows) {
+      const currency = row.currency || "EUR";
+      totals.set(currency, (totals.get(currency) || 0) + (Number(selector(row)) || 0));
+    }
+    return [...totals.entries()]
+      .sort(([currencyA], [currencyB]) => currencyA.localeCompare(currencyB))
+      .map(([currency, amount]) => ({ currency, amount: Math.round(amount * 100) / 100 }));
+  };
   return {
     totalRecords: rows.length,
-    totalGross: rows.reduce((s, r) => s + (Number(r.grossSalary) || 0), 0),
-    totalDeductions: rows.reduce((s, r) => s + (Number(r.deductions) || 0), 0),
-    totalNet: rows.reduce((s, r) => s + (Number(r.netPay) || 0), 0),
+    totalGrossByCurrency: totalsByCurrency((row) => row.grossSalary),
+    totalDeductionsByCurrency: totalsByCurrency((row) => row.deductions),
+    totalNetByCurrency: totalsByCurrency((row) => row.netPay),
   };
 }
 

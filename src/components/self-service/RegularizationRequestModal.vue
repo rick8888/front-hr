@@ -2,79 +2,94 @@
   <Modal
     :model-value="modelValue"
     :title="modalTitle"
-    size="md"
+    size="lg"
+    backdrop-class="bg-neutral-950/60 backdrop-blur-sm"
+    panel-class="overflow-hidden rounded-2xl border border-white/60 shadow-2xl"
+    header-class="border-neutral-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/60 px-7 py-5"
+    title-class="text-xl tracking-tight"
+    close-button-class="rounded-lg p-2 transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-violet-400"
+    :close-label="t('common.close')"
+    body-class="px-7 py-6"
     hide-footer
     @update:model-value="onModelValue"
   >
-    <form class="space-y-4" @submit.prevent="onSubmit">
-      <div v-if="saveError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <form class="space-y-5" @submit.prevent="onSubmit">
+      <div v-if="saveError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
         {{ saveError }}
       </div>
 
-      <div>
-        <label for="reg-date" class="mb-1.5 block text-sm font-medium text-neutral-800">
-          {{ t("common.date") }}<span class="text-red-500" aria-hidden="true"> *</span>
-        </label>
-        <input id="reg-date" v-model="form.date" type="date" required :class="inputClass" :disabled="saving" />
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="reg-date" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ t("common.date") }}<span class="text-rose-500" aria-hidden="true"> *</span>
+          </label>
+          <input id="reg-date" v-model="form.date" type="date" required :class="inputClass" :disabled="saving" />
+        </div>
+
+        <div>
+          <label for="reg-type" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ t("common.type") }}<span class="text-rose-500" aria-hidden="true"> *</span>
+          </label>
+          <select id="reg-type" v-model="form.type" required :class="inputClass" :disabled="saving">
+            <option value="" disabled>{{ t("ss.form.regularization.selectType") }}</option>
+            <option v-for="typeOpt in typeOptions" :key="typeOpt.value" :value="typeOpt.value">
+              {{ typeOpt.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="reg-checkin" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ t("ss.form.regularization.checkIn") }}<span class="text-rose-500" aria-hidden="true"> *</span>
+          </label>
+          <input id="reg-checkin" v-model="form.checkInTime" type="time" required :class="inputClass" :disabled="saving" />
+        </div>
+
+        <div>
+          <label for="reg-checkout" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ t("ss.form.regularization.checkOut") }}<span class="text-rose-500" aria-hidden="true"> *</span>
+          </label>
+          <input id="reg-checkout" v-model="form.checkOutTime" type="time" required :class="inputClass" :disabled="saving" />
+        </div>
       </div>
 
       <div>
-        <label for="reg-type" class="mb-1.5 block text-sm font-medium text-neutral-800">
-          {{ t("common.type") }}<span class="text-red-500" aria-hidden="true"> *</span>
-        </label>
-        <select id="reg-type" v-model="form.type" required :class="inputClass" :disabled="saving">
-          <option value="" disabled>{{ t("ss.form.regularization.selectType") }}</option>
-          <option v-for="typeOpt in typeOptions" :key="typeOpt.value" :value="typeOpt.value">
-            {{ typeOpt.label }}
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <label for="reg-checkin" class="mb-1.5 block text-sm font-medium text-neutral-800">
-          {{ t("ss.form.regularization.checkIn") }}<span class="text-red-500" aria-hidden="true"> *</span>
-        </label>
-        <input id="reg-checkin" v-model="form.checkInTime" type="time" required :class="inputClass" :disabled="saving" />
-      </div>
-
-      <div>
-        <label for="reg-checkout" class="mb-1.5 block text-sm font-medium text-neutral-800">
-          {{ t("ss.form.regularization.checkOut") }}<span class="text-red-500" aria-hidden="true"> *</span>
-        </label>
-        <input id="reg-checkout" v-model="form.checkOutTime" type="time" required :class="inputClass" :disabled="saving" />
-      </div>
-
-      <div>
-        <label for="reg-reason" class="mb-1.5 block text-sm font-medium text-neutral-800">
-          {{ t("common.reason") }}<span class="text-red-500" aria-hidden="true"> *</span>
+        <label for="reg-reason" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          {{ t("common.reason") }}<span class="text-rose-500" aria-hidden="true"> *</span>
         </label>
         <textarea id="reg-reason" v-model="form.reason" rows="4" required :class="[inputClass, 'resize-y']" :disabled="saving" />
       </div>
 
       <div>
-        <label for="reg-files" class="mb-1.5 block text-sm font-medium text-neutral-800">
+        <label for="reg-files" class="mb-1.5 block text-sm font-semibold text-slate-700">
           {{ t("common.attachments") }}
         </label>
-        <div class="flex items-center gap-3">
+        <div class="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2">
           <button
             type="button"
-            class="inline-flex items-center rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-xs hover:bg-neutral-50"
+            class="inline-flex shrink-0 items-center rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-200 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50"
+            :disabled="saving"
             @click="$refs.fileInput.click()"
           >
             {{ t("common.chooseFiles") }}
           </button>
-          <span class="truncate text-sm text-neutral-500">{{ filesLabel }}</span>
+          <span class="truncate text-sm text-slate-500">{{ filesLabel }}</span>
         </div>
-        <input ref="fileInput" id="reg-files" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple class="hidden" @change="onFiles" />
-        <p class="mt-1.5 text-xs text-neutral-500">{{ t("ss.form.regularization.filesHint") }}</p>
-        <p class="text-xs text-neutral-500">{{ t("ss.form.regularization.replaceHint") }}</p>
+        <input ref="fileInput" id="reg-files" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple class="hidden" :disabled="saving" @change="onFiles" />
+        <p class="mt-2 text-xs leading-relaxed text-slate-500">{{ t("ss.form.regularization.filesHint") }}</p>
+        <p class="text-xs leading-relaxed text-slate-500">{{ t("ss.form.regularization.replaceHint") }}</p>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-2">
-        <button type="button" class="rounded-lg bg-neutral-100 px-5 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-200 disabled:opacity-50" :disabled="saving" @click="cancel">
+      <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end sm:gap-3">
+        <button type="button" class="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50" :disabled="saving" @click="cancel">
           {{ t("common.cancel") }}
         </button>
-        <button type="submit" class="rounded-lg bg-secondary-500 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-secondary-600 disabled:pointer-events-none disabled:opacity-50" :disabled="!isValid || saving">
+        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" :disabled="!isValid || saving">
+          <svg v-if="!saving" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7-7 7" />
+          </svg>
           {{ submitLabel }}
         </button>
       </div>
@@ -119,7 +134,7 @@ const submitLabel = computed(() => {
 });
 
 const inputClass =
-  "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25 disabled:bg-neutral-50 disabled:opacity-70";
+  "w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 disabled:bg-slate-50 disabled:opacity-70";
 
 const fileInput = ref(null);
 const files = ref([]);

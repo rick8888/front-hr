@@ -23,9 +23,11 @@ export function mapDashboardRecordFromApi(raw) {
     id: base.id,
     employeeId: base.employeeId,
     name: base.employeeName,
+    avatarUrl: base.avatarUrl,
     code: base.empCode,
     period: base.period,
     periodKey: base.periodKey,
+    currency: base.currency,
     gross: base.grossSalary,
     net: base.netSalary,
     status: base.status,
@@ -73,6 +75,19 @@ export function computeDashboardKpi(records, period = currentPeriodKey()) {
   const pending = rows.filter((r) => r.status === "pending").length;
 
   const thisMonth = rows.filter((r) => r.periodKey === period);
+  const amountsByCurrency = (source, valueOf) => {
+    const groups = new Map();
+    for (const row of source) {
+      const currency = row.currency || "EUR";
+      const group = groups.get(currency) || { amount: 0, count: 0 };
+      group.amount += Number(valueOf(row)) || 0;
+      group.count += 1;
+      groups.set(currency, group);
+    }
+    return [...groups.entries()]
+      .sort(([currencyA], [currencyB]) => currencyA.localeCompare(currencyB))
+      .map(([currency, group]) => ({ currency, ...group }));
+  };
   const paymentThisMonth = round2(
     thisMonth.reduce((s, r) => s + (Number(r.net) || 0), 0)
   );
@@ -86,12 +101,20 @@ export function computeDashboardKpi(records, period = currentPeriodKey()) {
             avgSource.length
         )
       : 0;
+  const avgSalaryByCurrency = amountsByCurrency(avgSource, (row) => row.net)
+    .map(({ currency, amount, count }) => ({
+      currency,
+      amount: count ? round2(amount / count) : 0,
+    }));
 
   return {
     employees: employeeIds.size,
     pending,
     paymentThisMonth,
+    paymentThisMonthByCurrency: amountsByCurrency(thisMonth, (row) => row.net)
+      .map(({ currency, amount }) => ({ currency, amount: round2(amount) })),
     avgSalary,
+    avgSalaryByCurrency,
     totalStatuses: rows.length,
     currentPeriod: period,
   };

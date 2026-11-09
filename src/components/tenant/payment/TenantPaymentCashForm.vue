@@ -12,6 +12,7 @@
       <input
         :value="modelReference"
         type="text"
+        maxlength="120"
         class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         placeholder="ex: Reçu caisse #1234"
         @input="$emit('update:modelReference', $event.target.value)"

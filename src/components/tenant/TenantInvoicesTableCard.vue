@@ -21,14 +21,13 @@
         />
       </svg>
       <p>
-        Invoices are automatically generated for approved payments. You can
-        view and download them anytime.
+        {{ t("tenant.invoices.approvalInfo") }}
       </p>
     </div>
 
     <div class="mt-5 flex justify-end">
       <label class="inline-flex items-center gap-2 text-sm text-neutral-500">
-        Search invoices:
+        {{ t("tenant.invoices.search") }}
         <input
           type="search"
           :value="searchQuery"
@@ -51,7 +50,7 @@
                 col.align === 'center' ? 'text-center' : 'text-left',
               ]"
             >
-              {{ col.label }}
+              {{ t(col.label) }}
             </th>
           </tr>
         </thead>
@@ -65,7 +64,7 @@
                 class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-500 align-middle"
                 aria-hidden="true"
               />
-              <span class="ml-2 align-middle">Loading invoices…</span>
+              <span class="ml-2 align-middle">{{ t("tenant.invoices.loading") }}</span>
             </td>
           </tr>
           <tr v-else-if="!rows.length">
@@ -73,7 +72,7 @@
               :colspan="COLUMNS.length"
               class="px-4 py-6 text-center text-sm text-neutral-400"
             >
-              No invoices yet.
+              {{ t("tenant.invoices.empty") }}
             </td>
           </tr>
           <tr
@@ -83,7 +82,7 @@
             class="border-b border-neutral-100 last:border-0"
           >
             <td class="px-4 py-4 text-sm text-neutral-700">
-              {{ formatInvoiceDate(row.date) }}
+              {{ formatInvoiceDate(row.date, locale) }}
             </td>
             <td class="px-4 py-4 text-sm text-neutral-700">
               {{ row.invoiceNumber }}
@@ -98,10 +97,10 @@
               <span
                 :class="[
                   'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold',
-                  statusClass(row.status),
+                  statusClass(row.statusCode || row.status),
                 ]"
               >
-                {{ row.status }}
+                {{ statusLabel(row.statusCode || row.status) }}
               </span>
             </td>
             <td class="px-4 py-4">
@@ -131,7 +130,7 @@
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                     />
                   </svg>
-                  View
+                  {{ t("tenant.invoices.view") }}
                 </button>
                 <button
                   type="button"
@@ -153,7 +152,7 @@
                       d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
                     />
                   </svg>
-                  {{ downloadingId === row.id ? "…" : "Download" }}
+                  {{ downloadingId === row.id ? "…" : t("tenant.invoices.download") }}
                 </button>
               </div>
             </td>
@@ -166,6 +165,9 @@
 
 <script setup>
 import { formatInvoiceDate } from "../../composables/useTenantInvoices.js";
+import { useI18n } from "../../i18n/index.js";
+
+const { t, locale } = useI18n();
 
 defineProps({
   rows: { type: Array, required: true },
@@ -177,24 +179,40 @@ defineProps({
 defineEmits(["update:searchQuery", "view", "download"]);
 
 const COLUMNS = [
-  { key: "date", label: "Invoice Date" },
-  { key: "number", label: "Invoice Number" },
-  { key: "description", label: "Description" },
-  { key: "amount", label: "Amount" },
-  { key: "status", label: "Status" },
-  { key: "actions", label: "Actions" },
+  { key: "date", label: "tenant.invoices.date" },
+  { key: "number", label: "tenant.invoices.number" },
+  { key: "description", label: "tenant.invoices.description" },
+  { key: "amount", label: "tenant.invoices.amount" },
+  { key: "status", label: "tenant.invoices.status" },
+  { key: "actions", label: "tenant.invoices.actions" },
 ];
 
 function statusClass(status) {
   const key = String(status || "").toLowerCase();
-  if (key === "paid") return "bg-emerald-50 text-emerald-700";
-  if (key === "pending") return "bg-amber-50 text-amber-700";
-  if (key === "partial") return "bg-amber-50 text-amber-700";
-  if (key === "overdue") return "bg-rose-50 text-rose-700";
-  if (key === "failed") return "bg-rose-50 text-rose-700";
-  if (key === "cancelled") return "bg-neutral-100 text-neutral-600";
-  if (key === "refunded") return "bg-sky-50 text-sky-700";
-  if (key === "draft") return "bg-neutral-100 text-neutral-600";
+  if (key === "paid" || key === "payé" || key === "payée") return "bg-emerald-50 text-emerald-700";
+  if (key === "pending" || key === "en attente") return "bg-amber-50 text-amber-700";
+  if (key === "partial" || key === "partiellement payé") return "bg-amber-50 text-amber-700";
+  if (key === "overdue" || key === "en retard") return "bg-rose-50 text-rose-700";
+  if (key === "failed" || key === "échoué") return "bg-rose-50 text-rose-700";
+  if (key === "cancelled" || key === "canceled" || key === "annulé") return "bg-neutral-100 text-neutral-600";
+  if (key === "refunded" || key === "remboursé") return "bg-sky-50 text-sky-700";
+  if (key === "draft" || key === "brouillon") return "bg-neutral-100 text-neutral-600";
   return "bg-neutral-100 text-neutral-600";
+}
+
+function statusLabel(status) {
+  const keys = {
+    paid: "tenant.invoices.status.paid",
+    pending: "tenant.invoices.status.pending",
+    partial: "tenant.invoices.status.partial",
+    overdue: "tenant.invoices.status.overdue",
+    failed: "tenant.invoices.status.failed",
+    cancelled: "tenant.invoices.status.cancelled",
+    canceled: "tenant.invoices.status.cancelled",
+    refunded: "tenant.invoices.status.refunded",
+    draft: "tenant.invoices.status.draft",
+  };
+  const key = keys[String(status || "").toLowerCase()];
+  return key ? t(key) : status;
 }
 </script>

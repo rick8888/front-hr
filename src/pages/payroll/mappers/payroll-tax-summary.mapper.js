@@ -55,16 +55,34 @@ export function mapTaxSummaryFromApi(raw) {
 export function computeTaxSummaryKpi(list) {
   const rows = Array.isArray(list) ? list : [];
   const employeeIds = new Set(rows.map((r) => r.employeeId).filter((id) => id != null));
-  const totalTax = round2(rows.reduce((s, r) => s + (Number(r.taxAmount) || 0), 0));
-  const highestTax = rows.length
-    ? Math.max(...rows.map((r) => Number(r.taxAmount) || 0))
-    : 0;
+  const taxByCurrency = new Map();
+  const employeesByCurrency = new Map();
+  const highestByCurrency = new Map();
+  for (const row of rows) {
+    const currency = row.currency || "EUR";
+    const amount = Number(row.taxAmount) || 0;
+    taxByCurrency.set(currency, (taxByCurrency.get(currency) || 0) + amount);
+    if (row.employeeId != null) {
+      const employees = employeesByCurrency.get(currency) || new Set();
+      employees.add(row.employeeId);
+      employeesByCurrency.set(currency, employees);
+    }
+    highestByCurrency.set(currency, Math.max(highestByCurrency.get(currency) || 0, amount));
+  }
+  const totalTaxByCurrency = [...taxByCurrency.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([currency, amount]) => ({ currency, amount: round2(amount) }));
   const employees = employeeIds.size;
   return {
     totalEmployees: employees,
-    totalTax,
-    averageTax: employees > 0 ? round2(totalTax / employees) : 0,
-    highestTax: round2(highestTax),
+    totalTaxByCurrency,
+    averageTaxByCurrency: totalTaxByCurrency.map(({ currency, amount }) => {
+      const count = employeesByCurrency.get(currency)?.size || 0;
+      return { currency, amount: count > 0 ? round2(amount / count) : 0 };
+    }),
+    highestTaxByCurrency: [...highestByCurrency.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([currency, amount]) => ({ currency, amount: round2(amount) })),
   };
 }
 

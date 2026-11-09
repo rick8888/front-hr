@@ -11,6 +11,7 @@
     <div class="flex min-w-0 w-full flex-1 flex-col">
       <Header class="sticky top-0 z-50 shrink-0 print:hidden" />
       <main class="w-full min-w-0 overflow-x-auto pb-8 print:pb-0">
+        <TenantSubscriptionStatusNotice v-if="authStore.isTenant" class="px-4 pt-4 sm:px-6" />
         <slot />
       </main>
     </div>
@@ -27,6 +28,7 @@ import { useAppShell } from "../../composables/useAppShell.js";
 import Sidebar from "./Sidebar.vue";
 import Header from "./Header.vue";
 import EmployeeWorkTimerFab from "./EmployeeWorkTimerFab.vue";
+import TenantSubscriptionStatusNotice from "../tenant/TenantSubscriptionStatusNotice.vue";
 
 const authStore = useAuthStore();
 const route = useRoute();

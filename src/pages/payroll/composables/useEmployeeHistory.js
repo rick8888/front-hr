@@ -154,6 +154,9 @@ export function useEmployeeHistory() {
   const kpi = computed(() => computePayslipHistoryKpis(filteredRows.value));
 
   const trend = computed(() => buildSalaryTrendFromHistory(historyRows.value));
+  const hasMixedCurrencies = computed(
+    () => new Set(historyRows.value.map((row) => row.currency).filter(Boolean)).size > 1
+  );
 
   const totalPages = computed(() =>
     Math.max(1, Math.ceil(filteredRows.value.length / itemsPerPage.value) || 1)
@@ -202,6 +205,7 @@ export function useEmployeeHistory() {
     filteredRows,
     kpi,
     trend,
+    hasMixedCurrencies,
     loading,
     loadingEmployees,
     loadingHistory,

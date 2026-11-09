@@ -2,7 +2,7 @@
   <section
     class="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6"
   >
-    <h3 class="text-base font-bold text-neutral-900">Quick Actions</h3>
+    <h3 class="text-base font-bold text-neutral-900">{{ t("tenant.dashboard.quickActions") }}</h3>
     <div class="mt-4 space-y-3">
       <RouterLink
         v-for="action in actions"
@@ -24,6 +24,9 @@
 
 <script setup>
 import { h } from "vue";
+import { useI18n } from "../../i18n/index.js";
+
+const { t } = useI18n();
 
 defineProps({
   actions: { type: Array, required: true },

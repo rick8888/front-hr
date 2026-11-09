@@ -240,6 +240,7 @@ export default {
 
   "admin.attendance.reports.monthly.title": "Synthèse mensuelle de présence",
   "admin.attendance.reports.monthly.crumb": "Synthèse mensuelle",
+  "admin.attendance.reports.monthly.apply": "Appliquer",
   "admin.attendance.reports.monthly.tableTitle": "Synthèse mensuelle par employé",
   "admin.attendance.reports.monthly.kpi.employees": "Total employés",
   "admin.attendance.reports.monthly.kpi.avgAttendance": "Présence moyenne",
@@ -281,6 +282,7 @@ export default {
   "admin.attendance.reports.overtime.kpi.avg": "Moyenne / employé",
   "admin.attendance.reports.overtime.kpi.weekend": "Heures sup. week-end",
   "admin.attendance.reports.overtime.minHours": "Heures supplémentaires minimum",
+  "admin.attendance.reports.overtime.apply": "Appliquer",
   "admin.attendance.reports.overtime.dayType": "Type de jour",
   "admin.attendance.reports.overtime.approvalStatus": "Statut d’approbation",
   "admin.attendance.reports.overtime.dayType.all": "Tous les jours",

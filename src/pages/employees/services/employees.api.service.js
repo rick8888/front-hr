@@ -38,6 +38,15 @@ export const employeesApiService = {
     return unwrap(data);
   },
 
+  async updateAvatar(id, file) {
+    const form = new FormData();
+    form.append("avatar", file);
+    const { data } = await apiClient.post(`/employees/${id}/avatar`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return unwrap(data);
+  },
+
   async toggleStatus(id) {
     const { data } = await apiClient.patch(`/employees/${id}/status`);
     return unwrap(data);
