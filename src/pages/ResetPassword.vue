@@ -285,6 +285,7 @@
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import AuthLayout from "../components/layout/AuthLayout.vue";
+import { passwordResetApi } from "../services/passwordReset.api.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -322,20 +323,31 @@ const handleResetPassword = async () => {
   }
 
   isLoading.value = true;
+  try {
+    const email = typeof route.query.email === "string" ? route.query.email : "";
+    const token = typeof route.query.token === "string" ? route.query.token : "";
+    if (!email || !token) {
+      throw new Error("This password reset link is incomplete or invalid.");
+    }
 
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  // Mock reset password - in real app, call API with token from route
-  // const token = route.query.token;
-  
-  success.value = true;
-  isLoading.value = false;
-
-  // Redirect to login after 2 seconds
-  setTimeout(() => {
-    router.push("/login");
-  }, 2000);
+    await passwordResetApi.resetPassword({
+      email,
+      token,
+      password: formData.value.newPassword,
+      passwordConfirmation: formData.value.confirmPassword,
+    });
+    success.value = true;
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+  } catch (requestError) {
+    errorMessage.value =
+      requestError.response?.data?.message ||
+      requestError.message ||
+      "The password could not be reset.";
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -359,7 +371,6 @@ input:focus {
   }
 }
 </style>
-
 
 
 

@@ -49,6 +49,7 @@ export function useAdminDashboard() {
   const attendanceList = ref([]);
   const scheduledEvents = ref([]);
   const scheduleHighlightDates = ref([]);
+  const selectedDate = ref(toIsoDate(new Date()));
   const hrActions = ref(null);
 
   const currentDate = ref(
@@ -74,6 +75,9 @@ export function useAdminDashboard() {
   });
 
   const highlightSet = computed(() => new Set(scheduleHighlightDates.value));
+  const selectedScheduleEvents = computed(() =>
+    scheduledEvents.value.filter((day) => day.date_iso === selectedDate.value)
+  );
 
   const calendarDays = computed(() => {
     const year = currentDate.value.getFullYear();
@@ -92,7 +96,8 @@ export function useAdminDashboard() {
         day: prevMonthLastDay - i,
         isCurrentMonth: false,
         isToday: false,
-        isSelected: highlightSet.value.has(toIsoDate(date)),
+        isSelected: selectedDate.value === toIsoDate(date),
+        hasEvents: highlightSet.value.has(toIsoDate(date)),
         date,
       });
     }
@@ -106,7 +111,8 @@ export function useAdminDashboard() {
           date.getDate() === today.getDate() &&
           date.getMonth() === today.getMonth() &&
           date.getFullYear() === today.getFullYear(),
-        isSelected: highlightSet.value.has(toIsoDate(date)),
+        isSelected: selectedDate.value === toIsoDate(date),
+        hasEvents: highlightSet.value.has(toIsoDate(date)),
         date,
       });
     }
@@ -118,7 +124,8 @@ export function useAdminDashboard() {
         day: i,
         isCurrentMonth: false,
         isToday: false,
-        isSelected: highlightSet.value.has(toIsoDate(date)),
+        isSelected: selectedDate.value === toIsoDate(date),
+        hasEvents: highlightSet.value.has(toIsoDate(date)),
         date,
       });
     }
@@ -133,6 +140,7 @@ export function useAdminDashboard() {
     try {
       const payload = await adminDashboardApiService.fetch({
         period: chartFilter.value,
+        schedule_date: selectedDate.value,
       });
 
       stats.value = (Array.isArray(payload.kpis) ? payload.kpis : []).map(
@@ -187,23 +195,40 @@ export function useAdminDashboard() {
     }
   }
 
-  function previousMonth() {
-    currentDate.value = new Date(
-      currentDate.value.getFullYear(),
-      currentDate.value.getMonth() - 1,
-      1
+  function changeMonth(offset) {
+    const year = currentDate.value.getFullYear();
+    const month = currentDate.value.getMonth() + offset;
+    const day = new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+    currentDate.value = new Date(year, month, 1);
+    selectedDate.value = toIsoDate(
+      new Date(year, month, Math.min(Number(selectedDate.value.slice(-2)), day))
     );
+    load();
+  }
+
+  function previousMonth() {
+    changeMonth(-1);
   }
 
   function nextMonth() {
-    currentDate.value = new Date(
-      currentDate.value.getFullYear(),
-      currentDate.value.getMonth() + 1,
-      1
-    );
+    changeMonth(1);
   }
 
-  function selectDate() {}
+  function selectDate(calendarDay) {
+    selectedDate.value = toIsoDate(calendarDay.date);
+    if (!calendarDay.isCurrentMonth) {
+      currentDate.value = new Date(
+        calendarDay.date.getFullYear(),
+        calendarDay.date.getMonth(),
+        1
+      );
+    }
+    load();
+  }
 
   function getAvatarColor(name) {
     const colors = [
@@ -242,6 +267,8 @@ export function useAdminDashboard() {
     filteredChartData: chartData,
     attendanceList,
     scheduledEvents,
+    selectedScheduleEvents,
+    selectedDate,
     hrActions,
     currentDate,
     currentMonth,

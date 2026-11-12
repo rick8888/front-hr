@@ -10,6 +10,7 @@
           </h3>
           <button
             type="button"
+            :disabled="disabled"
             class="flex-shrink-0 rounded-md p-0.5 text-amber-500 hover:bg-white/60"
             :aria-label="t('ss.notes.card.pinned')"
             @click="$emit('pin', note)"
@@ -43,6 +44,7 @@
       <div class="flex justify-end gap-1">
         <button
           type="button"
+          :disabled="disabled"
           class="rounded-md p-2 text-sky-600 hover:bg-white/70"
           :aria-label="t('common.edit')"
           @click="$emit('edit', note)"
@@ -58,6 +60,7 @@
         </button>
         <button
           type="button"
+          :disabled="disabled"
           class="rounded-md p-2 text-amber-500 hover:bg-white/70"
           :aria-label="t('ss.notes.card.pin')"
           @click="$emit('pin', note)"
@@ -66,6 +69,7 @@
         </button>
         <button
           type="button"
+          :disabled="disabled"
           class="rounded-md p-2 text-neutral-500 hover:bg-white/70"
           :aria-label="t('ss.notes.card.archive')"
           @click="$emit('archive', note)"
@@ -101,11 +105,12 @@
 
 <script setup>
 import { computed } from "vue";
-import { formatUpdatedRelative, MY_NOTES_REFERENCE_TODAY } from "../../data/myNotesDemo.js";
+import { formatUpdatedRelative } from "../../data/myNotesDemo.js";
 import { useI18n } from "../../i18n/index.js";
 
 const props = defineProps({
   note: { type: Object, required: true },
+  disabled: { type: Boolean, default: false },
 });
 
 defineEmits(["edit", "pin", "archive", "delete"]);
@@ -114,6 +119,6 @@ const { t, locale } = useI18n();
 
 const updatedLabel = computed(() => {
   void locale.value;
-  return formatUpdatedRelative(props.note.updatedAt, MY_NOTES_REFERENCE_TODAY, t);
+  return formatUpdatedRelative(props.note.updatedAt, undefined, t);
 });
 </script>

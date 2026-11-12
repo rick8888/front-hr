@@ -1,6 +1,6 @@
 /**
- * Données fiscales mock — alignées sur bravo-api-K/database/data/fiscal/
- * Source API future : GET /api/fiscal/countries, GET /api/fiscal/profiles/{code}
+ * Référentiel fiscal initial, aligné sur bravo-api-K/database/data/fiscal/.
+ * Les modifications sont persistées dans les paramètres de la plateforme.
  */
 import countries from "./countries.json";
 import maProfile from "./profiles/MA.json";

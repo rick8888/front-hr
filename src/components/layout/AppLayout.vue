@@ -3,13 +3,13 @@
   <div class="premium-shell flex min-h-screen items-start overflow-x-hidden bg-neutral-50">
     <div
       v-if="sidebarOpen"
-      class="fixed inset-0 top-16 z-30 bg-neutral-900/40 lg:hidden"
+      class="fixed inset-0 z-30 bg-neutral-900/40 lg:hidden"
       @click="closeSidebar"
     />
     <Sidebar class="print:hidden" />
 
     <div class="flex min-w-0 w-full flex-1 flex-col">
-      <Header class="sticky top-0 z-50 shrink-0 print:hidden" />
+      <Header class="sticky top-0 z-20 shrink-0 print:hidden" />
       <main class="w-full min-w-0 overflow-x-auto pb-8 print:pb-0">
         <TenantSubscriptionStatusNotice v-if="authStore.isTenant" class="px-4 pt-4 sm:px-6" />
         <slot />

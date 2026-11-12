@@ -1,6 +1,3 @@
-/** Référence pour les libellés relatifs « Updated: … » */
-export const MY_NOTES_REFERENCE_TODAY = "2026-05-10";
-
 export const MY_NOTES_TAG_ALL = "all";
 
 export const MY_NOTES_TAG_OPTIONS = [
@@ -16,22 +13,13 @@ export const MY_NOTES_VIEW_OPTIONS = [
   { value: "all", labelKey: "ss.notes.view.all" },
 ];
 
-export const myNotesSeed = [
-  {
-    id: 1,
-    title: "asdsdsd",
-    body: "sadssdson",
-    checklist: [
-      { id: "c1", label: "Follow up with HR", checked: false },
-      { id: "c2", label: "Book meeting room", checked: false },
-      { id: "c3", label: "Send weekly summary", checked: false },
-    ],
-    updatedAt: "2026-04-08",
-    tags: ["work"],
-    pinned: true,
-    status: "active",
-  },
-];
+export function getTodayIso() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function parseIso(iso) {
   const d = new Date(iso + "T12:00:00");
@@ -43,7 +31,7 @@ function parseIso(iso) {
  * @param {string} todayIso
  * @param {(key: string, params?: Record<string, string|number>) => string} t
  */
-export function formatUpdatedRelative(iso, todayIso = MY_NOTES_REFERENCE_TODAY, t) {
+export function formatUpdatedRelative(iso, todayIso = getTodayIso(), t) {
   const end = parseIso(todayIso);
   const start = parseIso(iso);
   if (!end || !start) return "";

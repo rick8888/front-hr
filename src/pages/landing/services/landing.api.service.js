@@ -69,10 +69,10 @@ export const landingApiService = {
     return Array.isArray(list) ? list.map(normalizeCountry) : [];
   },
 
-  async registerTenant(payload) {
-    const { data } = await apiClient.post("/companies", payload, {
+  async sendContactMessage(payload) {
+    const { data } = await apiClient.post("/contact", payload, {
       skipAuthRedirect: true,
     });
-    return unwrap(data);
+    return data;
   },
 };

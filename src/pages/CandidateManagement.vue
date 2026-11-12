@@ -17,6 +17,23 @@
       </button>
     </div>
 
+    <div
+      v-if="loadError || actionError || jobsError"
+      role="alert"
+      class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      <p>{{ loadError || actionError || jobsError }}</p>
+      <button
+        v-if="loadError || jobsError"
+        type="button"
+        class="mt-2 font-semibold underline disabled:opacity-50"
+        :disabled="loading"
+        @click="loadData"
+      >
+        Réessayer
+      </button>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-white border border-neutral-200 rounded-xl p-4">
         <p class="text-xs uppercase tracking-wider font-semibold text-neutral-500">Nouvelles</p>
@@ -26,7 +43,7 @@
             class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600"
             aria-hidden="true"
           />
-          <template v-else>{{ stageCount("Applied") }}</template>
+          <template v-else>{{ loadError ? "—" : stageCount("Applied") }}</template>
         </p>
       </div>
       <div class="bg-white border border-neutral-200 rounded-xl p-4">
@@ -37,7 +54,7 @@
             class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600"
             aria-hidden="true"
           />
-          <template v-else>{{ stageCount("Interview") }}</template>
+          <template v-else>{{ loadError ? "—" : stageCount("Interview") }}</template>
         </p>
       </div>
       <div class="bg-white border border-neutral-200 rounded-xl p-4">
@@ -48,7 +65,7 @@
             class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600"
             aria-hidden="true"
           />
-          <template v-else>{{ stageCount("Offer") }}</template>
+          <template v-else>{{ loadError ? "—" : stageCount("Offer") }}</template>
         </p>
       </div>
       <div class="bg-white border border-neutral-200 rounded-xl p-4">
@@ -59,7 +76,7 @@
             class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600"
             aria-hidden="true"
           />
-          <template v-else>{{ conversionRate }}%</template>
+          <template v-else>{{ loadError ? "—" : `${conversionRate}%` }}</template>
         </p>
       </div>
     </div>
@@ -97,6 +114,13 @@
         aria-hidden="true"
       />
       {{ t("common.loading") }}
+    </div>
+
+    <div
+      v-else-if="loadError"
+      class="flex min-h-[520px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-6 text-center text-sm text-neutral-500"
+    >
+      Les candidatures ne sont pas disponibles tant que le serveur ne répond pas.
     </div>
 
     <div v-else class="grid grid-cols-1 xl:grid-cols-5 gap-4">
@@ -198,6 +222,7 @@
           </div>
           <button
             type="button"
+            :disabled="savingCandidate"
             class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Fermer"
             @click="closeCandidateModal"
@@ -209,6 +234,12 @@
         </div>
 
         <div class="max-h-[calc(100vh-12rem)] overflow-y-auto px-6 py-6 sm:px-7">
+          <p v-if="actionError" role="alert" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ actionError }}
+          </p>
+          <p v-if="jobsError" role="alert" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ jobsError }}
+          </p>
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <label for="candidate-name" class="mb-2 block text-sm font-semibold text-neutral-700">
@@ -288,6 +319,7 @@
         <div class="flex flex-col-reverse gap-3 border-t border-neutral-200 px-6 py-4 sm:flex-row sm:justify-end sm:px-7">
           <button
             type="button"
+            :disabled="savingCandidate"
             class="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
             @click="closeCandidateModal"
           >
@@ -295,10 +327,11 @@
           </button>
           <button
             type="button"
-            class="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            :disabled="savingCandidate || loading || openJobs.length === 0"
+            class="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             @click="saveCandidate"
           >
-            Enregistrer
+            {{ savingCandidate ? t("common.saving") : "Enregistrer" }}
           </button>
         </div>
       </div>
@@ -309,19 +342,23 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { candidateService } from "../services";
+import { candidatesApiService } from "./recruitment/services/recruitment.api.service.js";
 import { jobOpeningsApiService } from "./recruitment/services/recruitment.api.service.js";
 import { useI18n } from "../i18n/index.js";
 import { useAuthStore } from "../stores/authStore.js";
+import { parseApiError } from "../utils/apiErrors.js";
 
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const canManageEmployees = authStore.can("employees.manage");
-const CACHE_KEY = "candidates-kanban-cache-v1";
 const stages = ["Applied", "Screening", "Interview", "Offer", "Rejected", "Hired"];
 
 const loading = ref(true);
+const savingCandidate = ref(false);
+const loadError = ref("");
+const jobsError = ref("");
+const actionError = ref("");
 
 const searchQuery = ref("");
 const jobFilter = ref("");
@@ -339,14 +376,6 @@ const candidateForm = ref({
   experience: "",
   source: "LinkedIn",
 });
-
-const seedCandidates = () => [
-  { id: 1, name: "Alex Johnson", email: "alex@example.com", phone: "+1 555 120 002", position: "Senior Frontend Developer", experience: "6 ans", stage: "Interview", lastAction: "Entretien RH planifié", source: "LinkedIn", availability: "30 jours", summary: "Très bonne maîtrise Vue/React, leadership technique." },
-  { id: 2, name: "Maria Garcia", email: "maria@example.com", phone: "+1 555 120 118", position: "Product Designer", experience: "4 ans", stage: "Screening", lastAction: "Screening CV validé", source: "Indeed", availability: "Immédiate", summary: "Profil UX/UI solide, portfolio orienté SaaS B2B." },
-  { id: 3, name: "James Wilson", email: "james@example.com", phone: "+1 555 120 229", position: "DevOps Engineer", experience: "7 ans", stage: "Offer", lastAction: "Offre envoyée", source: "Cooptation", availability: "45 jours", summary: "Expert CI/CD, infra cloud AWS." },
-  { id: 4, name: "Patricia Lee", email: "patricia@example.com", phone: "+1 555 120 441", position: "Sales Manager", experience: "8 ans", stage: "Applied", lastAction: "Candidature reçue", source: "Site carrière", availability: "30 jours", summary: "Forte expérience en vente B2B enterprise." },
-  { id: 5, name: "Robert Smith", email: "robert@example.com", phone: "+1 555 120 553", position: "Senior Frontend Developer", experience: "5 ans", stage: "Hired", lastAction: "Contrat signé", source: "LinkedIn", availability: "N/A", summary: "Très bon fit culturel et technique." },
-];
 
 const jobOptions = computed(() => {
   const fromJobs = openJobs.value.map((j) => j.title).filter(Boolean);
@@ -379,12 +408,8 @@ const conversionRate = computed(() => {
   return Math.round((hired / total) * 100);
 });
 
-const persistLocal = () => {
-  localStorage.setItem(CACHE_KEY, JSON.stringify(candidates.value));
-};
-
-const normalizeCandidate = (candidate, fallbackId = null) => ({
-  id: candidate.id ?? fallbackId,
+const normalizeCandidate = (candidate) => ({
+  id: candidate.id,
   name: candidate.name ?? "",
   email: candidate.email ?? "",
   phone: candidate.phone ?? "",
@@ -402,6 +427,7 @@ const normalizeCandidate = (candidate, fallbackId = null) => ({
 });
 
 const loadOpenJobs = async () => {
+  jobsError.value = "";
   try {
     const list = await jobOpeningsApiService.fetchAll({ status: "Open" });
     openJobs.value = (Array.isArray(list) ? list : [])
@@ -411,42 +437,34 @@ const loadOpenJobs = async () => {
         status: job.status,
       }))
       .filter((job) => job.status === "Open" || !job.status);
-  } catch (_) {
+  } catch (error) {
     openJobs.value = [];
+    jobsError.value = parseApiError(error);
   }
 };
 
 const loadCandidates = async () => {
+  loadError.value = "";
   try {
-    const { data } = await candidateService.getAll();
-    const list = Array.isArray(data) ? data : data?.data;
-    if (!Array.isArray(list)) throw new Error("Invalid payload");
-    candidates.value = list.map((candidate, idx) => normalizeCandidate(candidate, idx + 1));
-    persistLocal();
-  } catch (_) {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) {
-          candidates.value = parsed.map((candidate, idx) => normalizeCandidate(candidate, idx + 1));
-          return;
-        }
-      } catch (_) {}
-    }
-    candidates.value = seedCandidates();
-    persistLocal();
+    const list = await candidatesApiService.fetchAll();
+    candidates.value = list.map(normalizeCandidate);
+  } catch (error) {
+    candidates.value = [];
+    loadError.value = parseApiError(error);
   }
 };
 
-onMounted(async () => {
+const loadData = async () => {
   loading.value = true;
+  actionError.value = "";
   try {
     await Promise.all([loadCandidates(), loadOpenJobs()]);
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(loadData);
 
 const onDragStart = (candidateId) => {
   draggedCandidateId.value = candidateId;
@@ -466,17 +484,12 @@ const onDrop = async (targetStage) => {
   const previousStage = candidates.value[index].stage;
   if (previousStage === targetStage) return;
 
-  candidates.value[index].stage = targetStage;
-  candidates.value[index].lastAction = `Passé à l'étape ${targetStage}`;
-  persistLocal();
-
   try {
-    await candidateService.updateStage(candidateId, targetStage);
-  } catch (_) {
-    candidates.value[index].stage = previousStage;
-    candidates.value[index].lastAction = `Retour à l'étape ${previousStage}`;
-    persistLocal();
-    alert("Impossible de synchroniser le déplacement avec l'API.");
+    const updated = await candidatesApiService.updateStage(candidateId, targetStage);
+    candidates.value[index] = normalizeCandidate(updated);
+    actionError.value = "";
+  } catch (error) {
+    actionError.value = parseApiError(error);
   } finally {
     draggedCandidateId.value = null;
   }
@@ -495,6 +508,7 @@ const viewCandidate = (candidate) => {
 };
 
 const openCandidateModal = () => {
+  actionError.value = "";
   candidateForm.value = {
     name: "",
     email: "",
@@ -507,10 +521,12 @@ const openCandidateModal = () => {
 };
 
 const closeCandidateModal = () => {
+  if (savingCandidate.value) return;
   isModalOpen.value = false;
 };
 
 const saveCandidate = async () => {
+  if (savingCandidate.value) return;
   if (
     !candidateForm.value.name.trim() ||
     !candidateForm.value.email.trim() ||
@@ -538,32 +554,16 @@ const saveCandidate = async () => {
     summary: "Profil à qualifier.",
   };
 
-  const fallbackId = candidates.value.length
-    ? Math.max(...candidates.value.map((c) => Number(c.id) || 0)) + 1
-    : 1;
-  const optimistic = {
-    id: fallbackId,
-    ...payload,
-    jobOpeningId: payload.job_opening_id,
-    position: payload.position || "—",
-  };
-  candidates.value.unshift(optimistic);
-  persistLocal();
-
+  savingCandidate.value = true;
+  actionError.value = "";
   try {
-    const { data } = await candidateService.create(payload);
-    const created = data?.data || data;
-    if (created?.id) {
-      const idx = candidates.value.findIndex((c) => c.id === fallbackId);
-      if (idx !== -1) {
-        candidates.value[idx] = normalizeCandidate(created, created.id);
-      }
-      persistLocal();
-    }
-  } catch (_) {
-    alert("Création API indisponible. Candidat sauvegardé localement.");
+    const created = await candidatesApiService.create(payload);
+    candidates.value.unshift(normalizeCandidate(created));
+    closeCandidateModal();
+  } catch (error) {
+    actionError.value = parseApiError(error);
+  } finally {
+    savingCandidate.value = false;
   }
-
-  closeCandidateModal();
 };
 </script>

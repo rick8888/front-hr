@@ -1,7 +1,7 @@
 <template>
   <div class="premium-shell premium-shell--sup-admin flex min-h-screen flex-col overflow-x-hidden bg-neutral-50 lg:flex-row lg:items-start">
     <header
-      class="sticky top-0 z-50 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 lg:hidden"
+      class="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 lg:hidden"
     >
       <button
         type="button"
@@ -23,14 +23,14 @@
 
     <div
       v-if="sidebarOpen"
-      class="fixed inset-0 top-16 z-30 bg-neutral-900/40 lg:hidden"
+      class="fixed inset-0 z-30 bg-neutral-900/40 lg:hidden"
       @click="closeSidebar"
     />
 
     <aside
       :class="[
-        'flex w-64 shrink-0 flex-col border-r border-neutral-200 bg-white',
-        'fixed bottom-0 left-0 top-16 z-40 h-[calc(100vh-4rem)] transform transition-transform duration-200 ease-out',
+        'mobile-full-height flex w-64 shrink-0 flex-col border-r border-neutral-200 bg-white',
+        'fixed inset-y-0 left-0 z-[60] transform transition-transform duration-200 ease-out',
         'lg:static lg:top-auto lg:z-0 lg:h-screen lg:translate-x-0',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"

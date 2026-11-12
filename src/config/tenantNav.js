@@ -57,6 +57,12 @@ export const TENANT_NAV = [
     path: "/tenant/support",
     icon: "\u{1F4AC}",
   },
+  {
+    id: "chat",
+    labelKey: "nav.tenant.chat",
+    path: "/tenant/chat",
+    icon: "\u{1F4AC}",
+  },
 ];
 
 export function pathMatchesTenantNav(path) {

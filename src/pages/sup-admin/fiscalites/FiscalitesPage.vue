@@ -3,8 +3,16 @@
     <PageHero title="Fiscalités" :breadcrumbs="[{ label: 'Super Admin' }, { label: 'Fiscalités' }]" />
 
     <p class="mb-4 text-sm text-neutral-500">
-      Référentiel fiscal par pays — données alignées sur
+      Référentiel fiscal par pays — modifications enregistrées sur la plateforme. Référentiel initial aligné sur
       <code class="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">bravo-api-K/database/data/fiscal/</code>
+    </p>
+
+    <p
+      v-if="taxStore.error"
+      role="alert"
+      class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+    >
+      {{ taxStore.error }}
     </p>
 
     <div class="mb-6 max-w-sm">
@@ -25,7 +33,7 @@
         :profile="taxStore.fiscalProfile"
         :active-rules-count="taxStore.activeRulesCount"
         :disabled="taxStore.saving"
-        @toggle-status="taxStore.toggleProfileStatus"
+        @toggle-status="handleTaxAction(taxStore.toggleProfileStatus)"
       />
 
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -84,20 +92,20 @@
         :rules="taxStore.taxRules"
         :categories="taxStore.categories"
         :disabled="taxStore.saving"
-        @add="taxStore.addDeclarationPeriod"
-        @update="taxStore.updateDeclarationPeriod"
-        @delete="taxStore.deleteDeclarationPeriod"
-        @toggle="taxStore.toggleDeclarationPeriod"
+        @add="handleTaxAction(taxStore.addDeclarationPeriod)"
+        @update="handleTaxAction(taxStore.updateDeclarationPeriod)"
+        @delete="handleTaxAction(taxStore.deleteDeclarationPeriod)"
+        @toggle="handleTaxAction(taxStore.toggleDeclarationPeriod)"
       />
 
       <TaxScaleManager
         :scales="taxStore.taxScales"
         :currency="taxStore.fiscalProfile.currency"
         :disabled="taxStore.saving"
-        @update-bracket="taxStore.updateScaleBracket"
-        @add-bracket="taxStore.addScaleBracket"
-        @delete-bracket="taxStore.deleteScaleBracket"
-        @toggle-scale="taxStore.toggleScale"
+        @update-bracket="handleTaxAction(taxStore.updateScaleBracket)"
+        @add-bracket="handleTaxAction(taxStore.addScaleBracket)"
+        @delete-bracket="handleTaxAction(taxStore.deleteScaleBracket)"
+        @toggle-scale="handleTaxAction(taxStore.toggleScale)"
       />
 
       <div class="grid gap-6 xl:grid-cols-3">
@@ -110,31 +118,31 @@
             :scales="taxStore.taxScales"
             :currency="taxStore.fiscalProfile.currency"
             :disabled="taxStore.saving"
-            @add="taxStore.addTaxRule"
-            @update="taxStore.updateTaxRule"
-            @delete="taxStore.deleteTaxRule"
+            @add="handleTaxAction(taxStore.addTaxRule)"
+            @update="handleTaxAction(taxStore.updateTaxRule)"
+            @delete="handleTaxAction(taxStore.deleteTaxRule)"
           />
         </div>
         <div class="space-y-6">
           <TaxCategoriesManager
             :categories="taxStore.categories"
             :disabled="taxStore.saving"
-            @add="taxStore.addCategory"
-            @rename="taxStore.updateCategory"
-            @disable="taxStore.disableCategory"
+            @add="handleTaxAction(taxStore.addCategory)"
+            @rename="handleTaxAction(taxStore.updateCategory)"
+            @disable="handleTaxAction(taxStore.disableCategory)"
           />
           <TaxCalculationBasesManager
             :bases="taxStore.calculationBases"
             :rules="taxStore.taxRules"
             :disabled="taxStore.saving"
-            @add="taxStore.addCalculationBase"
-            @update="taxStore.updateCalculationBase"
-            @disable="taxStore.disableCalculationBase"
+            @add="handleTaxAction(taxStore.addCalculationBase)"
+            @update="handleTaxAction(taxStore.updateCalculationBase)"
+            @disable="handleTaxAction(taxStore.disableCalculationBase)"
           />
           <FiscalVersionManager
             :versions="taxStore.versions"
             :disabled="taxStore.saving"
-            @restore="taxStore.restoreVersion"
+            @restore="handleTaxAction(taxStore.restoreVersion)"
           />
         </div>
       </div>
@@ -155,8 +163,19 @@ import TaxCategoriesManager from "./components/TaxCategoriesManager.vue";
 import TaxCalculationBasesManager from "./components/TaxCalculationBasesManager.vue";
 import FiscalVersionManager from "./components/FiscalVersionManager.vue";
 import { useTaxStore } from "./store/tax.store.js";
+import { parseApiError } from "../../../utils/apiErrors.js";
 
 const taxStore = useTaxStore();
+function handleTaxAction(action) {
+  return async (...args) => {
+    taxStore.error = null;
+    try {
+      await action(...args);
+    } catch (error) {
+      taxStore.error = parseApiError(error) || "Impossible d'enregistrer les modifications.";
+    }
+  };
+}
 
 const employeeRulesCount = computed(
   () => taxStore.taxRules.filter((r) => r.is_active && (r.applies_to === "employee" || r.applies_to === "both")).length

@@ -1,7 +1,7 @@
 <template>
   <Modal
     :model-value="modelValue"
-    :title="t('ss.notes.modal.newTitle')"
+    :title="initialNote ? t('ss.notes.modal.editTitle') : t('ss.notes.modal.newTitle')"
     size="md"
     hide-footer
     @update:model-value="$emit('update:modelValue', $event)"
@@ -40,6 +40,7 @@
       <div class="flex justify-end gap-3 pt-2">
         <button
           type="button"
+          :disabled="saving"
           class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
           @click="close"
         >
@@ -47,7 +48,8 @@
         </button>
         <button
           type="submit"
-          class="rounded-lg bg-secondary-500 px-4 py-2 text-sm font-medium text-white hover:bg-secondary-600"
+          :disabled="saving"
+          class="rounded-lg bg-secondary-500 px-4 py-2 text-sm font-medium text-white hover:bg-secondary-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {{ t("ss.notes.modal.save") }}
         </button>
@@ -63,6 +65,8 @@ import { useI18n } from "../../i18n/index.js";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  initialNote: { type: Object, default: null },
+  saving: { type: Boolean, default: false },
   assignableTags: {
     type: Array,
     default: () => [
@@ -87,9 +91,9 @@ watch(
   () => props.modelValue,
   (open) => {
     if (open) {
-      form.title = "";
-      form.body = "";
-      form.tag = props.assignableTags[0]?.value || "work";
+      form.title = props.initialNote?.title || "";
+      form.body = props.initialNote?.body || "";
+      form.tag = props.initialNote?.tags?.[0] || props.assignableTags[0]?.value || "work";
     }
   },
 );
@@ -99,7 +103,7 @@ function close() {
 }
 
 function onSubmit() {
+  if (props.saving) return;
   emit("submit", { ...form });
-  close();
 }
 </script>

@@ -6,6 +6,12 @@ export const SUPER_ADMIN_NAV = [
     icon: "\u{1F3E2}",
   },
   {
+    id: "chat",
+    label: "Messagerie",
+    path: "/sup-admin/chat",
+    icon: "\u{1F4AC}",
+  },
+  {
     id: "cotisations",
     label: "Cotisations légales",
     path: "/sup-admin/cotisations",

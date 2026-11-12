@@ -108,6 +108,7 @@ import TenantUsage from "../pages/tenant/TenantUsage.vue";
 import TenantCompanyProfile from "../pages/tenant/TenantCompanyProfile.vue";
 import TenantSupport from "../pages/tenant/TenantSupport.vue";
 import TenantUsers from "../pages/tenant/TenantUsers.vue";
+import ChatPage from "../pages/ChatPage.vue";
 import SupAdminLayout from "../components/layout/SupAdminLayout.vue";
 import EntreprisesPage from "../pages/sup-admin/entreprises/EntreprisesPage.vue";
 import FiscalitesPage from "../pages/sup-admin/fiscalites/FiscalitesPage.vue";
@@ -265,6 +266,12 @@ const routes = [
     meta: { title: "Support" },
   },
   {
+    path: "/tenant/chat",
+    name: "TenantChat",
+    component: ChatPage,
+    meta: { titleKey: "chat.title" },
+  },
+  {
     path: "/tenant/echeances",
     name: "TenantDeadlines",
     component: TenantDeadlines,
@@ -292,6 +299,12 @@ const routes = [
     name: "Dashboard2",
     component: Dashboard2,
     meta: { title: "Dashboard 2" },
+  },
+  {
+    path: "/chat",
+    name: "Chat",
+    component: ChatPage,
+    meta: { titleKey: "chat.title" },
   },
   {
     path: "/employees",
@@ -888,6 +901,12 @@ const routes = [
         name: "SupAdminParametres",
         component: ParametresPage,
         meta: { title: "Paramètres plateforme" },
+      },
+      {
+        path: "chat",
+        name: "SupAdminChat",
+        component: ChatPage,
+        meta: { titleKey: "chat.title" },
       },
     ],
   },

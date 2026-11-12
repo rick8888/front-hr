@@ -35,8 +35,9 @@
           </nav>
           <button
             type="button"
+            :disabled="loading || saving"
             class="inline-flex items-center justify-center gap-1.5 self-end rounded-lg bg-secondary-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-secondary-600"
-            @click="addOpen = true"
+            @click="openNewNote"
           >
             + {{ t("ss.notes.addNew") }}
           </button>
@@ -50,20 +51,31 @@
         @clear="onClearFilters"
       />
 
-      <div
-        v-if="!filteredNotes.length"
-        class="rounded-xl border border-dashed border-neutral-200 bg-white py-16 text-center text-sm text-neutral-500"
-      >
-        {{ t("ss.notes.emptyFiltered") }}
+      <p v-if="error" role="alert" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ error }}
+        <button type="button" class="ml-2 font-semibold underline" :disabled="loading" @click="loadNotes">
+          {{ t("common.retry") }}
+        </button>
+      </p>
+
+      <div v-if="loading" class="rounded-xl border border-neutral-200 bg-white py-16 text-center text-sm text-neutral-500">
+        {{ t("common.loading") }}
       </div>
       <div
-        v-else
+        v-else-if="!error && !filteredNotes.length"
+        class="rounded-xl border border-dashed border-neutral-200 bg-white py-16 text-center text-sm text-neutral-500"
+      >
+        {{ notes.length ? t("ss.notes.emptyFiltered") : t("ss.notes.empty") }}
+      </div>
+      <div
+        v-else-if="filteredNotes.length"
         class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
       >
         <NoteStickyCard
           v-for="note in filteredNotes"
           :key="note.id"
           :note="note"
+          :disabled="saving"
           @edit="onEdit"
           @pin="onPin"
           @archive="onArchive"
@@ -73,9 +85,12 @@
     </div>
 
     <AddNoteModal
-      v-model="addOpen"
+      :model-value="addOpen"
+      :initial-note="editingNote"
+      :saving="saving"
       :assignable-tags="assignableTags"
-      @submit="onAddNote"
+      @submit="onSaveNote"
+      @update:model-value="onNoteModalVisibilityChange"
     />
 
     <ConfirmDialog
@@ -84,25 +99,26 @@
       variant="danger"
       :message="deleteMessage"
       :confirm-text="t('common.delete')"
+      :busy="saving"
       @confirm="confirmDelete"
     />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import MyNotesFiltersBar from "../../components/notes/MyNotesFiltersBar.vue";
 import NoteStickyCard from "../../components/notes/NoteStickyCard.vue";
 import AddNoteModal from "../../components/notes/AddNoteModal.vue";
 import ConfirmDialog from "../../components/common/ConfirmDialog.vue";
 import {
-  MY_NOTES_REFERENCE_TODAY,
   MY_NOTES_TAG_ALL,
   MY_NOTES_TAG_OPTIONS,
   MY_NOTES_VIEW_OPTIONS,
-  myNotesSeed,
 } from "../../data/myNotesDemo.js";
 import { useI18n } from "../../i18n/index.js";
+import { notesApiService } from "./services/notes.api.service.js";
+import { parseApiError } from "../../utils/apiErrors.js";
 
 const { t, locale } = useI18n();
 
@@ -129,7 +145,10 @@ const assignableTags = computed(() =>
   })),
 );
 
-const notes = ref(myNotesSeed.map((n) => ({ ...n })));
+const notes = ref([]);
+const loading = ref(false);
+const saving = ref(false);
+const error = ref("");
 
 const filters = ref({
   search: "",
@@ -140,6 +159,7 @@ const filters = ref({
 const addOpen = ref(false);
 const deleteOpen = ref(false);
 const noteToDelete = ref(null);
+const editingNote = ref(null);
 
 const deleteMessage = computed(() => {
   void locale.value;
@@ -169,6 +189,18 @@ const filteredNotes = computed(() => {
   });
 });
 
+async function loadNotes() {
+  loading.value = true;
+  error.value = "";
+  try {
+    notes.value = await notesApiService.fetchAll();
+  } catch (requestError) {
+    error.value = parseApiError(requestError);
+  } finally {
+    loading.value = false;
+  }
+}
+
 function onClearFilters() {
   filters.value = {
     search: "",
@@ -177,42 +209,77 @@ function onClearFilters() {
   };
 }
 
-function onAddNote(payload) {
-  const id =
-    notes.value.reduce((m, x) => Math.max(m, x.id), 0) + 1;
-  notes.value.unshift({
-    id,
-    title: payload.title,
-    body: payload.body,
-    checklist: [],
-    updatedAt: MY_NOTES_REFERENCE_TODAY,
-    tags: [payload.tag],
-    pinned: false,
-    status: "active",
-  });
+async function onSaveNote(payload) {
+  saving.value = true;
+  error.value = "";
+  try {
+    if (editingNote.value) {
+      const updated = await notesApiService.update(editingNote.value.id, {
+        title: payload.title,
+        body: payload.body,
+        tags: [payload.tag],
+      });
+      replaceNote(updated);
+      editingNote.value = null;
+    } else {
+      const created = await notesApiService.create({
+        title: payload.title,
+        body: payload.body,
+        tags: [payload.tag],
+        checklist: [],
+        pinned: false,
+        status: "active",
+      });
+      notes.value.unshift(created);
+    }
+    addOpen.value = false;
+  } catch (requestError) {
+    error.value = parseApiError(requestError);
+  } finally {
+    saving.value = false;
+  }
+}
+
+function replaceNote(updated) {
+  const index = notes.value.findIndex((note) => note.id === updated.id);
+  if (index !== -1) notes.value[index] = updated;
 }
 
 function onEdit(note) {
-  // eslint-disable-next-line no-console
-  console.info("Edit note", note);
+  editingNote.value = note;
+  addOpen.value = true;
 }
 
-function onPin(note) {
-  const i = notes.value.findIndex((x) => x.id === note.id);
-  if (i === -1) return;
-  notes.value[i] = { ...notes.value[i], pinned: !notes.value[i].pinned };
+function openNewNote() {
+  editingNote.value = null;
+  addOpen.value = true;
 }
 
-function onArchive(note) {
-  const i = notes.value.findIndex((x) => x.id === note.id);
-  if (i === -1) return;
-  const next =
-    notes.value[i].status === "archived" ? "active" : "archived";
-  notes.value[i] = {
-    ...notes.value[i],
-    status: next,
-    updatedAt: MY_NOTES_REFERENCE_TODAY,
-  };
+function onNoteModalVisibilityChange(isOpen) {
+  addOpen.value = isOpen;
+  if (!isOpen) editingNote.value = null;
+}
+
+async function onPin(note) {
+  await updateNote(note, { pinned: !note.pinned });
+}
+
+async function onArchive(note) {
+  const status = note.status === "archived" ? "active" : "archived";
+  await updateNote(note, { status });
+}
+
+async function updateNote(note, payload) {
+  if (saving.value) return;
+  saving.value = true;
+  error.value = "";
+  try {
+    replaceNote(await notesApiService.update(note.id, payload));
+  } catch (requestError) {
+    error.value = parseApiError(requestError);
+  } finally {
+    saving.value = false;
+  }
 }
 
 function onDelete(note) {
@@ -220,10 +287,21 @@ function onDelete(note) {
   deleteOpen.value = true;
 }
 
-function confirmDelete() {
+async function confirmDelete() {
   if (!noteToDelete.value) return;
-  notes.value = notes.value.filter((n) => n.id !== noteToDelete.value.id);
-  noteToDelete.value = null;
-  deleteOpen.value = false;
+  saving.value = true;
+  error.value = "";
+  try {
+    await notesApiService.remove(noteToDelete.value.id);
+    notes.value = notes.value.filter((note) => note.id !== noteToDelete.value.id);
+    noteToDelete.value = null;
+    deleteOpen.value = false;
+  } catch (requestError) {
+    error.value = parseApiError(requestError);
+  } finally {
+    saving.value = false;
+  }
 }
+
+onMounted(loadNotes);
 </script>

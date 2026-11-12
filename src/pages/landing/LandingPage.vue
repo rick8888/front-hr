@@ -21,7 +21,7 @@
           <RouterLink to="/login" class="hidden rounded-lg px-3 py-2 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:inline-flex">
             {{ t("landing.nav.login") }}
           </RouterLink>
-          <a :href="contactHref" class="btn-primary hidden items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 md:inline-flex">
+          <a href="#inscription" class="btn-primary hidden items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 md:inline-flex">
             {{ t("landing.nav.contact") }}
             <span aria-hidden="true">↗</span>
           </a>
@@ -56,7 +56,7 @@
           </div>
           <RouterLink to="/login" class="rounded-lg px-3 py-2 text-sm font-semibold text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">{{ t("landing.nav.login") }}</RouterLink>
         </div>
-        <a :href="contactHref" class="btn-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
+        <a href="#inscription" class="btn-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2" @click="closeMenu">
           {{ t("landing.nav.contact") }}
           <span aria-hidden="true">↗</span>
         </a>
@@ -79,7 +79,7 @@
               {{ t("landing.hero.subtitle") }}
             </p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a :href="contactHref" class="btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
+              <a href="#inscription" class="btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
                 {{ t("landing.hero.cta") }}
                 <span aria-hidden="true">↗</span>
               </a>
@@ -276,21 +276,50 @@
       </section>
 
       <section id="inscription" class="scroll-mt-24 bg-gradient-to-br from-primary-800 via-primary-700 to-secondary-700 text-white">
-        <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 px-4 py-12 sm:px-8 sm:py-16 md:flex-row md:items-center">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div class="max-w-2xl">
             <p class="text-sm font-semibold text-primary-100">{{ t("landing.contact.kicker") }}</p>
             <h2 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{{ t("landing.contact.title") }}</h2>
             <p class="mt-3 text-sm leading-6 text-primary-50 sm:text-base">{{ t("landing.contact.subtitle") }}</p>
           </div>
-          <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <a :href="contactHref" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-primary-800 transition-colors hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-700">
-              {{ t("landing.contact.cta") }}
-              <span aria-hidden="true">↗</span>
-            </a>
-            <RouterLink to="/login" class="inline-flex items-center justify-center rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-              {{ t("landing.nav.login") }}
-            </RouterLink>
-          </div>
+          <form class="rounded-2xl bg-white p-5 text-neutral-800 shadow-xl sm:p-7" @submit.prevent="submitContact">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="block text-sm font-medium">
+                {{ t("landing.contact.name") }}
+                <input v-model="contactForm.name" required maxlength="160" autocomplete="name" class="mt-1.5 w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25" />
+              </label>
+              <label class="block text-sm font-medium">
+                {{ t("landing.contact.email") }}
+                <input v-model="contactForm.email" required maxlength="180" type="email" autocomplete="email" class="mt-1.5 w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25" />
+              </label>
+              <label class="block text-sm font-medium sm:col-span-2">
+                {{ t("landing.contact.company") }}
+                <input v-model="contactForm.company" maxlength="160" autocomplete="organization" class="mt-1.5 w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25" />
+              </label>
+              <label class="block text-sm font-medium sm:col-span-2">
+                {{ t("landing.contact.subject") }}
+                <input v-model="contactForm.subject" required maxlength="160" class="mt-1.5 w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25" />
+              </label>
+              <label class="block text-sm font-medium sm:col-span-2">
+                {{ t("landing.contact.message") }}
+                <textarea v-model="contactForm.message" required minlength="10" maxlength="5000" rows="4" class="mt-1.5 w-full resize-y rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25" />
+              </label>
+            </div>
+            <p v-if="contactError" class="mt-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert">
+              {{ contactError }}
+            </p>
+            <p v-if="contactSuccess" class="mt-4 rounded-lg bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800" role="status">
+              {{ t("landing.contact.success") }}
+            </p>
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button type="submit" :disabled="isContactSubmitting" class="inline-flex items-center justify-center rounded-lg bg-primary-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60">
+                {{ isContactSubmitting ? t("landing.contact.sending") : t("landing.contact.cta") }}
+              </button>
+              <RouterLink to="/login" class="text-center text-sm font-semibold text-primary-700 hover:text-primary-900">
+                {{ t("landing.nav.login") }}
+              </RouterLink>
+            </div>
+          </form>
         </div>
       </section>
     </main>
@@ -303,7 +332,7 @@
         </a>
         <p>{{ t("landing.footer.tagline") }}</p>
         <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <a :href="contactHref" class="hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.footer.contact") }}</a>
+          <a href="#inscription" class="hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.footer.contact") }}</a>
           <RouterLink to="/login" class="hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">{{ t("landing.footer.login") }}</RouterLink>
         </div>
       </div>
@@ -312,8 +341,10 @@
 </template>
 
 <script setup>
+import { reactive, ref } from "vue";
 import { useLanding } from "./composables/useLanding.js";
 import { useI18n } from "../../i18n/index.js";
+import { landingApiService } from "./services/landing.api.service.js";
 
 const { t } = useI18n();
 const {
@@ -324,7 +355,41 @@ const {
   toggleMenu,
 } = useLanding();
 
-const contactHref = "mailto:support@bravorh.com?subject=Bravo%20RH";
+const contactForm = reactive({
+  name: "",
+  email: "",
+  company: "",
+  subject: "",
+  message: "",
+});
+const isContactSubmitting = ref(false);
+const contactSuccess = ref(false);
+const contactError = ref("");
+
+async function submitContact() {
+  if (isContactSubmitting.value) return;
+
+  isContactSubmitting.value = true;
+  contactSuccess.value = false;
+  contactError.value = "";
+
+  try {
+    await landingApiService.sendContactMessage({ ...contactForm });
+    Object.assign(contactForm, {
+      name: "",
+      email: "",
+      company: "",
+      subject: "",
+      message: "",
+    });
+    contactSuccess.value = true;
+  } catch {
+    contactError.value = t("landing.contact.error");
+  } finally {
+    isContactSubmitting.value = false;
+  }
+}
+
 const featureKeys = ["employees", "attendance", "leave", "payroll", "documents", "reporting"];
 const workflowKeys = ["organize", "process", "review"];
 const faqKeys = [1, 2, 3];

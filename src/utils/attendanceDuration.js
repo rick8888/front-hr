@@ -1,11 +1,18 @@
 /**
  * Durée écoulée depuis un pointage HH:mm.
- * Le check-in est enregistré en UTC (timezone Laravel). On le lit en UTC
- * pour ne pas ajouter le décalage local (+1 h). L’horloge utilisée est
- * celle du navigateur (Date.now), pas une horloge serveur.
+ * Utilise l’horodatage ISO du serveur lorsqu’il est disponible. Le format
+ * HH:mm de compatibilité est interprété en UTC.
  */
-export function minutesSinceCheckIn(checkIn, dayIso) {
-  const match = String(checkIn || "").trim().match(/(\d{1,2}):(\d{2})/);
+export function minutesSinceCheckIn(checkIn, dayIso, now = Date.now()) {
+  const value = String(checkIn || "").trim();
+  if (value.includes("T") && /(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) {
+    const timestamp = Date.parse(value);
+    if (!Number.isNaN(timestamp)) {
+      return Math.max(0, Math.floor((now - timestamp) / 60000));
+    }
+  }
+
+  const match = value.match(/(\d{1,2}):(\d{2})/);
   if (!match) return 0;
 
   const hours = Number(match[1]);
@@ -16,7 +23,7 @@ export function minutesSinceCheckIn(checkIn, dayIso) {
   const startMs = Date.UTC(day.year, day.month, day.day, hours, minutes, 0, 0);
   if (Number.isNaN(startMs)) return 0;
 
-  return Math.max(0, Math.floor((Date.now() - startMs) / 60000));
+  return Math.max(0, Math.floor((now - startMs) / 60000));
 }
 
 function toUtcDateParts(value) {

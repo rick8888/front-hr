@@ -1,8 +1,8 @@
 <template>
   <aside
     :class="[
-      'flex w-60 shrink-0 flex-col border-r border-neutral-200 bg-white',
-      'fixed bottom-0 left-0 top-16 z-40 transform transition-transform duration-200 ease-out',
+      'mobile-full-height flex w-60 shrink-0 flex-col border-r border-neutral-200 bg-white',
+      'fixed inset-y-0 left-0 z-[60] transform transition-transform duration-200 ease-out',
       'lg:static lg:top-auto lg:z-0 lg:translate-x-0',
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
     ]"
@@ -60,6 +60,12 @@
 
       <!-- Admin -->
       <ul v-else class="space-y-0.5">
+        <li>
+          <RouterLink to="/chat" :class="linkClass(isActive('/chat'))">
+            <NavIcon name="notes" />
+            <span>{{ t('nav.chat') }}</span>
+          </RouterLink>
+        </li>
         <!-- Dashboard -->
         <li v-if="authStore.can('dashboard.view')">
           <RouterLink to="/dashboard" :class="linkClass(isActive('/dashboard'))">
@@ -646,6 +652,7 @@ const employeeNavigationExtras = computed(() => {
   void locale.value;
   return withLabels([
     { id: 9, labelKey: "nav.notes", path: "/notes", icon: "notes" },
+    { id: 10, labelKey: "nav.chat", path: "/chat", icon: "notes" },
   ]);
 });
 

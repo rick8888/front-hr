@@ -369,11 +369,12 @@
           >
             {{ day }}
           </div>
-          <div
+          <button
             v-for="(date, index) in calendarDays"
             :key="index"
+            type="button"
             :class="[
-              'text-center text-sm py-2 rounded cursor-pointer transition-colors',
+              'relative text-center text-sm py-2 rounded transition-colors',
               date.isToday
                 ? 'bg-primary-500 text-white font-semibold'
                 : date.isSelected
@@ -381,10 +382,17 @@
                 : 'text-neutral-600 hover:bg-neutral-100',
               !date.isCurrentMonth && 'text-neutral-300',
             ]"
+            :aria-pressed="date.isSelected"
+            :aria-label="date.date.toLocaleDateString(bcp47)"
             @click="selectDate(date)"
           >
             {{ date.day }}
-          </div>
+            <span
+              v-if="date.hasEvents"
+              class="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-current"
+              aria-hidden="true"
+            />
+          </button>
         </div>
       </div>
 
@@ -401,14 +409,14 @@
           Chargement…
         </div>
         <p
-          v-else-if="scheduledEvents.length === 0"
+          v-else-if="selectedScheduleEvents.length === 0"
           class="text-center text-sm text-neutral-500 py-6"
         >
           {{ t("admin.dashboard.noEvents") }}
         </p>
         <template v-else>
           <div
-            v-for="(day, index) in scheduledEvents"
+            v-for="(day, index) in selectedScheduleEvents"
             :key="index"
             class="border border-neutral-200 rounded-lg p-4"
           >
@@ -859,12 +867,14 @@ const {
   attendanceList,
   hrActions,
   scheduledEvents,
+  selectedScheduleEvents,
   currentMonth,
   weekdayLabels,
   calendarDays,
   previousMonth,
   nextMonth,
   selectDate,
+  bcp47,
   getAvatarColor,
 } = useAdminDashboard();
 

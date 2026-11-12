@@ -97,6 +97,14 @@
           </button>
         </form>
 
+        <div
+          v-if="error"
+          class="mt-4 p-3 bg-error-50 border border-error-200 rounded-lg text-xs text-error-700"
+          role="alert"
+        >
+          {{ error }}
+        </div>
+
         <!-- Success Message -->
         <div
           v-if="success"
@@ -118,10 +126,10 @@
             </svg>
             <div class="flex-1">
               <p class="text-sm font-semibold text-success-900 mb-0.5">
-                Reset link sent!
+                Check your email
               </p>
               <p class="text-xs text-success-700">
-                Please check your email for password reset instructions.
+                If this address is registered, password reset instructions will be sent.
               </p>
             </div>
           </div>
@@ -157,25 +165,28 @@
 <script setup>
 import { ref } from "vue";
 import AuthLayout from "../components/layout/AuthLayout.vue";
+import { passwordResetApi } from "../services/passwordReset.api.js";
 
 const email = ref("");
 const isLoading = ref(false);
 const success = ref(false);
+const error = ref("");
 
 const handleForgotPassword = async () => {
+  error.value = "";
+  success.value = false;
   isLoading.value = true;
-  
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  
-  // Mock forgot password - in real app, call API
-  success.value = true;
-  isLoading.value = false;
-  
-  // Reset success message after 5 seconds
-  setTimeout(() => {
-    success.value = false;
-  }, 5000);
+  try {
+    await passwordResetApi.requestResetLink(email.value);
+    success.value = true;
+  } catch (requestError) {
+    error.value =
+      requestError.response?.data?.message ||
+      requestError.message ||
+      "The password reset request could not be completed.";
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -199,7 +210,6 @@ input:focus {
   }
 }
 </style>
-
 
 
 

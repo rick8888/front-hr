@@ -40,6 +40,7 @@ const EMPTY = {
   breakMinutes: 0,
   breakStartedAt: null,
   isOnBreak: false,
+  serverNow: null,
 };
 
 function mapPayload(payload) {
@@ -47,6 +48,7 @@ function mapPayload(payload) {
   const record = today.record || null;
   const checkIn = record?.check_in ?? record?.checkIn ?? null;
   const checkOut = record?.check_out ?? record?.checkOut ?? null;
+  const checkInRaw = record?.check_in_at ?? checkIn;
   const breakStartedAt = record?.active_break_started_at ?? null;
   const isOnBreak = Boolean(record?.is_on_break);
   const dateIso =
@@ -64,7 +66,7 @@ function mapPayload(payload) {
     phase,
     checkIn: checkIn,
     checkOut: checkOut,
-    checkInRaw: checkIn,
+    checkInRaw,
     workingHours: formatHoursLabel(workingMinutes),
     breakMinutes: Math.max(
       0,
@@ -72,6 +74,7 @@ function mapPayload(payload) {
     ),
     breakStartedAt,
     isOnBreak,
+    serverNow: payload?.server_now ?? null,
   };
 }
 
@@ -84,7 +87,16 @@ export function useEmployeeWorkTimer() {
   const error = ref("");
   const state = ref({ ...EMPTY });
   const tick = ref(0);
+  const serverTimeAtSync = ref(null);
   let tickTimer = null;
+  let monotonicTimeAtSync = 0;
+
+  function currentServerTime() {
+    if (serverTimeAtSync.value !== null && typeof performance !== "undefined") {
+      return serverTimeAtSync.value + (performance.now() - monotonicTimeAtSync);
+    }
+    return Date.now();
+  }
 
   const summary = computed(() => {
     void tick.value;
@@ -92,13 +104,13 @@ export function useEmployeeWorkTimer() {
     const s = state.value;
     const workingHours =
       (s.phase === "in" || s.phase === "break") && s.checkInRaw
-        ? formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso))
+        ? formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso, currentServerTime()))
         : s.workingHours;
     const activeBreakTimestamp = s.isOnBreak && s.breakStartedAt
       ? Date.parse(s.breakStartedAt)
       : Number.NaN;
     const activeBreakMinutes = Number.isFinite(activeBreakTimestamp)
-      ? Math.max(0, Math.floor((Date.now() - activeBreakTimestamp) / 60000))
+      ? Math.max(0, Math.floor((currentServerTime() - activeBreakTimestamp) / 60000))
       : 0;
     return {
       checkIn: formatClock(s.checkIn, locale.value) || "—",
@@ -114,7 +126,7 @@ export function useEmployeeWorkTimer() {
     const s = state.value;
     if ((s.phase === "in" || s.phase === "break") && s.checkInRaw) {
       if (s.phase === "break") return summary.value.breakDuration;
-      return formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso));
+      return formatHoursLabel(minutesSinceCheckIn(s.checkInRaw, s.todayIso, currentServerTime()));
     }
     if (s.phase === "done") return s.workingHours || "0m";
     return t("ss.attendance.modal.fabCheckIn");
@@ -133,6 +145,11 @@ export function useEmployeeWorkTimer() {
 
   function applyPayload(payload) {
     state.value = mapPayload(payload);
+    const serverTimestamp = Date.parse(state.value.serverNow || "");
+    if (Number.isFinite(serverTimestamp) && typeof performance !== "undefined") {
+      serverTimeAtSync.value = serverTimestamp;
+      monotonicTimeAtSync = performance.now();
+    }
   }
 
   async function load() {
@@ -202,7 +219,7 @@ export function useEmployeeWorkTimer() {
     load();
     tickTimer = window.setInterval(() => {
       tick.value += 1;
-    }, 30000);
+    }, 1000);
   });
 
   onUnmounted(() => {

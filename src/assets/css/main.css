@@ -143,6 +143,20 @@ body {
   }
 }
 
+@media (max-width: 1023px) {
+  .premium-shell > aside.mobile-full-height {
+    height: 100vh;
+    min-height: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    .premium-shell > aside.mobile-full-height {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+  }
+}
+
 @media (min-width: 1024px) {
   .premium-shell > aside {
     position: fixed;
