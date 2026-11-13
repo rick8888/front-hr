@@ -10,7 +10,10 @@
 
     <div class="flex min-w-0 w-full flex-1 flex-col">
       <Header class="sticky top-0 z-20 shrink-0 print:hidden" />
-      <main class="w-full min-w-0 overflow-x-auto pb-8 print:pb-0">
+      <main
+        class="w-full min-w-0 overflow-x-hidden pb-8 print:pb-0"
+        :class="{ 'pb-20': authStore.isEmployee }"
+      >
         <TenantSubscriptionStatusNotice v-if="authStore.isTenant" class="px-4 pt-4 sm:px-6" />
         <slot />
       </main>

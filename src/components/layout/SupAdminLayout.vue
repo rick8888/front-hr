@@ -37,14 +37,14 @@
     >
       <div class="hidden h-16 items-center border-b border-neutral-200 px-6 lg:flex">
         <div class="flex items-center gap-2">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500 text-lg font-bold text-white"
-          >
-            SA
-          </div>
+          <img
+            src="/brand/bravorh-app-icon.png"
+            alt=""
+            class="h-10 w-10 rounded-xl"
+          />
           <div>
-            <span class="block leading-tight text-lg font-bold text-neutral-900">Super Admin</span>
-            <span class="text-xs text-neutral-500">Plateforme</span>
+            <span class="block leading-tight text-lg font-bold text-white">Bravo RH</span>
+            <span class="text-xs text-neutral-400">Super Admin</span>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
     </aside>
 
     <div class="min-w-0 flex-1">
-      <main class="min-w-0 w-full overflow-x-auto">
+      <main class="min-w-0 w-full overflow-x-hidden">
         <RouterView />
       </main>
     </div>

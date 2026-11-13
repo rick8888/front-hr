@@ -22,7 +22,6 @@
 
 html {
   @apply scroll-smooth;
-  zoom: 0.8;
 }
 
 body {
@@ -257,6 +256,47 @@ body {
 
 .premium-shell main {
   scrollbar-color: #cbd3e2 transparent;
+}
+
+@media (max-width: 640px) {
+  .premium-shell main > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .premium-shell main > :where([class~="p-6"], [class~="p-8"]) {
+    padding: 1rem;
+  }
+
+  .premium-shell main > :where([class~="px-6"], [class~="px-8"]) {
+    padding-inline: 1rem;
+  }
+
+  .premium-shell main [class~="grid-cols-3"],
+  .premium-shell main [class~="grid-cols-4"],
+  .premium-shell main [class~="grid-cols-5"],
+  .premium-shell main [class~="grid-cols-6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .premium-shell main table {
+    min-width: max-content;
+  }
+
+  .premium-shell main :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    max-width: 100%;
+  }
+
+  .work-timer-fab {
+    top: auto;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    transform: none;
+    flex-direction: row;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 .premium-shell main [class~="rounded-xl"][class~="border"],

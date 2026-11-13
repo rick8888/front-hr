@@ -3,14 +3,14 @@
     <div
       v-if="modelValue"
       :class="[
-        'fixed inset-0 flex items-center justify-center z-50',
+        'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6',
         backdropClass || 'bg-black bg-opacity-50',
       ]"
       @click.self="close"
     >
       <div
         :class="[
-          'bg-white rounded-xl shadow-xl w-full mx-4',
+          'my-auto flex max-h-[calc(100vh-2rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl bg-white shadow-xl',
           sizeClass,
           panelClass,
         ]"
@@ -18,7 +18,7 @@
         <!-- Header -->
         <div
           :class="[
-            'flex items-center justify-between px-6 py-4 border-b border-neutral-200',
+            'flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200 px-4 py-4 sm:px-6',
             headerClass,
           ]"
         >
@@ -39,7 +39,7 @@
         <!-- Body -->
         <div
           :class="[
-            'px-6 py-4 max-h-[calc(100vh-8rem)] overflow-y-auto',
+            'min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6',
             bodyClass,
           ]"
         >
@@ -50,7 +50,7 @@
         <slot name="footer">
           <div
             v-if="!hideFooter"
-            class="flex gap-3 px-6 py-4 border-t border-neutral-200 justify-end"
+            class="flex shrink-0 flex-wrap justify-end gap-3 border-t border-neutral-200 px-4 py-4 sm:px-6"
           >
             <button @click="close" class="btn-outline">Cancel</button>
             <button @click="confirm" class="btn-primary">Confirm</button>

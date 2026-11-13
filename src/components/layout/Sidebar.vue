@@ -10,11 +10,11 @@
     <!-- Logo -->
     <div class="flex h-14 items-center justify-between gap-2.5 border-b border-neutral-100 px-5">
       <div class="flex items-center gap-2.5">
-        <div
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-600 text-xs font-bold text-white"
-        >
-          HR
-        </div>
+        <img
+          src="/brand/bravorh-app-icon.png"
+          alt=""
+          class="h-8 w-8 shrink-0 rounded-lg"
+        />
         <span class="truncate text-[15px] font-semibold tracking-tight text-white">{{ t("app.name") }}</span>
       </div>
       <button

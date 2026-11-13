@@ -2,7 +2,7 @@
   <button
     type="button"
     :class="[
-      'group fixed right-0 top-1/2 z-[45] flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-2xl px-2.5 py-4 text-white shadow-[0_4px_14px_rgba(5,150,105,0.45)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+      'work-timer-fab group fixed right-0 top-1/2 z-[45] flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-2xl px-2.5 py-4 text-white shadow-[0_4px_14px_rgba(5,150,105,0.45)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
       fabClass,
     ]"
     :aria-label="ariaLabel"

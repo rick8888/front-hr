@@ -1,21 +1,6 @@
 <template>
   <AuthLayout>
     <div class="w-full max-w-md mx-auto">
-      <!-- Logo Section (Mobile) -->
-      <div class="lg:hidden flex items-center justify-center mb-4">
-        <div class="flex items-center gap-2">
-          <div
-            class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
-          >
-            BR
-          </div>
-          <div>
-            <h1 class="text-xl font-bold text-neutral-900">Bravo RH</h1>
-            <p class="text-neutral-500 text-xs">HR Management System</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Header -->
       <div class="text-center mb-5">
         <h2 class="text-2xl font-bold text-neutral-900 mb-1">Reset Password</h2>
@@ -371,6 +356,4 @@ input:focus {
   }
 }
 </style>
-
-
 

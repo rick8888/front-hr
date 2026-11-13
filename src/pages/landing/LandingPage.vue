@@ -1,10 +1,9 @@
 <template>
   <div class="min-h-screen overflow-hidden bg-[#f7f8fc] text-neutral-800">
-    <header class="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl">
+    <header class="sticky top-0 z-30 border-b border-neutral-200/80 bg-[#f7f8fc]/90 backdrop-blur-xl">
       <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
         <a href="#top" class="flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeMenu">
-          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-secondary-600 text-xs font-bold tracking-wide text-white">BR</span>
-          <span class="text-base font-bold tracking-tight text-neutral-900">Bravo RH</span>
+          <img src="/brand/bravorh-logo-light.png" alt="Bravo RH" class="h-auto w-36 sm:w-40" />
         </a>
 
         <nav class="hidden items-center gap-7 text-sm font-medium text-neutral-600 lg:flex" :aria-label="t('landing.nav.label')">
@@ -327,7 +326,7 @@
     <footer class="bg-white">
       <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-7 text-sm text-neutral-500 sm:px-8 md:flex-row md:items-center md:justify-between">
         <a href="#top" class="flex items-center gap-2 font-semibold text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
-          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-600 text-[9px] font-bold text-white" aria-hidden="true">BR</span>
+          <img src="/brand/bravorh-app-icon.png" alt="" class="h-7 w-7 rounded-lg" />
           Bravo RH
         </a>
         <p>{{ t("landing.footer.tagline") }}</p>

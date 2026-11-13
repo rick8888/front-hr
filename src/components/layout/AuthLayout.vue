@@ -31,11 +31,11 @@
       <div class="relative z-10 w-full max-w-lg">
         <!-- Logo -->
         <div class="flex items-center gap-3 mb-10">
-          <div
-            class="flex items-center justify-center w-12 h-12 text-xl font-bold bg-white shadow-xl rounded-xl text-primary-600"
-          >
-            BR
-          </div>
+          <img
+            src="/brand/bravorh-app-icon.png"
+            alt=""
+            class="h-12 w-12 rounded-2xl shadow-xl"
+          />
           <div>
             <h1 class="text-2xl font-bold text-white">Bravo RH</h1>
             <p class="text-xs text-primary-100">HR Management System</p>
@@ -159,7 +159,14 @@
     <div
       class="flex min-h-screen min-h-[100dvh] w-full items-center justify-center overflow-y-auto px-6 py-6 sm:px-8 lg:w-1/2 lg:px-12 xl:px-16"
     >
-      <div :class="['w-full my-auto', maxWidthClass]">
+      <div :class="['my-auto w-full', maxWidthClass]">
+        <div class="mb-6 flex justify-center">
+          <img
+            :src="logoUrl"
+            alt="Bravo RH"
+            class="h-auto w-40 sm:w-48"
+          />
+        </div>
         <slot />
       </div>
     </div>
@@ -168,6 +175,7 @@
 
 <script setup>
 import { computed } from "vue";
+import logoUrl from "../../assets/brand/bravorh-logo-light.png";
 
 const props = defineProps({
   /** Tailwind max-width key for the form column */
@@ -189,8 +197,8 @@ const maxWidthClass = computed(
 
 <style scoped>
 .auth-layout {
-  min-height: 125vh;
-  min-height: 125dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Smooth animations */
