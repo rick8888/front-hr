@@ -86,7 +86,7 @@
     <div class="card">
       <h2 class="text-lg font-bold text-neutral-900 mb-4">{{ t("admin.recruitment.recentCandidates") }}</h2>
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table v-responsive-table-cards class="w-full">
           <thead>
             <tr class="border-b border-neutral-200">
               <th class="text-left px-6 py-3 text-sm font-medium text-neutral-600">

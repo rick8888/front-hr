@@ -706,7 +706,7 @@
           class="overflow-x-auto -mx-6 -mb-6"
           aria-busy="true"
         >
-          <table class="min-w-full text-sm">
+          <table v-responsive-table-cards class="min-w-full text-sm">
             <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
               <tr>
                 <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.date") }}</th>
@@ -729,7 +729,7 @@
           </table>
         </div>
         <div v-else class="overflow-x-auto -mx-6 -mb-6">
-          <table class="min-w-full text-sm">
+          <table v-responsive-table-cards class="min-w-full text-sm">
             <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
               <tr>
                 <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.date") }}</th>
@@ -841,7 +841,7 @@
           class="overflow-x-auto -mx-6 -mb-6"
           aria-busy="true"
         >
-          <table class="min-w-full text-sm">
+          <table v-responsive-table-cards class="min-w-full text-sm">
             <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
               <tr>
                 <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.leaveType") }}</th>
@@ -863,7 +863,7 @@
           </table>
         </div>
         <div v-else class="overflow-x-auto -mx-6 -mb-6">
-          <table class="min-w-full text-sm">
+          <table v-responsive-table-cards class="min-w-full text-sm">
             <thead class="bg-neutral-50/70 text-xs uppercase text-neutral-500">
               <tr>
                 <th class="px-6 py-3 text-left font-medium">{{ t("admin.employees.view.col.leaveType") }}</th>

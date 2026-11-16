@@ -41,7 +41,7 @@
     </div>
 
     <div class="mt-3 overflow-x-auto">
-      <table class="min-w-full">
+      <table v-responsive-table-cards class="min-w-full">
         <thead>
           <tr class="border-b border-neutral-200 text-left">
             <th

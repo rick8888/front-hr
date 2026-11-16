@@ -205,6 +205,7 @@ export default {
   "nav.secondary.recruitment": "Recruitment",
   "nav.secondary.candidates": "Candidates",
   "nav.secondary.settings": "Settings",
+  "nav.secondary.declarations": "Tax and social declarations",
 
   "nav.ss.profile": "My Profile",
   "nav.ss.attendance": "My Attendance",
@@ -231,7 +232,7 @@ export default {
   "nav.tenant.billings": "Billings",
   "nav.tenant.invoices": "Invoices",
   "nav.tenant.usage": "Usage",
-  "nav.tenant.deadlines": "Deadlines",
+  "nav.tenant.deadlines": "Tax and social declarations",
   "nav.tenant.users": "Users",
   "nav.tenant.company": "Company profile",
   "nav.tenant.support": "Support",

@@ -12,7 +12,7 @@
       <h2 class="text-lg font-semibold text-neutral-900">Modifiers Details</h2>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm min-w-[520px]">
+      <table v-responsive-table-cards class="w-full text-sm min-w-[520px]">
         <thead>
           <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
             <th class="px-5 py-3 font-medium uppercase text-xs tracking-wide">Name</th>

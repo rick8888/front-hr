@@ -59,7 +59,7 @@
         </span>
       </div>
 
-      <table class="min-w-full border-collapse text-left text-sm">
+      <table v-responsive-table-cards class="min-w-full border-collapse text-left text-sm">
         <thead>
           <tr class="border-y border-neutral-100 bg-neutral-50/40 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
             <th

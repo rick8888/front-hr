@@ -95,7 +95,7 @@
     </div>
 
     <div v-else class="overflow-x-auto rounded-lg border border-neutral-200">
-      <table class="min-w-full divide-y divide-neutral-100 text-left">
+      <table v-responsive-table-cards class="min-w-full divide-y divide-neutral-100 text-left">
         <thead class="bg-neutral-50/80">
           <tr>
             <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">

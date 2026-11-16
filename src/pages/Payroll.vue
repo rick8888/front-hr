@@ -298,7 +298,7 @@
             class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-secondary-600"
           />
         </div>
-        <table class="w-full text-sm min-w-[900px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[900px]">
           <thead>
             <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
               <th class="pl-5 pr-2 py-3 w-10">

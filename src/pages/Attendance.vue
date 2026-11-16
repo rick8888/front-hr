@@ -56,7 +56,7 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-sm min-w-[1000px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[1000px]">
           <thead>
             <tr class="text-left text-xs font-semibold uppercase text-neutral-500 border-y border-neutral-100">
               <th class="px-4 py-3">{{ t("admin.attendance.col.id") }}</th>

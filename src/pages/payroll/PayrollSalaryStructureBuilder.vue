@@ -432,7 +432,7 @@
           </span>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table v-responsive-table-cards class="w-full text-sm">
             <thead>
               <tr class="bg-neutral-50 text-neutral-600 text-left border-b border-neutral-200">
                 <th class="px-4 py-3 font-medium">{{ t("admin.payroll.builder.component") }}</th>

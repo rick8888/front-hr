@@ -178,7 +178,7 @@
       </div>
 
       <div class="overflow-x-auto relative" :class="{ 'min-h-[200px]': loading }">
-        <table class="w-full text-sm min-w-[900px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[900px]">
           <thead>
             <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
               <th class="px-4 py-3 font-medium w-14">{{ t("admin.payroll.col.id") }}</th>

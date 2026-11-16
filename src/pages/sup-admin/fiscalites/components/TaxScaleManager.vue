@@ -63,7 +63,7 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="min-w-full text-left text-sm">
+        <table v-responsive-table-cards class="min-w-full text-left text-sm">
           <thead>
             <tr class="border-b border-neutral-100 bg-neutral-50/60">
               <th class="px-4 py-2 text-xs font-semibold uppercase text-neutral-500">#</th>

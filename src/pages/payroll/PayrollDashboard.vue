@@ -187,7 +187,7 @@
         >
           {{ t("admin.payroll.dashboard.recent.loading") }}
         </div>
-        <table class="w-full text-sm min-w-[720px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[720px]">
           <thead>
             <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
               <th class="pl-5 pr-3 py-3 font-medium uppercase text-xs tracking-wide">{{ t("admin.payroll.col.employee") }}</th>

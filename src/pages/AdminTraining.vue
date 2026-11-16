@@ -12,27 +12,29 @@
       <div class="mb-4">
         <button class="bg-primary-500 text-white px-4 py-2 rounded" @click="showAddModal = true">Ajouter une formation</button>
       </div>
-      <table class="min-w-full text-sm">
-        <thead>
-          <tr>
-            <th class="text-left py-2">Nom</th>
-            <th class="text-left py-2">Date</th>
-            <th class="text-left py-2">Participants</th>
-            <th class="text-left py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="formation in formations" :key="formation.id">
-            <td>{{ formation.nom }}</td>
-            <td>{{ formation.date }}</td>
-            <td>{{ formation.participants.length }}</td>
-            <td>
-              <button class="text-blue-600 mr-2" @click="editFormation(formation)">Modifier</button>
-              <button class="text-red-600" @click="deleteFormation(formation.id)">Supprimer</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table v-responsive-table-cards class="min-w-full text-sm">
+          <thead>
+            <tr>
+              <th class="text-left py-2">Nom</th>
+              <th class="text-left py-2">Date</th>
+              <th class="text-left py-2">Participants</th>
+              <th class="text-left py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="formation in formations" :key="formation.id">
+              <td>{{ formation.nom }}</td>
+              <td>{{ formation.date }}</td>
+              <td>{{ formation.participants.length }}</td>
+              <td>
+                <button class="text-blue-600 mr-2" @click="editFormation(formation)">Modifier</button>
+                <button class="text-red-600" @click="deleteFormation(formation.id)">Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <!-- Modal ajout/modification -->
       <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded shadow-xl w-96">

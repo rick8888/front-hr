@@ -108,40 +108,44 @@
       <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <h3 class="text-sm font-semibold text-neutral-700 mb-3">Gains</h3>
-          <table class="w-full text-sm">
-            <tbody>
-              <tr
-                v-for="(item, idx) in earnings"
-                :key="idx"
-                class="border-b border-neutral-100"
-              >
-                <td class="py-3">{{ item.label }}</td>
-                <td class="py-3 text-right font-medium">
-                  {{ formatCurrency(item.amount) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table v-responsive-table-cards class="w-full text-sm">
+              <tbody>
+                <tr
+                  v-for="(item, idx) in earnings"
+                  :key="idx"
+                  class="border-b border-neutral-100"
+                >
+                  <td class="py-3">{{ item.label }}</td>
+                  <td class="py-3 text-right font-medium">
+                    {{ formatCurrency(item.amount) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div>
           <h3 class="text-sm font-semibold text-neutral-700 mb-3">
             Retenues & cotisations
           </h3>
-          <table class="w-full text-sm">
-            <tbody>
-              <tr
-                v-for="(item, idx) in deductions"
-                :key="idx"
-                class="border-b border-neutral-100"
-              >
-                <td class="py-3">{{ item.label }}</td>
-                <td class="py-3 text-right font-medium">
-                  -{{ formatCurrency(item.amount) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table v-responsive-table-cards class="w-full text-sm">
+              <tbody>
+                <tr
+                  v-for="(item, idx) in deductions"
+                  :key="idx"
+                  class="border-b border-neutral-100"
+                >
+                  <td class="py-3">{{ item.label }}</td>
+                  <td class="py-3 text-right font-medium">
+                    -{{ formatCurrency(item.amount) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

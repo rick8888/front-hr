@@ -195,7 +195,7 @@
             </RouterLink>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full">
+            <table v-responsive-table-cards class="w-full">
               <thead>
                 <tr class="border-b border-neutral-200">
                   <th
@@ -421,7 +421,7 @@
             class="border border-neutral-200 rounded-lg p-4"
           >
           <h4 class="text-sm font-semibold text-neutral-900 mb-3">
-            {{ day.date }}
+            {{ formatScheduleDate(day) }}
           </h4>
           <div class="space-y-3">
             <div
@@ -432,14 +432,14 @@
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-medium text-primary-600">{{
-                    event.time
+                    translateScheduleText(event.time)
                   }}</span>
                 </div>
                 <p class="text-sm text-neutral-900 font-medium">
                   {{ event.title }}
                 </p>
                 <p class="text-xs text-neutral-500 mt-0.5">
-                  {{ event.description }}
+                  {{ translateScheduleText(event.description) }}
                 </p>
               </div>
               <button class="p-1 hover:bg-neutral-100 rounded transition-colors">
@@ -871,6 +871,8 @@ const {
   currentMonth,
   weekdayLabels,
   calendarDays,
+  formatScheduleDate,
+  translateScheduleText,
   previousMonth,
   nextMonth,
   selectDate,

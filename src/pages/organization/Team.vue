@@ -83,7 +83,7 @@
 
       <!-- Table -->
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table v-responsive-table-cards class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase border-t border-b border-neutral-100">
               <th class="px-6 py-3 w-16">ID</th>

@@ -173,6 +173,7 @@ const routePermissionRules = [
   { prefix: "/admin-equipments", anyOf: ["organization.manage", "employees.manage"] },
   { prefix: "/settings", anyOf: ["settings.manage"] },
   { prefix: "/reports", anyOf: ["reports.view"] },
+  { prefix: "/compliance", anyOf: ["reports.view"] },
   { prefix: "/entreprise", anyOf: ["settings.manage"] },
   { prefix: "/company-info", anyOf: ["settings.manage"] },
 ];
@@ -649,6 +650,13 @@ const routes = [
     path: "/reports",
     name: "Reports",
     component: Reports,
+  },
+  {
+    path: "/compliance/declarations",
+    name: "CompanyComplianceDeclarations",
+    component: TenantDeadlines,
+    props: { audience: "company_admin" },
+    meta: { title: "Déclarations fiscales et sociales" },
   },
   {
     path: "/departments",

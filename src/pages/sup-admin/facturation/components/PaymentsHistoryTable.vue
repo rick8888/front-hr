@@ -29,7 +29,7 @@
     </div>
 
     <div v-else class="overflow-x-auto">
-      <table class="min-w-full text-sm">
+      <table v-responsive-table-cards class="min-w-full text-sm">
         <thead>
           <tr class="border-b border-neutral-200 bg-neutral-50/80">
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500">Date</th>

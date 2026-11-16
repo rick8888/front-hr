@@ -60,7 +60,7 @@
     </div>
 
     <div class="overflow-x-auto border border-neutral-200 rounded-xl">
-      <table class="w-full bg-white">
+      <table v-responsive-table-cards class="w-full bg-white">
         <thead>
           <tr class="bg-neutral-50 border-b border-neutral-200">
             <th class="text-left px-6 py-3 text-xs font-semibold text-neutral-600 uppercase tracking-wider">Candidat</th>

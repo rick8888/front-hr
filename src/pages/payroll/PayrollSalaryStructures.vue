@@ -291,7 +291,7 @@
       </div>
 
       <div class="overflow-x-auto relative" :class="{ 'min-h-[200px]': loading }">
-        <table class="w-full text-sm min-w-[1000px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[1000px]">
           <thead>
             <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
               <th class="px-4 py-3 font-medium min-w-[200px]">{{ t("admin.payroll.structures.col.employee") }}</th>

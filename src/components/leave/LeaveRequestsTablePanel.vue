@@ -48,7 +48,7 @@
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full text-left border-collapse">
+      <table v-responsive-table-cards class="min-w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-neutral-200 bg-neutral-50/80">
             <th

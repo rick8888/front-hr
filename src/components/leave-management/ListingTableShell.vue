@@ -49,7 +49,7 @@
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse text-left">
+      <table v-responsive-table-cards class="min-w-full border-collapse text-left">
         <slot />
       </table>
     </div>

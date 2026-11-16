@@ -185,7 +185,7 @@
       </div>
 
       <div class="overflow-x-auto relative min-h-[200px]">
-        <table class="w-full text-sm min-w-[1100px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[1100px]">
           <thead>
             <tr class="bg-neutral-50 border-b border-neutral-200 text-left text-neutral-600">
               <th class="px-4 py-3 font-medium w-12">{{ t("admin.payroll.col.id") }}</th>

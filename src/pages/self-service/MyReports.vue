@@ -139,7 +139,7 @@
         </h2>
       </div>
       <div class="overflow-x-auto px-5 pb-5">
-        <table class="w-full min-w-[800px] text-xs">
+        <table v-responsive-table-cards class="w-full min-w-[800px] text-xs">
           <thead>
             <tr class="border-b border-neutral-200 text-left text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
               <th class="px-3 py-4">{{ t("ss.reports.col.month") }}</th>

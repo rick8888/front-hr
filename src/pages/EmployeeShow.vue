@@ -458,7 +458,7 @@
             <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.attendance") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
-                <table class="w-full border-collapse">
+                <table v-responsive-table-cards class="w-full border-collapse">
                   <thead class="sticky top-0 bg-white z-10">
                     <tr class="border-b border-neutral-200">
                       <th
@@ -538,7 +538,7 @@
             <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.projects") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
-                <table class="w-full border-collapse">
+                <table v-responsive-table-cards class="w-full border-collapse">
                   <thead class="sticky top-0 bg-white z-10">
                     <tr class="border-b border-neutral-200">
                       <th
@@ -615,7 +615,7 @@
             <h2 class="text-lg font-bold text-neutral-900 mb-6">{{ t("admin.employees.show.leave") }}</h2>
             <div class="overflow-x-auto">
               <div class="overflow-y-auto max-h-[600px]">
-                <table class="w-full border-collapse">
+                <table v-responsive-table-cards class="w-full border-collapse">
                   <thead class="sticky top-0 bg-white z-10">
                     <tr class="border-b border-neutral-200">
                       <th

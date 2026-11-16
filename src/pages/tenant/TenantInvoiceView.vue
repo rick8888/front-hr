@@ -199,8 +199,8 @@
             </div>
           </dl>
 
-          <div class="mt-8 overflow-hidden rounded-xl border border-neutral-200">
-            <table class="min-w-full">
+          <div class="mt-8 overflow-x-auto rounded-xl border border-neutral-200">
+            <table v-responsive-table-cards class="min-w-full">
               <thead class="bg-neutral-50">
                 <tr class="text-left">
                   <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">

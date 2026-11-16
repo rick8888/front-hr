@@ -110,7 +110,7 @@
         Department Performance
       </h3>
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table v-responsive-table-cards class="w-full">
           <thead>
             <tr class="border-b border-neutral-200">
               <th

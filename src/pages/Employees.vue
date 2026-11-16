@@ -1,17 +1,17 @@
 <template>
   <div class="px-4 py-4 sm:px-8 sm:py-6 max-w-7xl mx-auto">
     <!-- Header with Actions -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
+    <div class="mb-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
         <h1 class="text-2xl font-bold text-neutral-900">{{ t("admin.employees.title") }}</h1>
         <p class="text-sm text-neutral-600">{{ t("admin.employees.subtitle") }}</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
         <button
           v-if="canViewEmployees"
           type="button"
           @click="exportEmployees"
-          class="flex items-center gap-2 btn-outline"
+          class="flex w-full items-center justify-center gap-2 whitespace-nowrap btn-outline sm:w-auto"
           :disabled="exporting || loading"
         >
           <svg
@@ -34,7 +34,7 @@
           v-if="canManageEmployees"
           type="button"
           @click="importEmployees"
-          class="flex items-center gap-2 btn-outline"
+          class="flex w-full items-center justify-center gap-2 whitespace-nowrap btn-outline sm:w-auto"
           :disabled="importing || loading"
         >
           <svg
@@ -56,7 +56,7 @@
         <router-link
           v-if="canManageEmployees"
           to="/employees/new"
-          class="flex items-center gap-2 btn-primary"
+          class="col-span-2 flex w-full items-center justify-center gap-2 whitespace-nowrap btn-primary sm:col-span-1 sm:w-auto"
         >
           <svg
             class="w-4 h-4"
@@ -217,7 +217,7 @@
     <!-- Employees Table -->
     <div class="card">
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table v-responsive-table-cards class="w-full">
           <thead>
             <tr class="border-b border-neutral-200">
               <th class="px-6 py-3 text-left">

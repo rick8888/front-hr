@@ -76,7 +76,7 @@
     </div>
 
     <div class="overflow-x-auto border border-neutral-200 rounded-xl bg-white">
-      <table class="w-full text-sm min-w-[720px]">
+      <table v-responsive-table-cards class="w-full text-sm min-w-[720px]">
         <thead>
           <tr class="bg-neutral-50 border-b border-neutral-200 text-left">
             <th class="px-5 py-3 text-xs font-semibold text-neutral-600 uppercase">{{ t('settings.holidays.col.name') }}</th>

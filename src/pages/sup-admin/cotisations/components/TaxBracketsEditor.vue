@@ -12,7 +12,7 @@
     </div>
 
     <div v-else class="overflow-x-auto rounded-lg border border-neutral-200">
-      <table class="min-w-full text-sm">
+      <table v-responsive-table-cards class="min-w-full text-sm">
         <thead>
           <tr class="border-b border-neutral-200 bg-neutral-50/80">
             <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-neutral-500">Min</th>

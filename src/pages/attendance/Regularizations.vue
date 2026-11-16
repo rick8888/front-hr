@@ -180,7 +180,7 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-sm min-w-[960px]">
+        <table v-responsive-table-cards class="w-full text-sm min-w-[960px]">
           <thead>
             <tr
               class="text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase border-t border-b border-neutral-100"

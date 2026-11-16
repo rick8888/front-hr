@@ -201,7 +201,7 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[1100px] text-sm">
+        <table v-responsive-table-cards class="w-full min-w-[1100px] text-sm">
           <thead>
             <tr class="border-y border-neutral-200 text-left text-[11px] font-semibold uppercase tracking-wide text-neutral-600">
               <th class="px-6 py-3">{{ t("common.employee") }}</th>

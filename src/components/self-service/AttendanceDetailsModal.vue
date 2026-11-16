@@ -53,8 +53,8 @@
 
       <div class="pt-2">
         <p class="mb-2 text-sm font-semibold text-neutral-900">{{ t("ss.attendance.logsTitle") }}</p>
-        <div class="overflow-hidden rounded-lg border border-neutral-200">
-          <table class="min-w-full text-left text-sm">
+        <div class="overflow-x-auto rounded-lg border border-neutral-200">
+          <table v-responsive-table-cards class="min-w-full text-left text-sm">
             <thead>
               <tr class="bg-neutral-50 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
                 <th scope="col" class="px-4 py-2.5">{{ t("common.type") }}</th>

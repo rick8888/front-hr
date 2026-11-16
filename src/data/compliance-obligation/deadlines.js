@@ -14,6 +14,13 @@ function addDays(date, days) {
   return startOfDay(d);
 }
 
+function formatLocalIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function lastDayOfMonth(year, month1to12) {
   return new Date(year, month1to12, 0).getDate();
 }
@@ -120,6 +127,44 @@ export function computeNextDeadline(obligation, fromDate = new Date()) {
   return buildDeadlineRow(obligation, ref.year, ref.month, dueDate, graceEnd, today);
 }
 
+function computePreviousDeadline(obligation, fromDate = new Date()) {
+  const today = startOfDay(fromDate);
+  const maxIterations = obligation.frequency === "annual" ? 5 : 24;
+  let probeYear = today.getFullYear();
+  let probeMonth = today.getMonth() + 1;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const ref = referenceForDueMonth(obligation, probeYear, probeMonth);
+    const dueDate = computeDueDate(obligation, ref.year, ref.month);
+
+    if (dueDate < today) {
+      const graceEnd = addDays(dueDate, obligation.grace_days ?? 0);
+      return buildDeadlineRow(
+        obligation,
+        ref.year,
+        ref.month,
+        dueDate,
+        graceEnd,
+        today,
+      );
+    }
+
+    if (obligation.frequency === "annual") {
+      probeYear -= 1;
+    } else if (obligation.frequency === "quarterly") {
+      const previous = shiftMonth(probeYear, probeMonth, -3);
+      probeYear = previous.year;
+      probeMonth = previous.month;
+    } else {
+      const previous = shiftMonth(probeYear, probeMonth, -1);
+      probeYear = previous.year;
+      probeMonth = previous.month;
+    }
+  }
+
+  return null;
+}
+
 function buildDeadlineRow(obligation, refYear, refMonth, dueDate, graceEnd, today) {
   const daysUntil = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
   const daysUntilGraceEnd = Math.round((graceEnd - today) / (1000 * 60 * 60 * 24));
@@ -141,8 +186,8 @@ function buildDeadlineRow(obligation, refYear, refMonth, dueDate, graceEnd, toda
     authority: obligation.authority,
     frequency: obligation.frequency,
     reference_period_label: formatPeriodLabel(obligation, refYear, refMonth),
-    due_date: dueDate.toISOString().slice(0, 10),
-    grace_end_date: graceEnd.toISOString().slice(0, 10),
+    due_date: formatLocalIsoDate(dueDate),
+    grace_end_date: formatLocalIsoDate(graceEnd),
     days_until: daysUntil,
     days_until_grace_end: daysUntilGraceEnd,
     status,
@@ -155,7 +200,10 @@ function buildDeadlineRow(obligation, refYear, refMonth, dueDate, graceEnd, toda
 export function computeAllDeadlines(obligations, fromDate = new Date()) {
   return obligations
     .filter((o) => o.is_active)
-    .map((o) => computeNextDeadline(o, fromDate))
+    .flatMap((obligation) => [
+      computePreviousDeadline(obligation, fromDate),
+      computeNextDeadline(obligation, fromDate),
+    ].filter(Boolean))
     .sort((a, b) => a.due_date.localeCompare(b.due_date));
 }
 

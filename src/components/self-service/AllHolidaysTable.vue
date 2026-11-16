@@ -5,7 +5,7 @@
     </header>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse text-left text-sm">
+      <table v-responsive-table-cards class="min-w-full border-collapse text-left text-sm">
         <thead>
           <tr class="border-b border-neutral-100 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
             <th

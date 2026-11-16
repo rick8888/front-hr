@@ -643,6 +643,14 @@ const adminNavSecondary = computed(() => {
           icon: "settings",
         }
       : null,
+    authStore.can("reports.view")
+      ? {
+          id: 16,
+          labelKey: "nav.secondary.declarations",
+          path: "/compliance/declarations",
+          icon: "document",
+        }
+      : null,
   ].filter(Boolean);
 
   return withLabels(items);

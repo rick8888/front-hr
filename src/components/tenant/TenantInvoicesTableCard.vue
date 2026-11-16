@@ -26,20 +26,22 @@
     </div>
 
     <div class="mt-5 flex justify-end">
-      <label class="inline-flex items-center gap-2 text-sm text-neutral-500">
+      <label
+        class="flex w-full flex-col items-stretch gap-2 text-sm text-neutral-500 sm:w-auto sm:flex-row sm:items-center"
+      >
         {{ t("tenant.invoices.search") }}
         <input
           type="search"
           :value="searchQuery"
           :disabled="loading"
-          class="rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-60"
+          class="w-full rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-60 sm:w-56"
           @input="$emit('update:searchQuery', $event.target.value)"
         />
       </label>
     </div>
 
     <div class="mt-3 overflow-x-auto">
-      <table class="min-w-full">
+      <table v-responsive-table-cards class="min-w-full">
         <thead>
           <tr class="border-b border-neutral-200 text-left">
             <th
@@ -103,11 +105,11 @@
                 {{ statusLabel(row.statusCode || row.status) }}
               </span>
             </td>
-            <td class="px-4 py-4">
-              <div class="flex items-center gap-2">
+            <td class="px-4 py-4 mobile-table-actions-cell">
+              <div class="flex items-center gap-2 mobile-table-actions">
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1.5 rounded-md border border-secondary-200 bg-secondary-50 px-3 py-1.5 text-xs font-semibold text-[#7c7cf8] transition-colors hover:bg-secondary-100"
+                  class="inline-flex items-center justify-center gap-1.5 rounded-md border border-secondary-200 bg-secondary-50 px-3 py-1.5 text-xs font-semibold text-[#7c7cf8] transition-colors hover:bg-secondary-100 mobile-table-action-button"
                   @click="$emit('view', row)"
                 >
                   <svg
@@ -134,7 +136,7 @@
                 </button>
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1.5 rounded-md bg-[#7c7cf8] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#6b6be8] disabled:cursor-not-allowed disabled:opacity-60"
+                  class="inline-flex items-center justify-center gap-1.5 rounded-md bg-[#7c7cf8] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#6b6be8] disabled:cursor-not-allowed disabled:opacity-60 mobile-table-action-button"
                   :disabled="downloadingId === row.id"
                   @click="$emit('download', row)"
                 >

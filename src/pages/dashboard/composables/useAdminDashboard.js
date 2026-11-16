@@ -79,6 +79,32 @@ export function useAdminDashboard() {
     scheduledEvents.value.filter((day) => day.date_iso === selectedDate.value)
   );
 
+  function formatScheduleDate(day) {
+    const date = new Date(`${day.date_iso}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return day.date;
+
+    return date.toLocaleDateString(bcp47.value, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function translateScheduleText(value) {
+    const translations = {
+      Leave: "admin.dashboard.schedule.leave",
+      "All day": "admin.dashboard.schedule.allDay",
+      "Company holiday": "admin.dashboard.schedule.companyHoliday",
+      "Half-day holiday": "admin.dashboard.schedule.halfDayHoliday",
+      "Pending leave approval": "admin.dashboard.schedule.pendingLeaveApproval",
+      "Leave request": "admin.dashboard.schedule.leaveRequest",
+    };
+    const key = translations[value];
+
+    return key ? t(key) : value;
+  }
+
   const calendarDays = computed(() => {
     const year = currentDate.value.getFullYear();
     const month = currentDate.value.getMonth();
@@ -274,6 +300,9 @@ export function useAdminDashboard() {
     currentMonth,
     weekdayLabels,
     calendarDays,
+    bcp47,
+    formatScheduleDate,
+    translateScheduleText,
     previousMonth,
     nextMonth,
     selectDate,

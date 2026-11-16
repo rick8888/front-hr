@@ -155,7 +155,7 @@
           <!-- Table -->
           <div class="rounded-xl border border-neutral-200 overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
-              <table class="min-w-full text-sm">
+              <table v-responsive-table-cards class="min-w-full text-sm">
                 <thead class="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
                   <tr>
                     <th class="px-4 py-3 text-left font-medium">{{ t("admin.payroll.builder.component") }}</th>

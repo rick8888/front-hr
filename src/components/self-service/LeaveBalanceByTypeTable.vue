@@ -13,7 +13,7 @@
     </header>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse text-left text-sm">
+      <table v-responsive-table-cards class="min-w-full border-collapse text-left text-sm">
         <thead>
           <tr class="border-b border-neutral-100 bg-neutral-50/80 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
             <th scope="col" class="px-5 py-3 md:px-6">{{ t("ss.leave.col.leaveType") }}</th>
