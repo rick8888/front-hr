@@ -118,6 +118,7 @@ import PlansPage from "../pages/sup-admin/plans/PlansPage.vue";
 import FacturationPage from "../pages/sup-admin/facturation/FacturationPage.vue";
 import ParametresPage from "../pages/sup-admin/parametres/ParametresPage.vue";
 import StatutsPage from "../pages/sup-admin/statuts/StatutsPage.vue";
+import ContactRequestsPage from "../pages/sup-admin/contacts/ContactRequestsPage.vue";
 import Forbidden from "../pages/Forbidden.vue";
 
 // Admin-only routes (fallback rôle employé — les permissions affinent ensuite)
@@ -909,6 +910,12 @@ const routes = [
         name: "SupAdminParametres",
         component: ParametresPage,
         meta: { title: "Paramètres plateforme" },
+      },
+      {
+        path: "contacts",
+        name: "SupAdminContacts",
+        component: ContactRequestsPage,
+        meta: { title: "Demandes de contact" },
       },
       {
         path: "chat",
